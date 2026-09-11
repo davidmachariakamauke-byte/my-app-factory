@@ -1,0 +1,17 @@
+{
+  "name": "my-app-factory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate.js",
+    "render-video": "remotion render src/TutorialComposition.jsx out/tutorial.mp4"
+  },
+  "dependencies": {
+    "@google/genai": "^0.1.1",
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0"
+  }
+}
