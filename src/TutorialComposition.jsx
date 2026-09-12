@@ -1,7 +1,7 @@
-import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
+import { registerRoot, Composition, AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import scriptData from "./videoScript.json" assert { type: "json" };
 
-export const TutorialComposition = () => {
+const TutorialSequence = () => {
   let currentFrameOffset = 0;
 
   return (
@@ -34,3 +34,21 @@ const SceneCard = ({ scene }) => {
     </AbsoluteFill>
   );
 };
+
+const RemotionRoot = () => {
+  // Automatically calculate the total video length based on the AI script
+  const totalDuration = scriptData.scenes.reduce((acc, scene) => acc + scene.durationInFrames, 0) || 210;
+  
+  return (
+    <Composition
+      id="Tutorial"
+      component={TutorialSequence}
+      durationInFrames={totalDuration}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+  );
+};
+
+registerRoot(RemotionRoot);
