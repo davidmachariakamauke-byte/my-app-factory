@@ -33,7 +33,7 @@ jobs:
         run: node scripts/generate.js
 
       - name: Render Video Tutorial
-        run: npx remotion render src/TutorialComposition.jsx out/tutorial.mp4 --fps=30
+        run: npx remotion render src/TutorialComposition.jsx Tutorial out/tutorial.mp4
 
       - name: Commit App & Video
         run: |
