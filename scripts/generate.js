@@ -18,23 +18,23 @@ async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function fetchWithRetry(contents, maxRetries = 3) {
+// Increased maxRetries to 5 for better resilience against traffic spikes
+async function fetchWithRetry(contents, maxRetries = 5) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Calling Gemini API (Attempt ${attempt}/${maxRetries})...`);
       const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model: "gemini-3.5-flash-lite",
         contents: contents,
       });
       return response;
     } catch (error) {
-      // Catch the 503 overload error and wait before trying again
       if (error.status === 503 || (error.message && error.message.includes("503"))) {
         console.warn(`⚠️ Google API overloaded (503). Retrying in ${attempt * 5} seconds...`);
         if (attempt === maxRetries) throw error;
-        await delay(attempt * 5000); // Waits 5s, then 10s, then fails if the 3rd attempt drops
+        await delay(attempt * 5000);
       } else {
-        throw error; // Fail immediately if the error is a 400 (bad request) or 401 (bad API key)
+        throw error;
       }
     }
   }
@@ -58,7 +58,6 @@ async function main() {
     }
   `);
 
-  // Call the new retry function instead of the direct API call
   const response = await fetchWithRetry(contents);
 
   console.log("Parsing response...");
