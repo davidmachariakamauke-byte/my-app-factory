@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 
-// 1. Create fallback files immediately so Remotion doesn't crash Webpack if the AI fails
+// 1. Create fallback files immediately so Remotion doesn't crash if the AI completely fails
 fs.mkdirSync(path.join(process.cwd(), "src"), { recursive: true });
 const fallbackScript = {
   title: "Error Video",
@@ -12,6 +12,33 @@ fs.writeFileSync(path.join(process.cwd(), "src/videoScript.json"), JSON.stringif
 fs.writeFileSync(path.join(process.cwd(), "src/App.jsx"), "export default function App() { return <div>Error</div> }", "utf8");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// 2. Exponential Backoff function for autonomous retries
+async function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(contents, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Calling Gemini API (Attempt ${attempt}/${maxRetries})...`);
+      const response = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: contents,
+      });
+      return response;
+    } catch (error) {
+      // Catch the 503 overload error and wait before trying again
+      if (error.status === 503 || (error.message && error.message.includes("503"))) {
+        console.warn(`⚠️ Google API overloaded (503). Retrying in ${attempt * 5} seconds...`);
+        if (attempt === maxRetries) throw error;
+        await delay(attempt * 5000); // Waits 5s, then 10s, then fails if the 3rd attempt drops
+      } else {
+        throw error; // Fail immediately if the error is a 400 (bad request) or 401 (bad API key)
+      }
+    }
+  }
+}
 
 async function main() {
   const issueBody = process.env.ISSUE_BODY || "Create a simple React app.";
@@ -31,11 +58,8 @@ async function main() {
     }
   `);
 
-  console.log("Calling Gemini API...");
-  const response = await ai.models.generateContent({
-    model: "gemini-3.8-flash",
-    contents: contents,
-  });
+  // Call the new retry function instead of the direct API call
+  const response = await fetchWithRetry(contents);
 
   console.log("Parsing response...");
   let rawText = response.text;
