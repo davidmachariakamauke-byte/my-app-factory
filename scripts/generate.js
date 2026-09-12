@@ -33,7 +33,7 @@ async function main() {
 
   console.log("Calling Gemini API...");
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-3.8-flash",
     contents: contents,
   });
 
