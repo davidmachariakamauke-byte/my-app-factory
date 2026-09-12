@@ -33,7 +33,7 @@ async function main() {
 
   console.log("Calling Gemini API...");
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-pro",
+    model: "gemini-3.1-pro-preview",
     contents: contents,
   });
 
@@ -53,5 +53,5 @@ async function main() {
 main().catch(err => {
   console.error("❌ CRITICAL ERROR IN AI GENERATION:");
   console.error(err);
-  process.exit(1); // Force the GitHub Action to fail here so we see the real error!
+  process.exit(1); 
 });
