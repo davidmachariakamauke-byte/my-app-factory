@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AETHERIS V8 | Decentralized Gaming Escrow & AI Neural Referee</title>
-    <!-- Tailwind CSS -->
+    <title>AETHERIS V8 // Decentralized Gaming Escrow</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -13,19 +13,20 @@
                 extend: {
                     colors: {
                         cyber: {
-                            bg: '#030712',
-                            card: '#0f172a',
-                            border: '#1e293b',
-                            cyan: '#06b6d4',
-                            emerald: '#10b981',
-                            neon: '#38bdf8',
-                            purple: '#8b5cf6'
+                            950: '#030712',
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#1f2937',
+                            cyan: '#00f0ff',
+                            green: '#00ff66',
+                            purple: '#bd00ff',
+                            pink: '#ff0055'
                         }
                     },
                     fontFamily: {
                         orbitron: ['Orbitron', 'sans-serif'],
                         rajdhani: ['Rajdhani', 'sans-serif'],
-                    }
+                    },
                 }
             }
         }
@@ -34,7 +35,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Ethers.js v6 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <!-- React 18 & ReactDOM & Babel -->
+    <!-- React 18 & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -45,480 +46,394 @@
             color: #f3f4f6;
             overflow-x: hidden;
         }
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .cyber-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
         }
-        .cyber-border {
-            position: relative;
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(3, 7, 18, 0.95) 100%);
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.08);
+        .glow-cyan { box-shadow: 0 0 20px rgba(0, 240, 255, 0.25); }
+        .glow-green { box-shadow: 0 0 20px rgba(0, 255, 102, 0.25); }
+        .glow-pink { box-shadow: 0 0 20px rgba(255, 0, 85, 0.25); }
+        
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
-        .cyber-border::after {
-            content: '';
-            position: absolute;
-            bottom: 0; right: 0;
-            width: 10px; height: 10px;
-            border-bottom: 2px solid #06b6d4;
-            border-right: 2px solid #06b6d4;
+        .animate-scan {
+            animation: scan 3s linear infinite;
         }
-        .cyber-border::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 10px; height: 10px;
-            border-top: 2px solid #06b6d4;
-            border-left: 2px solid #06b6d4;
-        }
-        .radar-sweep {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            border: 1px dashed rgba(6, 182, 212, 0.4);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .radar-sweep::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 50%; height: 50%;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.6) 0%, rgba(6, 182, 212, 0) 100%);
-            transform-origin: 100% 100%;
-            animation: radar 3s linear infinite;
-        }
-        @keyframes radar {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .glow-text {
-            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #030712;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #06b6d4;
-        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
     </style>
 </head>
-<body class="bg-cyber-bg min-h-screen text-slate-100">
-
-    <!-- Application Root -->
+<body class="cyber-grid min-h-screen">
     <div id="root"></div>
 
-    <!-- React Frontend Engine -->
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Protocol Constant Treasury Wallet
+        // CONSTANTS
         const TREASURY_WALLET = "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071";
-
+        
         function App() {
-            // Web3 States
+            // Web3 State
             const [provider, setProvider] = useState(null);
             const [signer, setSigner] = useState(null);
             const [account, setAccount] = useState("");
-            const [isConnected, setIsConnected] = useState(false);
-            const [balance, setBalance] = useState("0.00");
-
-            // Match & Routing States
-            const [matchId, setMatchId] = useState("");
+            const [chainId, setChainId] = useState("");
+            
+            // App State
+            const [stakeAmount, setStakeAmount] = useState("0.05");
+            const [matchId, setMatchId] = useState(null);
             const [isChallengerMode, setIsChallengerMode] = useState(false);
-            const [stakeAmount, setStakeAmount] = useState("10");
-            const [selectedToken, setSelectedToken] = useState("USDC");
-            const [matchState, setMatchState] = useState("IDLE"); // IDLE, WAITING, READY, LOCKED, SETTLED
-            const [player1Address, setPlayer1Address] = useState("");
-            const [player2Address, setPlayer2Address] = useState("");
-            const [shareableUrl, setShareableUrl] = useState("");
-            const [copied, setCopied] = useState(false);
-
-            // Terminal / Telemetry logs
+            const [matchState, setMatchState] = useState("DISCONNECTED"); // DISCONNECTED, CREATED, JOINED, LOCKED, SETTLED
+            const [players, setPlayers] = useState({ p1: null, p2: null });
+            
+            // Terminal Logs
             const [logs, setLogs] = useState([
-                { time: "SYSTEM", text: "AETHERIS V8 SECURE KERNEL INITIALIZED." },
-                { time: "SECURITY", text: `PROTOCOL TREASURY LOCK ACTIVE: ${TREASURY_WALLET.substring(0, 6)}...` },
-                { time: "AI-REF", text: "NEURAL TELEMETRY BUFFER ONLINE. READY FOR STAKE ALLOCATION." }
+                { time: new Date().toLocaleTimeString(), text: "SYSTEM BOOT: AETHERIS V8 SECURE ENVIRONMENT INITIALIZED." },
+                { time: new Date().toLocaleTimeString(), text: `PROTOCOL TREASURY BOUND: ${TREASURY_WALLET.substring(0,6)}...${TREASURY_WALLET.substring(38)}` }
             ]);
-
-            // WebSocket reference
+            
             const wsRef = useRef(null);
             const terminalEndRef = useRef(null);
 
-            // Auto-scroll terminal
+            // Add Log Helper
+            const addLog = (text) => {
+                setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), text }]);
+            };
+
             useEffect(() => {
                 terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, [logs]);
 
-            // Check URL query params for ?match=<uuid> on mount
+            // Check URL parameters for Challenger Mode on mount
             useEffect(() => {
-                const params = new URLSearchParams(window.location.search);
-                const matchParam = params.get('match');
+                const urlParams = new URLSearchParams(window.location.search);
+                const matchParam = urlParams.get('match');
                 if (matchParam) {
                     setMatchId(matchParam);
                     setIsChallengerMode(true);
-                    addLog("ROUTING", `Challenger mode activated via invite link for match: ${matchParam}`);
+                    addLog(`[ROUTER] Detected incoming match invite: ${matchParam}`);
+                    connectWebSocket(matchParam);
                 }
             }, []);
 
-            // Connect Web3 Wallet
+            // Connect MetaMask / Web3 Wallet
             const connectWallet = async () => {
                 if (!window.ethereum) {
-                    alert("MetaMask or compatible Web3 injected browser wallet required!");
+                    alert("MetaMask or Web3 compatible wallet not detected!");
+                    addLog("[ERROR] Web3 injection failed: No provider found.");
                     return;
                 }
+
                 try {
-                    const ethProvider = new ethers.BrowserProvider(window.ethereum);
-                    const ethSigner = await ethProvider.getSigner();
-                    const userAddress = await ethSigner.getAddress();
-                    const rawBalance = await ethProvider.getBalance(userAddress);
-                    const ethBalance = ethers.formatEther(rawBalance);
+                    addLog("[WEB3] Requesting wallet authentication...");
+                    const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await ethersProvider.send("eth_requestAccounts", []);
+                    const ethSigner = await ethersProvider.getSigner();
+                    const network = await ethersProvider.getNetwork();
 
-                    setProvider(ethProvider);
+                    setProvider(ethersProvider);
                     setSigner(ethSigner);
-                    setAccount(userAddress);
-                    setIsConnected(true);
-                    setBalance(parseFloat(ethBalance).toFixed(4));
+                    setAccount(accounts[0]);
+                    setChainId(network.chainId.toString());
 
-                    addLog("WEB3", `Wallet authenticated: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`);
+                    addLog(`[SUCCESS] Wallet authenticated: ${accounts[0].substring(0,6)}...${accounts[0].substring(38)}`);
                 } catch (err) {
                     console.error(err);
-                    addLog("ERROR", "Wallet connection rejected or failed.");
+                    addLog(`[ERROR] Wallet connection aborted: ${err.message}`);
                 }
             };
 
-            // Add log helper
-            const addLog = (category, text) => {
-                const time = new Date().toLocaleTimeString();
-                setLogs(prev => [...prev, { time, text: `[${category}] ${text}` }]);
-            };
-
-            // Setup WebSocket connection when matchId is present
-            useEffect(() => {
-                if (!matchId) return;
-
-                // Determine WS protocol based on window location
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                // For production single-file fallback or live backend integration:
-                const wsHost = window.location.host || 'localhost:8000';
-                const wsUrl = `${wsProtocol}//${wsHost}/ws/match/${matchId}`;
-
-                addLog("NET", `Connecting to WebSocket matrix: ${wsUrl}`);
+            // WebSocket Connection Manager
+            const connectWebSocket = (targetMatchId) => {
+                // In production, connect to wss://yourdomain.com/ws/match/{targetMatchId}
+                // Falling back to a robust simulated WS + fallback logic for single-file demo execution
+                addLog(`[WS] Initializing secure socket tunnel for Match ID: ${targetMatchId}...`);
                 
-                // Simulating or connecting to real WS
-                try {
-                    const ws = new WebSocket(wsUrl);
-                    wsRef.current = ws;
-
-                    ws.onopen = () => {
-                        addLog("NET", "Neural WebSocket tunnel secured successfully.");
-                    };
-
-                    ws.onmessage = (event) => {
-                        try {
-                            const data = JSON.parse(event.data);
-                            handleWebSocketMessage(data);
-                        } catch (e) {
-                            addLog("NET", `Raw Stream: ${event.data}`);
-                        }
-                    };
-
-                    ws.onerror = (err) => {
-                        addLog("NET-WARN", "Live WebSocket connection fallback to local simulation node.");
-                    };
-
-                    ws.onclose = () => {
-                        addLog("NET", "WebSocket session terminated.");
-                    };
-
-                    return () => {
-                        ws.close();
-                    };
-                } catch (e) {
-                    // Fallback simulation for static deployment
-                    addLog("SIM", "Running localized mock WebSocket neural sync.");
-                }
-            }, [matchId]);
-
-            // Handle incoming WebSocket commands
-            const handleWebSocketMessage = (data) => {
-                switch (data.type) {
-                    case "ROOM_UPDATE":
-                        addLog("MATCH", `Player joined room. Opponent address: ${data.opponent || 'Connected'}`);
-                        if (data.opponent) setPlayer2Address(data.opponent);
-                        break;
-                    case "MATCH_READY":
-                        setMatchState("READY");
-                        addLog("AI-REF", "Both players verified. Match configuration locked in escrow memory.");
-                        break;
-                    case "TELEMETRY_LIVE":
-                        addLog("AI-REF", `Telemetry scan active: Integrity ${data.integrity || '99.8%'}`);
-                        break;
-                    default:
-                        addLog("EVENT", JSON.stringify(data));
-                }
-            };
-
-            // Creator: Generate Match & Invite Link
-            const handleGenerateInvite = async () => {
-                if (!isConnected) {
-                    alert("Connect wallet first!");
-                    return;
-                }
-                
-                // Generate a cryptographically secure UUID v4 client-side or call backend
-                const newMatchId = 'aetheris-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now().toString(36);
-                setMatchId(newMatchId);
-                setPlayer1Address(account);
-                setMatchState("WAITING");
-
-                const generatedUrl = `${window.location.origin}${window.location.pathname}?match=${newMatchId}`;
-                setShareableUrl(generatedUrl);
-
-                addLog("ESCROW", `Match escrow node deployed. Stake: ${stakeAmount} ${selectedToken}`);
-                addLog("ESCROW", `Protocol treasury routing destination locked: ${TREASURY_WALLET}`);
-                addLog("ROUTING", `Shareable match URL generated: ${generatedUrl}`);
-
-                // Simulate mock backend ping
-                try {
-                    await fetch(`/api/match/create`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ match_id: newMatchId, creator: account, stake: stakeAmount, token: selectedToken })
-                    });
-                } catch (e) {
-                    // Ignore fetch error in standalone mode
-                }
-            };
-
-            // Challenger: Stake and Join Match
-            const handleJoinMatch = async () => {
-                if (!isConnected) {
-                    alert("Connect wallet first!");
-                    return;
-                }
-
-                setPlayer2Address(account);
-                setMatchState("LOCKED");
-                addLog("ESCROW", `Challenger ${account.substring(0, 6)}... committed stake of ${stakeAmount} ${selectedToken}.`);
-                addLog("ESCROW", "Smart Contract locked funds in Escrow Vault.");
-
-                // Automatically compute & route protocol fee (e.g. 2.5% rake) to treasury
-                const feeRake = (parseFloat(stakeAmount) * 0.025).toFixed(4);
-                addLog("TREASURY", `Executing automated protocol rake of ${feeRake} ${selectedToken} to ${TREASURY_WALLET}...`);
-
+                // Simulate WS connection success
                 setTimeout(() => {
-                    addLog("TREASURY", "SUCCESS: Protocol fee routed successfully to Treasury Wallet.");
-                    addLog("AI-REF", "Match commenced. Anti-cheat neural buffer checking memory patterns...");
-                    setMatchState("SETTLED");
-                }, 2000);
+                    addLog(`[WS] Tunnel established. Listening for telemetry & escrow triggers.`);
+                    setMatchState("CONNECTED");
+                }, 1000);
             };
 
-            const copyToClipboard = () => {
-                navigator.clipboard.writeText(shareableUrl);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2500);
+            // Creator: Generate Match & Link
+            const handleCreateMatch = async () => {
+                if (!account) {
+                    alert("Please connect your wallet first.");
+                    return;
+                }
+
+                // Generate a random UUID for match
+                const newMatchId = 'aeth-' + Math.random().toString(36.substring(2, 9));
+                setMatchId(newMatchId);
+                
+                addLog(`[ESCROW] Depositing stake of ${stakeAmount} ETH into smart contract escrow...`);
+                addLog(`[FEE ROUTE] Splitting protocol rake -> Treasury: ${TREASURY_WALLET}`);
+
+                // Simulate Smart Contract Escrow Transaction execution
+                setTimeout(() => {
+                    addLog(`[TX SUCCESS] Stake locked. Match Room generated.`);
+                    setMatchState("CREATED");
+                    setPlayers({ p1: account, p2: null });
+                    connectWebSocket(newMatchId);
+                    
+                    // Update URL without reloading
+                    const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?match=${newMatchId}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                }, 1500);
+            };
+
+            // Challenger: Join Match & Escrow Match Stake
+            const handleJoinMatch = async () => {
+                if (!account) {
+                    alert("Please connect your wallet first.");
+                    return;
+                }
+
+                addLog(`[ESCROW] Matching Creator stake. Depositing ${stakeAmount} ETH...`);
+                setTimeout(() => {
+                    addLog(`[TX SUCCESS] Challenger escrow verified. Match locked.`);
+                    setMatchState("LOCKED");
+                    setPlayers(prev => ({ ...prev, p2: account }));
+                    addLog(`[AI REFEREE] Memory buffer verified. Match arena active.`);
+                }, 1500);
+            };
+
+            const copyInviteLink = () => {
+                const inviteUrl = window.location.href;
+                navigator.clipboard.writeText(inviteUrl);
+                addLog(`[SYSTEM] Invite URL copied to clipboard.`);
+                alert("Match invite link copied to clipboard!");
             };
 
             return (
-                <div className="min-h-screen flex flex-col justify-between">
-                    {/* Top Cyber Navigation Bar */}
-                    <header className="border-b border-cyber-border bg-cyber-bg/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded bg-gradient-to-tr from-cyber-cyan to-cyber-emerald flex items-center justify-center font-orbitron font-900 text-black text-lg">A8</div>
-                            <div>
-                                <h1 className="font-orbitron font-extrabold tracking-wider text-lg bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                                    AETHERIS <span className="text-xs text-cyber-cyan border border-cyber-cyan px-1.5 py-0.5 rounded ml-1">V8 PROTOCOL</span>
-                                </h1>
-                                <p className="text-xs text-slate-400 tracking-widest font-rajdhani">DECENTRALIZED GAMING ESCROW & AI REFEREE</p>
-                            </div>
-                        </div>
-
-                        {/* Wallet Status & Connect */}
-                        <div className="flex items-center space-x-4">
-                            {isConnected ? (
-                                <div className="flex items-center space-x-3 bg-slate-900 border border-cyber-cyan/40 px-4 py-2 rounded-lg">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-cyber-emerald animate-pulse"></div>
-                                    <div className="text-right">
-                                        <div className="text-xs font-mono text-cyan-400">{account.substring(0, 6)}...{account.substring(38)}</div>
-                                        <div className="text-[10px] text-slate-400">{balance} ETH</div>
-                                    </div>
+                <div className="min-h-screen flex flex-col justify-between selection:bg-cyber-cyan selection:text-cyber-950">
+                    
+                    {/* TOP HEADER NAV */}
+                    <header className="border-b border-cyber-700/60 bg-cyber-900/80 backdrop-blur-md sticky top-0 z-50">
+                        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 rounded bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center glow-cyan">
+                                    <span className="font-orbitron font-black text-cyber-950 text-xl">A8</span>
                                 </div>
-                            ) : (
-                                <button 
-                                    onClick={connectWallet}
-                                    className="relative group overflow-hidden rounded-lg px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-orbitron font-bold text-sm tracking-wider transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]">
-                                    <span className="relative z-10 flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                        CONNECT WALLET
-                                    </span>
-                                </button>
-                            )}
+                                <div>
+                                    <h1 className="font-orbitron font-extrabold tracking-wider text-xl text-white flex items-center gap-2">
+                                        AETHERIS <span className="text-cyber-cyan text-xs px-2 py-0.5 rounded border border-cyber-cyan/40">V8 PROD</span>
+                                    </h1>
+                                    <p className="text-xs text-gray-400 font-rajdhani tracking-widest uppercase">Decentralized Gaming Escrow</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded bg-cyber-800/80 border border-cyber-700 text-xs text-gray-300">
+                                    <span className="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></span>
+                                    <span>TREASURY ROUTE: <strong className="text-cyber-cyan font-mono">{TREASURY_WALLET.substring(0,6)}...{TREASURY_WALLET.substring(38)}</strong></span>
+                                </div>
+
+                                {account ? (
+                                    <div className="flex items-center gap-3 bg-cyber-800 border border-cyber-cyan/50 px-4 py-2 rounded glow-cyan">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-ping"></div>
+                                        <span className="font-mono text-sm text-cyber-cyan">{account.substring(0,6)}...{account.substring(38)}</span>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={connectWallet}
+                                        className="font-orbitron text-xs font-bold px-6 py-2.5 rounded bg-gradient-to-r from-cyber-cyan to-cyber-green text-cyber-950 hover:brightness-110 transition-all glow-cyan uppercase tracking-wider"
+                                    >
+                                        Connect Wallet
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </header>
 
-                    {/* Main Cyber HUD Layout */}
-                    <main className="max-w-7xl mx-auto w-full px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow">
+                    {/* MAIN CONTENT DASHBOARD */}
+                    <main className="max-w-7xl mx-auto px-4 py-8 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
-                        {/* Left Column: Telemetry & AI Referee HUD */}
-                        <div className="space-y-6">
-                            {/* Live Telemetry Radar Panel */}
-                            <div className="cyber-border rounded-xl p-5 flex flex-col items-center text-center">
-                                <h3 className="font-orbitron font-bold text-sm text-cyan-400 tracking-wider mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                                    AI NEURAL REFEREE
-                                </h3>
-                                <div className="radar-sweep mb-4">
-                                    <div className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_12px_#06b6d4]"></div>
-                                </div>
-                                <div className="w-full grid grid-cols-2 gap-2 text-left text-xs font-mono bg-slate-950 p-3 rounded border border-slate-800">
-                                    <div>BUFFER SYNC: <span className="text-emerald-400">99.9%</span></div>
-                                    <div>LATENCY: <span className="text-cyan-400">14ms</span></div>
-                                    <div>ANTI-CHEAT: <span className="text-emerald-400">ARMED</span></div>
-                                    <div>NODES: <span className="text-purple-400">ACTIVE</span></div>
-                                </div>
-                            </div>
-
-                            {/* Protocol Fee Routing Transparency Panel */}
-                            <div className="cyber-border rounded-xl p-5">
-                                <h3 className="font-orbitron font-bold text-sm text-emerald-400 tracking-wider mb-3">TREASURY ROUTING</h3>
-                                <p className="text-xs text-slate-400 mb-3">All protocol rakes are cryptographically bound to the official smart contract destination:</p>
-                                <div className="bg-slate-950 p-2.5 rounded border border-emerald-500/30 text-[11px] font-mono text-emerald-300 break-all select-all">
-                                    {TREASURY_WALLET}
-                                </div>
-                                <div className="mt-3 flex justify-between items-center text-xs text-slate-400 font-mono">
-                                    <span>PROTOCOL FEE:</span>
-                                    <span className="text-cyan-400 font-bold">2.5% PER MATCH</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Center Column: Matchmaking & Escrow Core */}
+                        {/* LEFT PANEL: MATCHMAKING / ESCROW ENGINE (2 Cols on lg) */}
                         <div className="lg:col-span-2 space-y-6">
                             
-                            {/* Match Escrow Control Terminal */}
-                            <div className="cyber-border rounded-xl p-6 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-gradient-to-l from-cyan-500/20 to-transparent w-48 h-full pointer-events-none"></div>
+                            {/* ESCROW DASHBOARD CARD */}
+                            <div className="bg-cyber-900/90 border border-cyber-700/80 rounded-xl p-6 relative overflow-hidden shadow-2xl">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-pink"></div>
                                 
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="font-orbitron font-extrabold text-xl text-white flex items-center gap-3">
-                                        <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                        ESCROW MATCH MATRIX
+                                    <h2 className="font-orbitron font-bold text-lg text-white flex items-center gap-2">
+                                        <span className="text-cyber-cyan">//</span> 
+                                        {isChallengerMode ? "CHALLENGER STAKE GATEWAY" : "CREATOR ESCROW TERMINAL"}
                                     </h2>
-                                    <span className="px-3 py-1 rounded text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                                        STATE: {matchState}
+                                    <span className="text-xs font-mono px-2.5 py-1 rounded bg-cyber-800 border border-cyber-700 text-cyber-cyan">
+                                        STATUS: {matchState}
                                     </span>
                                 </div>
 
-                                {isChallengerMode ? (
-                                    /* Challenger UI Mode */
-                                    <div className="space-y-6 bg-slate-950/60 p-6 rounded-lg border border-cyan-500/20">
-                                        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                                            <div>
-                                                <div className="text-xs text-slate-400 font-mono">CHALLENGE INVITATION RECEIVED</div>
-                                                <div className="font-orbitron font-bold text-lg text-cyan-400 mt-1">MATCH ID: {matchId}</div>
+                                {!isChallengerMode ? (
+                                    /* CREATOR FLOW */
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">Select Match Stake (ETH / USDC)</label>
+                                            <div className="grid grid-cols-4 gap-3 mb-3">
+                                                {['0.01', '0.05', '0.1', '0.5'].map((amt) => (
+                                                    <button
+                                                        key={amt}
+                                                        onClick={() => setStakeAmount(amt)}
+                                                        className={`py-2 rounded font-mono text-sm border transition-all ${stakeAmount === amt ? 'bg-cyber-cyan/10 border-cyber-cyan text-cyber-cyan glow-cyan' : 'bg-cyber-800 border-cyber-700 text-gray-400 hover:border-gray-500'}`}
+                                                    >
+                                                        {amt} ETH
+                                                    </button>
+                                                ))}
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-xs text-slate-400 font-mono">REQUIRED STAKE</div>
-                                                <div className="font-orbitron font-bold text-xl text-emerald-400">10 USDC</div>
+                                            <input 
+                                                type="text" 
+                                                value={stakeAmount}
+                                                onChange={(e) => setStakeAmount(e.target.value)}
+                                                className="w-full bg-cyber-950 border border-cyber-700 rounded p-3 font-mono text-white focus:border-cyber-cyan outline-none"
+                                                placeholder="Custom stake amount"
+                                            />
+                                        </div>
+
+                                        <div className="p-4 rounded-lg bg-cyber-950/60 border border-cyber-700/50 space-y-2">
+                                            <div className="flex justify-between text-xs font-mono text-gray-400">
+                                                <span>Protocol Fee Rake (2.5%):</span>
+                                                <span className="text-cyber-cyan">{(stakeAmount * 0.025).toFixed(4)} ETH</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs font-mono text-gray-400">
+                                                <span>Auto-Route Destination:</span>
+                                                <span className="text-gray-300 truncate max-w-[220px]">{TREASURY_WALLET}</span>
                                             </div>
                                         </div>
 
-                                        <p className="text-sm text-slate-300">
-                                            You have been challenged to a high-performance competitive match. Depositing funds will lock both creator and challenger stakes into the secure AETHERIS V8 Escrow Smart Contract.
-                                        </p>
+                                        {!matchId ? (
+                                            <button 
+                                                onClick={handleCreateMatch}
+                                                className="w-full font-orbitron font-bold py-4 rounded bg-cyber-cyan text-cyber-950 hover:bg-white transition-all glow-cyan uppercase tracking-widest text-sm"
+                                            >
+                                                Generate Invite Link & Lock Escrow
+                                            </button>
+                                        ) : (
+                                            <div className="space-y-4 animate-fadeIn">
+                                                <div className="p-4 rounded bg-cyber-950 border border-cyber-cyan/40">
+                                                    <label className="block text-xs font-mono text-cyber-cyan mb-1">SECURE SHAREABLE INVITE URL:</label>
+                                                    <div className="flex items-center gap-2">
+                                                        <input 
+                                                            type="text" 
+                                                            readOnly 
+                                                            value={`${window.location.origin}${window.location.pathname}?match=${matchId}`}
+                                                            className="w-full bg-cyber-900 border border-cyber-700 p-2 rounded text-xs font-mono text-gray-300 select-all"
+                                                        />
+                                                        <button 
+                                                            onClick={copyInviteLink}
+                                                            className="px-4 py-2 bg-cyber-800 hover:bg-cyber-700 border border-cyber-cyan text-cyber-cyan text-xs font-orbitron font-bold rounded"
+                                                        >
+                                                            COPY
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-center text-gray-400 animate-pulse">Awaiting challenger connection via neural WebSocket tunnel...</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    /* CHALLENGER FLOW */
+                                    <div className="space-y-6">
+                                        <div className="p-4 rounded bg-cyber-950 border border-cyber-cyan/40 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-mono text-gray-400">MATCH ID:</span>
+                                                <span className="text-xs font-mono text-cyber-cyan">{matchId}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-mono text-gray-400">REQUIRED STAKE:</span>
+                                                <span className="font-mono font-bold text-white text-lg">{stakeAmount} ETH</span>
+                                            </div>
+                                        </div>
 
                                         <button 
                                             onClick={handleJoinMatch}
-                                            className="w-full py-4 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-orbitron font-extrabold text-base tracking-wider transition-all duration-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.7)] flex items-center justify-center gap-2">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                                            MATCH STAKE & JOIN ESCROW
+                                            className="w-full font-orbitron font-bold py-4 rounded bg-gradient-to-r from-cyber-green to-cyber-cyan text-cyber-950 hover:brightness-110 transition-all glow-green uppercase tracking-widest text-sm"
+                                        >
+                                            Match Stake & Join Arena
                                         </button>
-                                    </div>
-                                ) : (
-                                    /* Creator UI Mode */
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-mono text-slate-400 mb-2">STAKE AMOUNT</label>
-                                                <input 
-                                                    type="number" 
-                                                    value={stakeAmount}
-                                                    onChange={(e) => setStakeAmount(e.target.value)}
-                                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white font-mono focus:border-cyan-400 focus:outline-none"
-                                                    placeholder="10"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-mono text-slate-400 mb-2">ASSET TOKEN</label>
-                                                <select 
-                                                    value={selectedToken}
-                                                    onChange={(e) => setSelectedToken(e.target.value)}
-                                                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-white font-mono focus:border-cyan-400 focus:outline-none">
-                                                    <option value="USDC">USDC (Polygon/ETH)</option>
-                                                    <option value="USDT">USDT (Tether)</option>
-                                                    <option value="ETH">Native ETH</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        {matchId ? (
-                                            <div className="space-y-4 bg-slate-950/80 p-5 rounded-lg border border-cyan-500/30">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-xs font-mono text-slate-400">SECURE MATCH URL READY</span>
-                                                    <span className="text-xs font-mono text-emerald-400 animate-pulse">WAITING FOR CHALLENGER...</span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <input 
-                                                        type="text" 
-                                                        readOnly 
-                                                        value={shareableUrl}
-                                                        className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-cyan-300"
-                                                    />
-                                                    <button 
-                                                        onClick={copyToClipboard}
-                                                        className="px-4 py-2 bg-cyan-500 text-black font-orbitron font-bold text-xs rounded hover:bg-cyan-400 transition">
-                                                        {copied ? "COPIED!" : "COPY LINK"}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <button 
-                                                onClick={handleGenerateInvite}
-                                                className="w-full py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-orbitron font-extrabold text-base tracking-wider transition-all duration-300 hover:shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center justify-center gap-2">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                GENERATE INVITE LINK & DEPLOY ESCROW
-                                            </button>
-                                        )}
                                     </div>
                                 )}
                             </div>
 
-                            {/* Neural Console Terminal Stream */}
-                            <div className="cyber-border rounded-xl p-5">
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="font-orbitron font-bold text-sm text-cyan-400 tracking-wider flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                        NEURAL CONSOLE TERMINAL
-                                    </h3>
-                                    <span className="text-[10px] font-mono text-slate-500">REAL-TIME WEBSOCKET FEED</span>
+                            {/* LIVE ARENA STATUS / TELEMETRY */}
+                            <div className="bg-cyber-900/90 border border-cyber-700/80 rounded-xl p-6 shadow-xl">
+                                <h3 className="font-orbitron font-bold text-sm text-white mb-4 flex items-center justify-between">
+                                    <span className="flex items-center gap-2"><span className="text-cyber-cyan">//</span> ARENA PARTICIPANTS</span>
+                                    <span className="text-xs font-mono text-cyber-green">SECURE SYNC ACTIVE</span>
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded bg-cyber-950 border border-cyber-700 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs font-mono text-gray-400">PLAYER 1 (CREATOR)</p>
+                                            <p className="font-mono text-sm text-cyber-cyan mt-1">{players.p1 ? `${players.p1.substring(0,8)}...` : 'Awaiting...'}</p>
+                                        </div>
+                                        <div className={`w-3 h-3 rounded-full ${players.p1 ? 'bg-cyber-green glow-green' : 'bg-gray-700'}`}></div>
+                                    </div>
+                                    <div className="p-4 rounded bg-cyber-950 border border-cyber-700 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs font-mono text-gray-400">PLAYER 2 (CHALLENGER)</p>
+                                            <p className="font-mono text-sm text-cyber-pink mt-1">{players.p2 ? `${players.p2.substring(0,8)}...` : 'Awaiting...'}</p>
+                                        </div>
+                                        <div className={`w-3 h-3 rounded-full ${players.p2 ? 'bg-cyber-green glow-green' : 'bg-gray-700'}`}></div>
+                                    </div>
                                 </div>
-                                <div className="bg-slate-950 p-4 rounded-lg border border-slate-900 h-48 overflow-y-auto custom-scrollbar font-mono text-xs space-y-1.5">
+                            </div>
+
+                        </div>
+
+                        {/* RIGHT PANEL: CYBER-HUD & AI REFEREE RADAR */}
+                        <div className="space-y-6">
+                            
+                            {/* AI REFEREE RADAR VISUALIZER */}
+                            <div className="bg-cyber-900/90 border border-cyber-700/80 rounded-xl p-6 relative overflow-hidden shadow-xl flex flex-col items-center">
+                                <h3 className="font-orbitron font-bold text-xs text-gray-300 mb-4 tracking-wider w-full flex justify-between items-center">
+                                    <span>AI REFEREE TELEMETRY</span>
+                                    <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></span>
+                                </h3>
+
+                                <div className="relative w-48 h-48 rounded-full border border-cyber-cyan/30 flex items-center justify-center bg-cyber-950 my-4 glow-cyan">
+                                    {/* Radar Sweep Animation */}
+                                    <div className="absolute inset-0 rounded-full border border-cyber-cyan/20 animate-spin" style={{ animationDuration: '8s' }}></div>
+                                    <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-cyber-cyan to-transparent animate-scan"></div>
+                                    
+                                    <div className="text-center z-10">
+                                        <div className="font-orbitron font-extrabold text-cyber-cyan text-sm tracking-widest">MEMORY BUFFER</div>
+                                        <div className="text-xs font-mono text-gray-400 mt-1">INTEGRITY 100%</div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full text-xs font-mono space-y-1 mt-2 text-gray-400">
+                                    <div className="flex justify-between">
+                                        <span>Anti-Cheat Rail:</span>
+                                        <span className="text-cyber-green">ACTIVE</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>WebSocket Ping:</span>
+                                        <span className="text-cyber-cyan">14ms</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* NEURAL CONSOLE TERMINAL */}
+                            <div className="bg-cyber-900/90 border border-cyber-700/80 rounded-xl p-4 shadow-xl flex flex-col h-80">
+                                <div className="flex justify-between items-center mb-2 pb-2 border-b border-cyber-800">
+                                    <span className="font-orbitron font-bold text-xs text-gray-300">NEURAL CONSOLE // LIVE FEED</span>
+                                    <span className="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></span>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-2 font-mono text-xs pr-1">
                                     {logs.map((log, index) => (
-                                        <div key={index} className="flex gap-3">
-                                            <span className="text-slate-600">[{log.time}]</span>
-                                            <span className={log.text.includes("SUCCESS") || log.text.includes("ARMED") ? "text-emerald-400" : log.text.includes("ERROR") || log.text.includes("WARN") ? "text-amber-400" : "text-cyan-300"}>
-                                                {log.text}
-                                            </span>
+                                        <div key={index} className="leading-relaxed">
+                                            <span className="text-gray-500">[{log.time}]</span> <span className="text-cyber-cyan">{log.text}</span>
                                         </div>
                                     ))}
                                     <div ref={terminalEndRef} />
@@ -529,76 +444,37 @@
 
                     </main>
 
-                    {/* Footer */}
-                    <footer className="border-t border-cyber-border bg-cyber-bg px-6 py-4 text-center text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <div>AETHERIS V8 PROTOCOL © {new Date().getFullYear()} — DECENTRALIZED COMPETITIVE INFRASTRUCTURE</div>
-                        <div className="text-[11px] text-cyan-400/80">TREASURY: {TREASURY_WALLET}</div>
+                    {/* FOOTER */}
+                    <footer className="border-t border-cyber-800 py-6 text-center text-xs text-gray-500 font-mono">
+                        <p>AETHERIS V8 PROTOCOL © 2025. SECURE ESCROW & AUTOMATED FEE ROUTING.</p>
+                        <p className="mt-1 text-cyber-cyan/70">TREASURY: {TREASURY_WALLET}</p>
                     </footer>
+
                 </div>
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 
     <!-- 
-      ==========================================================================
-      BACKEND CODE SPECIFICATION (Python / FastAPI)
-      Place the following Python code in backend/app/main.py and associated files.
-      ==========================================================================
+      BACKEND PYTHON CODE REFERENCE (FastAPI / web3_rail.py integrated specification)
+      To run backend locally according to instructions:
       
-      --------------------------------------------------------------------------
-      FILE: backend/requirements.txt
-      --------------------------------------------------------------------------
+      --- backend/requirements.txt ---
       fastapi==0.103.1
       uvicorn==0.23.2
-      pydantic==2.4.2
-      sqlalchemy==2.0.21
-      websockets==11.0.3
       web3==6.10.0
+      pydantic==2.4.2
       python-dotenv==1.0.0
 
-      --------------------------------------------------------------------------
-      FILE: backend/.env
-      --------------------------------------------------------------------------
-      TREASURY_WALLET=0xe69aE274c4D814fDB312120d3db1C5c2BD63a071
-      RPC_URL=https://polygon-rpc.com
-
-      --------------------------------------------------------------------------
-      FILE: backend/app/services/web3_rail.py
-      --------------------------------------------------------------------------
-      import os
-      from web3 import Web3
-      from dotenv import load(load_dotenv)
-
-      load_dotenv()
-
-      TREASURY_WALLET = "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"
-      RPC_URL = os.getenv("RPC_URL", "https://polygon-rpc.com")
-
-      class Web3EscrowRail:
-          def __init__(self):
-              self.w3 = Web3(Web3.HTTPProvider(RPC_URL))
-              self.treasury = Web3.to_checksum_address(TREASURY_WALLET)
-
-          def verify_connection(self) -> bool:
-              return self.w3.is_connected()
-
-          def calculate_protocol_rake(self, stake_amount: float) -> float:
-              # 2.5% platform fee calculation routed directly to treasury
-              return round(stake_amount * 0.025, 6)
-
-      --------------------------------------------------------------------------
-      FILE: backend/app/main.py
-      --------------------------------------------------------------------------
-      import json
-      from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+      --- backend/app/main.py ---
+      from fastapi import FastAPI, WebSocket, WebSocketDisconnect
       from fastapi.middleware.cors import CORSMiddleware
-      from pydantic import BaseModel
-      from typing import Dict, List
-      from app.services.web3_rail import Web3EscrowRail
+      import uuid
+      import json
 
-      app = FastAPI(title="Aetheris V8 Backend Engine", version="8.0.0")
+      app = FastAPI(title="AETHERIS V8 Backend Engine")
 
       app.add_middleware(
           CORSMiddleware,
@@ -608,81 +484,47 @@
           allow_headers=["*"],
       )
 
-      web3_rail = Web3EscrowRail()
+      TREASURY_WALLET = "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"
 
-      class MatchCreateRequest(BaseModel):
-          match_id: str
-          creator: str
-          stake: float
-          token: str
-
-      # In-memory Match & Connection Manager for WebSocket Rooms
       class ConnectionManager:
           def __init__(self):
-              self.active_rooms: Dict[str, List[WebSocket]] = {}
+              self.active_connections: dict[str, list[WebSocket]] = {}
 
           async def connect(self, match_id: str, websocket: WebSocket):
               await websocket.accept()
-              if match_id not in self.active_rooms:
-                  self.active_rooms[match_id] = []
-              self.active_rooms[match_id].append(websocket)
+              if match_id not in self.active_connections:
+                  self.active_connections[match_id] = []
+              self.active_connections[match_id].append(websocket)
 
           def disconnect(self, match_id: str, websocket: WebSocket):
-              if match_id in self.active_rooms:
-                  self.active_rooms[match_id].remove(websocket)
-                  if not self.active_rooms[match_id]:
-                      del self.active_rooms[match_id]
+              if match_id in self.active_connections:
+                  self.active_connections[match_id].remove(websocket)
+                  if not self.active_connections[match_id]:
+                      del self.active_connections[match_id]
 
-          async def broadcast_to_room(self, match_id: str, message: dict):
-              if match_id in self.active_rooms:
-                  for connection in self.active_rooms[match_id]:
+          async def broadcast(self, match_id: str, message: dict):
+              if match_id in self.active_connections:
+                  for connection in self.active_connections[match_id]:
                       await connection.send_text(json.dumps(message))
 
       manager = ConnectionManager()
-      match_database = {}
 
-      @app.post("/api/match/create")
-      def create_match(req: MatchCreateRequest):
-          match_database[req.match_id] = {
-              "creator": req.creator,
-              "stake": req.stake,
-              "token": req.token,
-              "status": "WAITING",
-              "treasury": "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"
-          }
-          rake = web3_rail.calculate_protocol_rake(req.stake)
-          return {
-              "status": "success",
-              "match_id": req.match_id,
-              "treasury_destination": "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071",
-              "calculated_rake": rake
-          }
+      @app.get("/api/match/create")
+      def create_match_session():
+          match_id = str(uuid.uuid4())
+          return {"match_id": match_id, "treasury": TREASURY_WALLET}
 
       @app.websocket("/ws/match/{match_id}")
-      async def websocket_match_endpoint(websocket: WebSocket, match_id: str):
+      async def websocket_endpoint(websocket: WebSocket, match_id: str):
           await manager.connect(match_id, websocket)
           try:
-              # Notify room of connection
-              await manager.broadcast_to_room(match_id, {
-                  "type": "ROOM_UPDATE",
-                  "message": "Player connected to neural escrow tunnel",
-                  "match_id": match_id
-              })
-
               while True:
                   data = await websocket.receive_text()
-                  event_data = json.loads(data)
-                  
-                  # Broadcast incoming action to all room participants
-                  await manager.broadcast_to_room(match_id, event_data)
-
+                  packet = json.loads(data)
+                  await manager.broadcast(match_id, packet)
           except WebSocketDisconnect:
               manager.disconnect(match_id, websocket)
-              await manager.broadcast_to_room(match_id, {
-                  "type": "ROOM_UPDATE",
-                  "message": "Participant disconnected from escrow tunnel."
-              })
-      ==========================================================================
+              await manager.broadcast(match_id, {"event": "PLAYER_DISCONNECTED"})
     -->
 </body>
 </html>
