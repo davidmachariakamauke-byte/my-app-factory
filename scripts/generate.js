@@ -51,7 +51,6 @@ fs.writeFileSync(path.join(process.cwd(), "src/App.jsx"), "export default functi
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// 2. Exponential Backoff for autonomous retries
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -83,9 +82,12 @@ async function main() {
   let contents = [];
   contents.push(`User Prompt: ${issueBody}`);
   contents.push(`
+    CRITICAL RULE: DO NOT import any external libraries or icon packages (such as lucide-react, react-icons, framer-motion).
+    Use ONLY standard HTML tags, inline CSS styling, and raw inline SVGs or standard emojis for icons.
+    
     Return ONLY a single valid JSON object. No markdown formatting, no code blocks, no backticks.
     {
-      "appCode": "export default function App() { return <div>Hello</div>; }",
+      "appCode": "export default function App() { return <div style={{padding: '20px'}}><h1>KaziConnect</h1></div>; }",
       "videoScript": {
         "title": "App Tutorial",
         "scenes": [
@@ -103,7 +105,6 @@ async function main() {
   
   const parsed = JSON.parse(rawText);
 
-  // Overwrite fallbacks with generated code
   fs.writeFileSync(path.join(process.cwd(), "src/App.jsx"), parsed.appCode, "utf8");
   fs.writeFileSync(path.join(process.cwd(), "src/videoScript.json"), JSON.stringify(parsed.videoScript, null, 2), "utf8");
   
