@@ -2,8 +2,46 @@ import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 
-// 1. Instantly write fallback files to prevent pipeline crashes
+// 1. Instantly scaffold the complete React + Vite ecosystem
 fs.mkdirSync(path.join(process.cwd(), "src"), { recursive: true });
+
+// A. Vite Configuration
+const viteConfig = `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})`;
+fs.writeFileSync(path.join(process.cwd(), "vite.config.js"), viteConfig, "utf8");
+
+// B. HTML Entry Point
+const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KaziConnect</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>`;
+fs.writeFileSync(path.join(process.cwd(), "index.html"), indexHtml, "utf8");
+
+// C. React Root Renderer
+const mainJsx = `import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)`;
+fs.writeFileSync(path.join(process.cwd(), "src/main.jsx"), mainJsx, "utf8");
+
+// D. App & Video Fallbacks
 const fallbackScript = {
   title: "Error Video",
   scenes: [{ durationInFrames: 90, heading: "AI Error", subtext: "The AI failed to generate the app. Check Actions logs." }]
@@ -13,7 +51,7 @@ fs.writeFileSync(path.join(process.cwd(), "src/App.jsx"), "export default functi
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// 2. Exponential Backoff function for autonomous retries
+// 2. Exponential Backoff for autonomous retries
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -61,7 +99,7 @@ async function main() {
 
   console.log("Parsing response...");
   let rawText = response.text;
-  rawText = rawText.replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+  rawText = rawText.replace(/^\s*```json/, "").replace(/^\s*```/, "").replace(/```\s*$/, "").trim();
   
   const parsed = JSON.parse(rawText);
 
