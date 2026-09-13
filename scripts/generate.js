@@ -13,8 +13,8 @@ async function fetchWithRetry(contents, maxRetries = 5) {
     try {
       console.log(`Calling Gemini API (Attempt ${attempt}/${maxRetries})...`);
       return await ai.models.generateContent({
-        // 1. UPGRADE TO PRO MODEL: Much stronger reasoning for complex, beautiful UIs
-        model: "gemini-1.5-pro",
+        // 1.5-flash is much stronger at coding than lite, without the Pro tier 404 block
+        model: "gemini-1.5-flash",
         contents: contents,
       });
     } catch (error) {
@@ -30,51 +30,71 @@ async function fetchWithRetry(contents, maxRetries = 5) {
 }
 
 async function main() {
-  const issueBody = process.env.ISSUE_BODY || "Create a full KaziConnect app.";
+  const issueBody = process.env.ISSUE_BODY || "Create a beautiful KaziConnect dashboard.";
   const indexPath = path.join(process.cwd(), "index.html");
 
-  // 2. ADD MEMORY: Read the current website so Gemini can edit it iteratively
-  let existingApp = "No existing code. Build from scratch.";
+  // Read existing React code so the AI can iterate and improve upon it
+  let existingReactCode = "No existing code. Build from scratch.";
   if (fs.existsSync(indexPath)) {
-    existingApp = fs.readFileSync(indexPath, "utf8");
+    const fullHtml = fs.readFileSync(indexPath, "utf8");
+    const match = fullHtml.match(/<script type="text\/babel">\s*([\s\S]*?)\s*<\/script>/);
+    if (match && match[1]) {
+      existingReactCode = match[1].trim();
+    }
   }
 
-  // 3. THE MASTER UI SYSTEM PROMPT: Forces professional design standards
   const prompt = `
-  You are an elite Staff Frontend Engineer and UI/UX Designer, equivalent to the AI behind Lovable or v0.dev.
-  
+  You are an elite Staff Frontend Engineer and UI/UX Designer.
   USER REQUEST: "${issueBody}"
   
-  CURRENT APP CODE:
-  \`\`\`html
-  ${existingApp}
+  CURRENT REACT CODE:
+  \`\`\`javascript
+  ${existingReactCode}
   \`\`\`
   
   YOUR DIRECTIVES:
-  1. ITERATIVE EDITING: If "CURRENT APP CODE" exists and is a valid app, DO NOT rewrite it from scratch. Surgically update it to fulfill the USER REQUEST while preserving existing features and data.
-  2. ARCHITECTURE: Output a single-file HTML app. Include Tailwind CSS and React/Babel via CDN.
+  1. If CURRENT REACT CODE exists, surgically update it. If not, build the app.
+  2. Write ONLY the raw React JavaScript code. DO NOT write any HTML. DO NOT wrap it in <script> tags. 
   3. PROFESSIONAL UI/UX RULES:
-     - Use a modern, clean design system inspired by Stripe or Vercel.
-     - Implement generous padding, subtle borders (border-slate-200), soft shadows (shadow-sm, shadow-md), and rounded corners (rounded-xl).
-     - Use a professional color palette (e.g., slate-900 for text, minimal vibrant accents for primary buttons).
-     - Ensure perfect mobile responsiveness using Tailwind's sm:, md:, lg: prefixes.
-     - Build empty states, loading states, and smooth interactive hover effects (transition-all duration-200).
+     - Use a modern, clean design system.
+     - Implement generous padding, subtle borders (border-slate-200), soft shadows, and rounded corners (rounded-xl).
+     - Ensure perfect mobile responsiveness using Tailwind (sm:, md:, lg:).
      - Use raw inline SVGs for all icons.
-  4. RETURN FORMAT: 
-     - Return ONLY the raw HTML code starting with <!DOCTYPE html>.
-     - Do not include markdown formatting, backticks, or conversational text.
+  4. Your code must define a main 'App' component and end with this exact line:
+     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  5. RETURN FORMAT: Return ONLY raw JavaScript code. No markdown formatting, no backticks.
   `;
 
   const response = await fetchWithRetry([prompt]);
 
-  console.log("Processing output...");
-  let rawHtml = response.text;
-  
-  // Clean up any stray markdown formatting the model might try to inject
-  rawHtml = rawHtml.replace(/^\s*```html/, "").replace(/^\s*```/, "").replace(/```\s*$/, "").trim();
+  console.log("Processing AI output...");
+  let aiReactCode = response.text.replace(/^\s*```(javascript|js|jsx)?/, "").replace(/```\s*$/, "").trim();
 
-  fs.writeFileSync(indexPath, rawHtml, "utf8");
-  console.log("✅ index.html updated successfully with Lovable-tier UI.");
+  // The Bulletproof Wrapper: Hardcoded so the AI can never break the core infrastructure
+  const finalHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KaziConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { background-color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+${aiReactCode}
+  </script>
+</body>
+</html>`;
+
+  fs.writeFileSync(indexPath, finalHtml, "utf8");
+  console.log("✅ index.html securely assembled and updated.");
 }
 
 main().catch(err => {
