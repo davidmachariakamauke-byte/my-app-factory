@@ -35,6 +35,11 @@ jobs:
       - name: Render Video Tutorial
         run: npx remotion render src/TutorialComposition.jsx Tutorial out/tutorial.mp4
 
+      - name: Build React App
+        run: |
+          npm run build
+          cp -r dist/* . || cp -r build/* .
+
       - name: Commit App & Video
         run: |
           git config user.name "AI App Factory"
@@ -50,10 +55,10 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const issue_number = context.issue.number;
-            
+
             github.rest.issues.createComment({
               owner,
               repo,
               issue_number,
-              body: `🚀 **App and Tutorial Video Created!**\n\nYour app code and video tutorial have been compiled and saved directly into your repository.`
+              body: "🚀 **App and Tutorial Video Created!**\n\nYour app code and video tutorial have been compiled and saved directly into your repository."
             });
