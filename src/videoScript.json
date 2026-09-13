@@ -1,0 +1,20 @@
+{
+  "title": "FundiMarket KE Launch",
+  "scenes": [
+    {
+      "durationInFrames": 90,
+      "heading": "Karibu FundiMarket KE",
+      "subtext": "Connecting all construction workers in Kenya with everything ready in the market."
+    },
+    {
+      "durationInFrames": 90,
+      "heading": "Vifaa & Tools On Demand",
+      "subtext": "Find cement, steel bars, and heavy tools instantly delivered to your construction site."
+    },
+    {
+      "durationInFrames": 90,
+      "heading": "Kazi na Malipo ya M-Pesa",
+      "subtext": "Secure construction gigs, connect with hardware shops, and build Kenya faster."
+    }
+  ]
+}
