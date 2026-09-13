@@ -57,7 +57,6 @@ async function main() {
     }
   `);
 
-  // Call the retry wrapper instead of the direct API call
   const response = await fetchWithRetry(contents);
 
   console.log("Parsing response...");
