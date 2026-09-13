@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
 import path from "path";
 
-// 1. Create fallback files immediately so Remotion doesn't crash if the AI completely fails
+// 1. Instantly write fallback files to prevent pipeline crashes
 fs.mkdirSync(path.join(process.cwd(), "src"), { recursive: true });
 const fallbackScript = {
   title: "Error Video",
@@ -18,7 +18,6 @@ async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Increased maxRetries to 5 for better resilience against traffic spikes
 async function fetchWithRetry(contents, maxRetries = 5) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -58,6 +57,7 @@ async function main() {
     }
   `);
 
+  // Call the retry wrapper instead of the direct API call
   const response = await fetchWithRetry(contents);
 
   console.log("Parsing response...");
@@ -66,7 +66,7 @@ async function main() {
   
   const parsed = JSON.parse(rawText);
 
-  // Overwrite fallbacks with actual generated code
+  // Overwrite fallbacks with generated code
   fs.writeFileSync(path.join(process.cwd(), "src/App.jsx"), parsed.appCode, "utf8");
   fs.writeFileSync(path.join(process.cwd(), "src/videoScript.json"), JSON.stringify(parsed.videoScript, null, 2), "utf8");
   
