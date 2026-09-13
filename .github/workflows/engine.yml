@@ -23,43 +23,30 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies
-        run: npm install --legacy-peer-deps
+      - name: Install Gemini SDK
+        run: npm install @google/genai
 
-      - name: Run Gemini AI Generator
+      - name: Run Gemini Generator
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body || github.event.comment.body }}
         run: node scripts/generate.js
 
-      - name: Render Video Tutorial
-        run: npx remotion render src/TutorialComposition.jsx Tutorial out/tutorial.mp4
-
-      - name: Build React App
-        run: |
-          npm install vite @vitejs/plugin-react lucide-react --no-save --legacy-peer-deps
-          npx vite build --base=/my-app-factory/
-          cp -r dist/* . 
-
-      - name: Commit App & Video
+      - name: Commit & Deploy
         run: |
           git config user.name "AI App Factory"
           git config user.email "factory@github.local"
-          git add .
-          git commit -m "Auto-generated app & video for Issue #${{ github.event.issue.number }}" || exit 0
+          git add index.html
+          git commit -m "Generated KaziConnect App for Issue #${{ github.event.issue.number }}" || exit 0
           git push
 
       - name: Reply to Issue
         uses: actions/github-script@v7
         with:
           script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const issue_number = context.issue.number;
-
             github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number,
-              body: "🚀 **App and Tutorial Video Created!**\n\nYour app code and video tutorial have been compiled and saved directly into your repository."
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "🚀 **App Published!**\n\nYour app has been built and updated directly on GitHub Pages."
             });
