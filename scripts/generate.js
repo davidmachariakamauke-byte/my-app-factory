@@ -13,8 +13,7 @@ async function fetchWithRetry(contents, maxRetries = 5) {
     try {
       console.log(`Calling Gemini API (Attempt ${attempt}/${maxRetries})...`);
       return await ai.models.generateContent({
-        // 1.5-flash is much stronger at coding than lite, without the Pro tier 404 block
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         contents: contents,
       });
     } catch (error) {
@@ -30,10 +29,9 @@ async function fetchWithRetry(contents, maxRetries = 5) {
 }
 
 async function main() {
-  const issueBody = process.env.ISSUE_BODY || "Create a beautiful KaziConnect dashboard.";
+  const issueBody = process.env.ISSUE_BODY || "Create a full KaziConnect app.";
   const indexPath = path.join(process.cwd(), "index.html");
 
-  // Read existing React code so the AI can iterate and improve upon it
   let existingReactCode = "No existing code. Build from scratch.";
   if (fs.existsSync(indexPath)) {
     const fullHtml = fs.readFileSync(indexPath, "utf8");
@@ -53,16 +51,15 @@ async function main() {
   \`\`\`
   
   YOUR DIRECTIVES:
-  1. If CURRENT REACT CODE exists, surgically update it. If not, build the app.
-  2. Write ONLY the raw React JavaScript code. DO NOT write any HTML. DO NOT wrap it in <script> tags. 
+  1. If CURRENT REACT CODE exists, update it cleanly. If not, build the full app.
+  2. Write ONLY raw React JavaScript code. DO NOT write HTML tags. DO NOT include backticks or markdown formatting.
   3. PROFESSIONAL UI/UX RULES:
-     - Use a modern, clean design system.
-     - Implement generous padding, subtle borders (border-slate-200), soft shadows, and rounded corners (rounded-xl).
-     - Ensure perfect mobile responsiveness using Tailwind (sm:, md:, lg:).
-     - Use raw inline SVGs for all icons.
-  4. Your code must define a main 'App' component and end with this exact line:
+     - Modern design system with Tailwind CSS styling.
+     - Generous padding, soft shadows (shadow-md), rounded corners (rounded-xl), clear typography.
+     - Mobile-responsive layout (using sm:, md:, lg: prefixes).
+     - Standard inline SVGs for icons.
+  4. Your code must define an 'App' component and end with:
      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  5. RETURN FORMAT: Return ONLY raw JavaScript code. No markdown formatting, no backticks.
   `;
 
   const response = await fetchWithRetry([prompt]);
@@ -70,7 +67,6 @@ async function main() {
   console.log("Processing AI output...");
   let aiReactCode = response.text.replace(/^\s*```(javascript|js|jsx)?/, "").replace(/```\s*$/, "").trim();
 
-  // The Bulletproof Wrapper: Hardcoded so the AI can never break the core infrastructure
   const finalHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,7 +90,7 @@ ${aiReactCode}
 </html>`;
 
   fs.writeFileSync(indexPath, finalHtml, "utf8");
-  console.log("✅ index.html securely assembled and updated.");
+  console.log("✅ index.html generated successfully.");
 }
 
 main().catch(err => {
