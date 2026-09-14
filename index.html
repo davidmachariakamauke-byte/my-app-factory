@@ -17,7 +17,7 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// Injected Web Audio Synth for ultimate immersive cyberpunk interaction
+// High-Fidelity Web Audio Synthesizer for Immersive Audio Feedback
 const playSound = (type) => {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -28,46 +28,49 @@ const playSound = (type) => {
         gain.connect(ctx.destination);
 
         if (type === 'click') {
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.05, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+            osc.frequency.setValueAtTime(900, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
             osc.start();
-            osc.stop(ctx.currentTime + 0.08);
+            osc.stop(ctx.currentTime + 0.05);
         } else if (type === 'warning') {
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(450, ctx.currentTime + 0.15);
-            osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.frequency.setValueAtTime(120, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(380, ctx.currentTime + 0.12);
+            osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
             osc.start();
-            osc.stop(ctx.currentTime + 0.3);
+            osc.stop(ctx.currentTime + 0.25);
         } else if (type === 'success') {
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-            osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
-            osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
-            gain.gain.setValueAtTime(0.08, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+            const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            chord.forEach((freq, idx) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
+                g.gain.setValueAtTime(0.03, ctx.currentTime + idx * 0.06);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.06 + 0.3);
+                o.start(ctx.currentTime + idx * 0.06);
+                o.stop(ctx.currentTime + idx * 0.06 + 0.3);
+            });
         } else if (type === 'scan') {
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(1000, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.4);
-            gain.gain.setValueAtTime(0.03, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.02, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
             osc.start();
-            osc.stop(ctx.currentTime + 0.4);
+            osc.stop(ctx.currentTime + 0.5);
         }
     } catch (e) {
-        // Fallback if browser blocks audio autoplay/contexts
+        // Ignored if user interaction limits apply
     }
 };
 
-// Global styles and typography injection
 const injectStylesAndFonts = () => {
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap';
@@ -77,183 +80,101 @@ const injectStylesAndFonts = () => {
     const style = document.createElement('style');
     style.innerHTML = `
         body {
-            background-color: #050508;
-            color: #d1d5db;
+            background-color: #030407;
+            color: #e2e8f0;
             font-family: 'Inter', sans-serif;
             background-image: 
-                radial-gradient(at 50% 0%, rgba(102, 252, 241, 0.08) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(255, 0, 85, 0.05) 0px, transparent 50%),
-                linear-gradient(rgba(18, 18, 24, 0.4) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(18, 18, 24, 0.4) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+                radial-gradient(at 50% 0%, rgba(102, 252, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 0, 85, 0.04) 0px, transparent 50%),
+                linear-gradient(rgba(18, 18, 24, 0.65) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 18, 24, 0.65) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
             overflow-x: hidden;
         }
-
-        .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Custom Cyberpunk glows & clips */
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         .neon-cyan-glow {
-            box-shadow: 0 0 20px rgba(102, 252, 241, 0.25);
-            border-color: rgba(102, 252, 241, 0.5);
+            box-shadow: 0 0 25px rgba(102, 252, 241, 0.3);
+            border-color: rgba(102, 252, 241, 0.6);
         }
-
         .neon-red-glow {
-            box-shadow: 0 0 25px rgba(255, 0, 85, 0.35);
-            border-color: rgba(255, 0, 85, 0.6);
+            box-shadow: 0 0 35px rgba(255, 0, 85, 0.45);
+            border-color: rgba(255, 0, 85, 0.75);
         }
-
         .cyber-panel {
-            background: rgba(10, 11, 16, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(102, 252, 241, 0.1);
+            background: rgba(8, 9, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 252, 241, 0.15);
             position: relative;
         }
-
         .cyber-panel::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 8px;
-            height: 8px;
-            border-top: 2px solid #66FCF1;
-            border-left: 2px solid #66FCF1;
+            top: 0; left: 0; width: 12px; height: 12px;
+            border-top: 2px solid #66FCF1; border-left: 2px solid #66FCF1;
         }
-
         .cyber-panel::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 8px;
-            height: 8px;
-            border-bottom: 2px solid #66FCF1;
-            border-right: 2px solid #66FCF1;
+            bottom: 0; right: 0; width: 12px; height: 12px;
+            border-bottom: 2px solid #66FCF1; border-right: 2px solid #66FCF1;
         }
-
         .cyber-panel-red::before { border-color: #ff0055; }
         .cyber-panel-red::after { border-color: #ff0055; }
-
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-
-        .scanline-overlay {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .scanline-overlay::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
         .scanning-sweep {
             position: absolute;
-            width: 100%;
-            height: 2px;
+            width: 100%; height: 2px;
             background: linear-gradient(90deg, transparent, #66FCF1, transparent);
-            animation: scanline 3s linear infinite;
-            top: 0;
-            z-index: 10;
+            animation: scanline 2.5s linear infinite;
+            top: 0; z-index: 10;
         }
-
         .warning-sweep {
             position: absolute;
-            width: 100%;
-            height: 4px;
+            width: 100%; height: 4px;
             background: linear-gradient(90deg, transparent, #ff0055, transparent);
-            animation: scanline 1.5s linear infinite;
-            top: 0;
-            z-index: 10;
+            animation: scanline 1.2s linear infinite;
+            top: 0; z-index: 10;
         }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(420px); }
         }
-        ::-webkit-scrollbar-track {
-            background: #0a0b10;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1f293d;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #66FCF1;
-        }
-
-        /* Visual Equalizer Bars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #030407; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #66FCF1; }
         .eq-bar {
-            width: 4px;
+            width: 3px;
             background-color: #66FCF1;
-            border-radius: 2px;
-            transition: height 0.1s ease;
-        }
-
-        /* Cyberpunk Grid Background */
-        .grid-bg {
-            background-image: linear-gradient(to right, rgba(102, 252, 241, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(102, 252, 241, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
+            border-radius: 1px;
+            transition: height 0.08s ease;
         }
     `;
     document.head.appendChild(style);
 };
 
-// Raw content templates
 const SOLIDITY_CONTRACT_CODE = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 /**
  * @title Project Epic: Decentralized AI Referee Gaming Escrow
- * @notice Combines AI telemetry Oracle signature verification with Uniswap Multi-Asset swapping.
- * @dev Enforces automated platform fee extraction on payouts.
+ * @notice Exclusively locks and settles native USDC stakes on the Base network.
+ * @dev Enforces automated platform fee extraction on payouts to the platform wallet.
  */
-
-interface ISwapRouter {
-    struct ExactInputSingleParams {
-        address tokenIn;
-        address tokenOut;
-        uint24 fee;
-        address recipient;
-        uint256 deadline;
-        uint256 amountIn;
-        uint256 amountOutMinimum;
-        uint160 sqrtPriceLimitX96;
-    }
-    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
-}
 
 interface IERC20 {
     function transfer(address to, uint256 amount) external returns (bool);
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
 }
 
 contract EpicGamingEscrow {
-    // Platform Fee Direct Wallet Destination (Base Layer-2)
+    // Base Network Platform Fee Destination
     address public constant FEE_ADDRESS = 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071;
-    uint256 public constant FEE_BPS = 250; // 2.5% fee
+    uint256 public constant FEE_BPS = 250; // 2.5% Flat Platform Fee
 
-    address public oracle;
-    address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913; // Base USDC address
-    ISwapRouter public immutable swapRouter;
+    address public immutable oracle;
+    address public immutable usdcToken; // Base Network Native USDC: 0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913
 
     struct Match {
         address player1;
@@ -264,93 +185,51 @@ contract EpicGamingEscrow {
     }
 
     mapping(bytes32 => Match) public matches;
-    mapping(address => bool) public supportedTokens;
 
     event MatchStaked(bytes32 indexed matchId, address indexed player, uint256 usdcAmount);
     event MatchSettled(bytes32 indexed matchId, address indexed winner, uint256 winnerPayout, uint256 platformFee);
     event CheatEnforced(bytes32 indexed matchId, address indexed cheater, address indexed victim, uint256 payout);
 
     modifier onlyOracle() {
-        require(msg.sender == oracle, "Error: caller must be Authorized AI Referee Oracle");
+        require(msg.sender == oracle, "Error: Must be Authorized AI Referee Oracle");
         _;
     }
 
-    constructor(address _oracle, address _swapRouter) {
+    constructor(address _oracle, address _usdcToken) {
+        require(_oracle != address(0), "Invalid oracle");
+        require(_usdcToken != address(0), "Invalid token");
         oracle = _oracle;
-        swapRouter = ISwapRouter(_swapRouter);
+        usdcToken = _usdcToken;
     }
 
     /**
-     * @notice Stakes standard ERC20 token or Native ETH, auto-swaps to USDC via Uniswap v3 & locks in Escrow pool.
+     * @notice Stakes native USDC tokens and locks them into match escrow pool.
      */
-    function stakeAndSwap(
-        bytes32 matchId,
-        address opponent,
-        address tokenIn,
-        uint256 amountIn,
-        uint24 poolFee,
-        uint256 minUsdcOut
-    ) external payable {
-        require(opponent != address(0), "Invalid opponent");
-        uint256 usdcReceived;
+    function stakeUSDC(bytes32 matchId, address opponent, uint256 amount) external {
+        require(opponent != address(0) && opponent != msg.sender, "Invalid opponent address");
+        require(amount > 0, "Stake must be greater than 0");
 
-        if (tokenIn == address(0)) {
-            // Swap Native ETH to USDC
-            require(msg.value == amountIn, "ETH amount mismatch");
-            usdcReceived = swapRouter.exactInputSingle{value: msg.value}(
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: 0x4200000000000000000000000000000000000006, // WETH on Base
-                    tokenOut: USDC,
-                    fee: poolFee,
-                    recipient: address(this),
-                    deadline: block.timestamp + 300,
-                    amountIn: amountIn,
-                    amountOutMinimum: minUsdcOut,
-                    sqrtPriceLimitX96: 0
-                })
-            );
-        } else {
-            // Transfer ERC20 from user and Swap to USDC
-            IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
-            IERC20(tokenIn).approve(address(swapRouter), amountIn);
-            
-            usdcReceived = swapRouter.exactInputSingle(
-                ISwapRouter.ExactInputSingleParams({
-                    tokenIn: tokenIn,
-                    tokenOut: USDC,
-                    fee: poolFee,
-                    recipient: address(this),
-                    deadline: block.timestamp + 300,
-                    amountIn: amountIn,
-                    amountOutMinimum: minUsdcOut,
-                    sqrtPriceLimitX96: 0
-                })
-            );
-        }
+        // Secure Transfer from standard player wallet
+        IERC20(usdcToken).transferFrom(msg.sender, address(this), amount);
 
         Match storage m = matches[matchId];
-        if (!m.active) {
+        if (!m.active && !m.settled) {
             m.player1 = msg.sender;
             m.player2 = opponent;
             m.active = true;
         }
-        
-        m.lockedUsdc += usdcReceived;
-        emit MatchStaked(matchId, msg.sender, usdcReceived);
+
+        m.lockedUsdc += amount;
+        emit MatchStaked(matchId, msg.sender, amount);
     }
 
     /**
-     * @notice Oracle triggers instant payout to the verified winner.
-     * @dev Automatically extracts platform fee directly to the specified platform wallet.
+     * @notice Oracle triggers instant resolution and dispatches USDC winner payout minus platform fee.
      */
-    function executePayout(
-        bytes32 matchId,
-        address winner,
-        bytes calldata signature
-    ) external onlyOracle {
+    function executePayout(bytes32 matchId, address winner) external onlyOracle {
         Match storage m = matches[matchId];
-        require(m.active && !m.settled, "Match not active or already settled");
-        require(winner == m.player1 || winner == m.player2, "Winner must be a player");
+        require(m.active && !m.settled, "Match inactive or resolved");
+        require(winner == m.player1 || winner == m.player2, "Winner must be active participant");
 
         m.settled = true;
         m.active = false;
@@ -359,24 +238,20 @@ contract EpicGamingEscrow {
         uint256 feeAmount = (totalPool * FEE_BPS) / 10000;
         uint256 winnerPayout = totalPool - feeAmount;
 
-        // Execute automated fee transfer
-        IERC20(USDC).transfer(FEE_ADDRESS, feeAmount);
-        // Execute winner payout
-        IERC20(USDC).transfer(winner, winnerPayout);
+        // Route commission directly to Base storage node
+        require(IERC20(usdcToken).transfer(FEE_ADDRESS, feeAmount), "Platform fee transfer failed");
+        // Route remaining funds to validated victor
+        require(IERC20(usdcToken).transfer(winner, winnerPayout), "Winner transfer failed");
 
         emit MatchSettled(matchId, winner, winnerPayout, feeAmount);
     }
 
     /**
-     * @notice Enforce zero-tolerance instant payout adjustment if telemetry detects execution cheats.
+     * @notice Zero-Tolerance Anti-Cheat override execution. Awards non-violating player entire balance minus fee.
      */
-    function enforceAntiCheatShutdown(
-        bytes32 matchId,
-        address cheater,
-        bytes calldata signature
-    ) external onlyOracle {
+    function enforceAntiCheatShutdown(bytes32 matchId, address cheater) external onlyOracle {
         Match storage m = matches[matchId];
-        require(m.active && !m.settled, "Match state cannot be adjusted");
+        require(m.active && !m.settled, "Match cannot be modified");
         address honestPlayer = (cheater == m.player1) ? m.player2 : m.player1;
 
         m.settled = true;
@@ -386,44 +261,12 @@ contract EpicGamingEscrow {
         uint256 feeAmount = (totalPool * FEE_BPS) / 10000;
         uint256 winnerPayout = totalPool - feeAmount;
 
-        // Punish cheater, award clean player fully minus service fee
-        IERC20(USDC).transfer(FEE_ADDRESS, feeAmount);
-        IERC20(USDC).transfer(honestPlayer, winnerPayout);
+        require(IERC20(usdcToken).transfer(FEE_ADDRESS, feeAmount), "Platform fee transfer failed");
+        require(IERC20(usdcToken).transfer(honestPlayer, winnerPayout), "Honest player payout failed");
 
         emit CheatEnforced(matchId, cheater, honestPlayer, winnerPayout);
     }
 }`;
-
-const MERMAID_DIAGRAM = `graph TD
-    %% Base Styling Classes
-    classDef client fill:#1a1c23,stroke:#66FCF1,stroke-width:2px,color:#fff;
-    classDef server fill:#111219,stroke:#ff0055,stroke-width:2px,color:#fff;
-    classDef contract fill:#050508,stroke:#ffd700,stroke-width:2px,color:#fff;
-    classDef base fill:#0B0C10,stroke:#22c55e,stroke-width:1px,color:#a3e635;
-
-    %% Data Flow Nodes
-    P1[Player 1 Client]:::client
-    P2[Player 2 Client]:::client
-    API[FastAPI Telemetry Hub]:::server
-    REF[AI Referee Decision Engine]:::server
-    ROUTER[DEX Multi-Asset Router]:::contract
-    ESCROW[Base L2 Escrow Contract]:::contract
-    FEE[Fee Wallet: 0xe69aE...]:::base
-
-    %% Interactive Links
-    P1 -->|1. Stakes diverse Token| ROUTER
-    P2 -->|1. Stakes diverse Token| ROUTER
-    ROUTER -->|2. Swaps into USDC| ESCROW
-    
-    P1 -.->|3. Sends Live Game Telemetry| API
-    P2 -.->|3. Sends Live Game Telemetry| API
-    
-    API -->|4. Heavy Memory / Cheat Scan| REF
-    REF -->|5. Analytical Verdict / Signature| ESCROW
-    
-    ESCROW -->|6. Platform Fee Direct Route| FEE
-    ESCROW -->|7. Disburses remaining USDC| P1 & P2
-`;
 
 function App() {
     useEffect(() => {
@@ -432,287 +275,325 @@ function App() {
 
     // State Variables
     const [matchId] = useState("0x" + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(""));
-    const [gameState, setGameState] = useState("idle"); // idle, scanning, dispute, victory
+    const [gameState, setGameState] = useState("idle"); // idle, staking, scanning, dispute, victory
+    
+    // Wallet SIWE authentications
     const [connected, setConnected] = useState(false);
     const [walletAddress, setWalletAddress] = useState("");
-    const [escrowPool, setEscrowPool] = useState(0); // in USDC
-    const [p1Stake, setP1Stake] = useState(0);
-    const [p2Stake, setP2Stake] = useState(0);
+    const [usdcBalance, setUsdcBalance] = useState(0);
+    const [siweModal, setSiweModal] = useState(false);
+    const [siweSigning, setSiweSigning] = useState(false);
+    const [jwtSession, setJwtSession] = useState(null);
+
+    // Escrow metrics
+    const [escrowPool, setEscrowPool] = useState(0.00);
+    const [p1Stake, setP1Stake] = useState(0.00);
+    const [p2Stake, setP2Stake] = useState(0.00);
     const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, solidity, architecture
 
-    // Swapper variables
-    const [stakeToken, setStakeToken] = useState("ETH");
-    const [stakeAmount, setStakeAmount] = useState("0.1");
+    // Swapping / Deposit Interface States
+    const [stakingAmount, setStakingAmount] = useState("100");
+    const [selectedPlayer, setSelectedPlayer] = useState("Player 1");
 
-    // Chat states
+    // Chat interactions
     const [chatLog, setChatLog] = useState([
-        { sender: "AI REFEREE", text: "Oracle system initialized. Waiting for player telemetry connection...", time: "SYSTEM START" }
+        { sender: "AI REFEREE", text: "Secure AI Oracle session initiated. Monitoring Base L2 Node channels.", time: "SYS-INIT" }
     ]);
     const [userInput, setUserInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-
-    // Audio State Toggle
     const [mute, setMute] = useState(false);
 
-    // Live Telemetry stream variables
-    const [ping, setPing] = useState(12);
+    // Live Telemetry logs
+    const [ping, setPing] = useState(14);
     const [fps, setFps] = useState(144);
+    const [packetLoss, setPacketLoss] = useState(0);
     const [memState, setMemState] = useState("SECURE");
-    const [packLoss, setPackLoss] = useState(0);
 
-    // Mock telemetry updates
+    // Live telemetry variations
     useEffect(() => {
         const interval = setInterval(() => {
             if (gameState === "scanning") {
-                setPing(Math.floor(Math.random() * 5) + 15);
-                setFps(Math.floor(Math.random() * 10) + 130);
-                setPackLoss(Math.floor(Math.random() * 2));
+                setPing(Math.floor(Math.random() * 6) + 12);
+                setFps(Math.floor(Math.random() * 8) + 138);
+                setPacketLoss(Math.random() > 0.95 ? 1 : 0);
             } else if (gameState === "dispute") {
-                setPing(999);
-                setFps(32);
-                setPackLoss(28);
+                setPing(982);
+                setFps(24);
+                setPacketLoss(35);
             } else {
-                setPing(Math.floor(Math.random() * 4) + 10);
-                setFps(Math.floor(Math.random() * 5) + 140);
-                setPackLoss(0);
+                setPing(Math.floor(Math.random() * 3) + 10);
+                setFps(Math.floor(Math.random() * 4) + 141);
+                setPacketLoss(0);
             }
-        }, 1500);
+        }, 1200);
         return () => clearInterval(interval);
     }, [gameState]);
 
-    // Wallet simulation
-    const connectWallet = () => {
+    // Handle initial connection click (opens custom SIWE screen)
+    const handleConnectClick = () => {
         if (!mute) playSound('click');
         if (connected) {
+            // Disconnect immediately
             setConnected(false);
             setWalletAddress("");
+            setUsdcBalance(0);
+            setJwtSession(null);
+            addChatMsg("SYSTEM", "User session cleared. Connected wallet detached.");
         } else {
+            setSiweModal(true);
+        }
+    };
+
+    // SIWE Cryptographic Sign Simulator
+    const executeSIWE = () => {
+        if (!mute) playSound('scan');
+        setSiweSigning(true);
+        setTimeout(() => {
+            setSiweSigning(false);
+            setSiweModal(false);
             setConnected(true);
-            setWalletAddress("0x71C765...b2c3");
-        }
+            setWalletAddress("0x71C7...b2c3");
+            setUsdcBalance(5000.00); // Give user initial mock USDC to stake
+            const randomJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + btoa(JSON.stringify({ address: "0x71C7...b2c3", auth: true }));
+            setJwtSession(randomJwt);
+            addChatMsg("SYSTEM", "SIWE signature cryptographically verified. Generated session JWT.");
+            addChatMsg("AI REFEREE", "Player 1 Wallet linked with full telemetry authorization. Native USDC assets ready.");
+            if (!mute) playSound('success');
+        }, 1600);
     };
 
-    // Staking process
-    const handleStakeSwap = (player) => {
-        if (!connected) {
-            alert("Please connect your Web3 wallet first!");
-            return;
-        }
-        if (!mute) playSound('success');
-
-        const rate = stakeToken === "ETH" ? 3500 : stakeToken === "DEGEN" ? 0.03 : 150;
-        const usdcEquivalent = parseFloat(stakeAmount) * rate;
-
-        if (player === 1) {
-            setP1Stake(usdcEquivalent);
-            setEscrowPool(prev => prev + usdcEquivalent);
-            addChatMsg("SYSTEM", `Player 1 staked ${stakeAmount} ${stakeToken} (Swapped to ${usdcEquivalent.toFixed(2)} USDC via Uniswap V3 Router)`);
-        } else {
-            setP2Stake(usdcEquivalent);
-            setEscrowPool(prev => prev + usdcEquivalent);
-            addChatMsg("SYSTEM", `Player 2 staked ${stakeAmount} ${stakeToken} (Swapped to ${usdcEquivalent.toFixed(2)} USDC via Uniswap V3 Router)`);
-        }
-    };
-
-    // Helper to log chat messages
     const addChatMsg = (sender, text) => {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         setChatLog(prev => [...prev, { sender, text, time }]);
     };
 
-    // Trigger AI analytical response
-    const triggerAIResponse = (userPrompt) => {
+    // Multi-route Deposit or Direct USDC stake
+    const executeStake = () => {
+        if (!connected) {
+            alert("Cryptographic SIWE session must be authenticated to stake assets!");
+            return;
+        }
+        const parsedAmount = parseFloat(stakingAmount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            alert("Please input a valid USDC stake amount.");
+            return;
+        }
+        if (parsedAmount > usdcBalance) {
+            alert("Insufficient native USDC balance!");
+            return;
+        }
+
+        if (!mute) playSound('success');
+        setUsdcBalance(prev => prev - parsedAmount);
+
+        if (selectedPlayer === "Player 1") {
+            setP1Stake(prev => prev + parsedAmount);
+            setEscrowPool(prev => prev + parsedAmount);
+            addChatMsg("SYSTEM", `Player 1 (ELITE_CONQUEROR) deposited ${parsedAmount} USDC into the Base L2 Escrow contract.`);
+        } else {
+            setP2Stake(prev => prev + parsedAmount);
+            setEscrowPool(prev => prev + parsedAmount);
+            addChatMsg("SYSTEM", `Player 2 (DEGEN_KILLER) deposited ${parsedAmount} USDC into the Base L2 Escrow contract.`);
+        }
+    };
+
+    // AI Interactive response model
+    const triggerAIResponse = (promptText) => {
         setIsTyping(true);
         if (!mute) playSound('scan');
         setTimeout(() => {
             setIsTyping(false);
             let reply = "";
-            if (userPrompt.toLowerCase().includes("status") || userPrompt.toLowerCase().includes("telemetry")) {
-                reply = `[TELEMETRY REPORT] All player hooks verified. Network Ping: ${ping}ms. Client processes checked. Integrity Score: 99.8%. No anomalies recorded.`;
-            } else if (userPrompt.toLowerCase().includes("cheat") || userPrompt.toLowerCase().includes("hack")) {
-                reply = "Warning: Zero-tolerance policies active. Memory integrity blocks scan game modules continuously. Client manipulations trigger instantaneous payout forfeiture.";
-            } else if (userPrompt.toLowerCase().includes("winner") || userPrompt.toLowerCase().includes("payout")) {
-                reply = escrowPool > 0 
-                    ? `Match pool contains $${escrowPool.toFixed(2)} USDC. AI Oracle referee evaluates active telemetry continuously. Perform 'Complete Match' action or trigger 'Simulate Cheat Action' to force AI verdict.`
-                    : "No stakes detected inside the Base escrow contract. Deposit USDC tokens using the multi-asset staking swapper first.";
+            const norm = promptText.toLowerCase();
+
+            if (norm.includes("status") || norm.includes("telemetry")) {
+                reply = `[TELEMETRY REPORT] Verified Client Modules. FPS: ${fps}. Net Latency: ${ping}ms. All local processes checked and tagged secure. Escrow lock index: ${matchId.substring(0, 10)}...`;
+            } else if (norm.includes("cheat") || norm.includes("violation")) {
+                reply = "Zero-tolerance ruleset is operational. Active client telemetry is evaluated. Memory wrappers, local hook modifications, or network spoofing trigger instant collateral release to the honest counterparty.";
+            } else if (norm.includes("payout") || norm.includes("fee")) {
+                reply = `Match pool is currently ${escrowPool.toFixed(2)} USDC. Platform reserves 2.50% directly into secure storage. Resolution triggers multi-sig broadcast to verified winner address.`;
             } else {
-                reply = `Oracle processed inquiry: "${userPrompt}". Monitoring live telemetry for Match L2 Hash [${matchId.substring(0, 10)}...]. Standing by for match completion.`;
+                reply = `Inquiry processed. Standing by for telemetry endpoints. Currently checking Match L2 state for active locks. Standard operations stable.`;
             }
+
             addChatMsg("AI REFEREE", reply);
             if (!mute) playSound('click');
-        }, 1200);
+        }, 1100);
     };
 
-    // Send chat text
     const handleSendChat = (e) => {
         e.preventDefault();
         if (!userInput.trim()) return;
-        const query = userInput;
-        addChatMsg("USER", query);
+        const msg = userInput;
+        addChatMsg("USER", msg);
         setUserInput("");
-        triggerAIResponse(query);
+        triggerAIResponse(msg);
     };
 
-    // Game simulator controllers
-    const simulateMatchStart = () => {
+    // Match State Simulators
+    const startMatchScan = () => {
         if (escrowPool === 0) {
-            alert("No funds locked in Escrow. Please deposit stakes using the Swapper panel first!");
+            alert("Escrow Pool must be funded prior to starting match telemetry monitoring!");
             return;
         }
         if (!mute) playSound('scan');
         setGameState("scanning");
-        addChatMsg("AI REFEREE", "Match telemetry ingestion actively tracking. Scanning memory space, client application checksum, lag limits...");
+        addChatMsg("AI REFEREE", "Active game telemetry hooks loaded. Client memory spaces, performance indexes, and network packets are being logged.");
     };
 
-    const simulateCheatDetection = () => {
+    const forceCheatViolation = () => {
         if (gameState !== "scanning") {
-            alert("Please start the match telemetry scan first!");
+            alert("Match telemetry scan must be active to trigger violations!");
             return;
         }
         if (!mute) playSound('warning');
         setGameState("dispute");
-        setMemState("VIOLATION: MEMORY INJECTION");
-        addChatMsg("AI REFEREE", "CRITICAL THREAT: Unauthorized cheat client detected on Player 1! Packet modification matched unauthorized memory offset signature.");
-        
+        setMemState("VIOLATION: DYNAMIC PACKET INJECTION");
+        addChatMsg("AI REFEREE", "CRITICAL ANOMALY IDENTIFIED: Player 1 (ELITE_CONQUEROR) matches signature profiles of raw client package injection.");
+
         setTimeout(() => {
-            addChatMsg("AI REFEREE", "ACTION ENFORCED: Zero-tolerance policy violation. Initiating emergency shutdown. Automated escrow override triggered.");
+            addChatMsg("AI REFEREE", "SECURITY VERDICT: Cheat metrics verified. Shutting down active channels and executing secure escrow override.");
             if (!mute) playSound('success');
-            // Distribute full payout minus fee to clean player (Player 2)
+            
+            // Deliver full payout minus fee (2.5%) to Player 2
             const fee = escrowPool * 0.025;
-            const payout = escrowPool - fee;
-            addChatMsg("SYSTEM", `Base Contract Transaction: Executed Escrow release. ${payout.toFixed(2)} USDC transferred to honest Player 2. Fee of ${fee.toFixed(2)} USDC routed to Base address: 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071`);
+            const honestPayout = escrowPool - fee;
+            addChatMsg("SYSTEM", `Base Contract Broadcast: Transferred ${honestPayout.toFixed(2)} USDC to non-violating Player 2. Routed platform fee of ${fee.toFixed(2)} USDC to safe deposit.`);
             setEscrowPool(0);
             setP1Stake(0);
             setP2Stake(0);
-        }, 2500);
+        }, 3000);
     };
 
-    const simulateHonestVictory = () => {
+    const resolveCleanVictory = () => {
         if (gameState !== "scanning") {
-            alert("Please start the match telemetry scan first!");
+            alert("Match telemetry scan must be active to complete match!");
             return;
         }
         if (!mute) playSound('success');
         setGameState("victory");
         setMemState("VERIFIED SECURE");
-        addChatMsg("AI REFEREE", "MATCH COMPLETE: Integrity verification passed. High telemetry evaluation complete. Winner identified: Player 2 (Clean Victory).");
+        addChatMsg("AI REFEREE", "MATCH COMPLETE: High telemetry evaluation complete. Counter-signatures verified. No violations recorded. Winner identified: Player 2.");
 
         setTimeout(() => {
             const fee = escrowPool * 0.025;
             const payout = escrowPool - fee;
-            addChatMsg("SYSTEM", `Base Contract Resolution: Disbursed ${payout.toFixed(2)} USDC to Winner (Player 2). Swapped platform fee of ${fee.toFixed(2)} USDC routed directly to address: 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071`);
+            addChatMsg("SYSTEM", `Base L2 Settled: ${payout.toFixed(2)} USDC released to Player 2. Service fee of ${fee.toFixed(2)} USDC routed directly to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071`);
             setEscrowPool(0);
             setP1Stake(0);
             setP2Stake(0);
-        }, 2000);
+        }, 2200);
     };
 
-    const resetSimulator = () => {
+    const resetArena = () => {
         if (!mute) playSound('click');
         setGameState("idle");
         setMemState("SECURE");
         setEscrowPool(0);
         setP1Stake(0);
         setP2Stake(0);
-        setChatLog([{ sender: "AI REFEREE", text: "Oracle reset. Interactive telemetry connection standby...", time: "RESET COMPLETE" }]);
+        setChatLog([{ sender: "AI REFEREE", text: "Oracle reset completed. Standing by for next match configurations.", time: "SYS-RESET" }]);
     };
 
     return (
         <div className="min-h-screen bg-transparent flex flex-col justify-between selection:bg-[#66FCF1] selection:text-black">
             
-            {/* Ambient Background Particles simulation */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40 overflow-hidden z-0">
-                <div className="absolute top-[20%] left-[10%] w-[15vw] h-[15vw] bg-cyan-500/10 rounded-full blur-[80px]" />
-                <div className="absolute bottom-[20%] right-[10%] w-[20vw] h-[20vw] bg-pink-500/5 rounded-full blur-[100px]" />
+            {/* Holographic Glowing Orbs */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-30 overflow-hidden z-0">
+                <div className="absolute top-[10%] left-[25%] w-[25vw] h-[25vw] bg-cyan-600/10 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[15%] right-[15%] w-[30vw] h-[30vw] bg-pink-600/5 rounded-full blur-[120px]" />
             </div>
 
-            {/* CYBERPUNK HEADER */}
-            <header className="border-b border-[#66FCF1]/20 bg-[#07080a]/90 backdrop-blur-md relative z-30">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* HEADER */}
+            <header className="border-b border-[#66FCF1]/15 bg-[#040609]/95 backdrop-blur-lg relative z-30">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     
-                    {/* Brand Dynamic Animated Logo */}
+                    {/* Animated Cybershield Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="relative group cursor-pointer" onClick={() => { if (!mute) playSound('click'); }}>
-                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-500 relative overflow-hidden ${
-                                gameState === "dispute" ? "bg-red-500/20 border-red-500 border-2 neon-red-glow" :
-                                gameState === "scanning" ? "bg-cyan-500/20 border-[#66FCF1] border-2 neon-cyan-glow" :
-                                gameState === "victory" ? "bg-yellow-500/20 border-yellow-400 border-2" :
-                                "bg-[#1F2833]/80 border-[#66FCF1]/40 border"
+                        <div className="relative group cursor-pointer" onClick={() => { if(!mute) playSound('click'); }}>
+                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 relative overflow-hidden border ${
+                                gameState === "dispute" ? "bg-red-500/10 border-red-500 neon-red-glow" :
+                                gameState === "scanning" ? "bg-cyan-500/15 border-[#66FCF1] neon-cyan-glow animate-pulse" :
+                                gameState === "victory" ? "bg-emerald-500/10 border-emerald-400" :
+                                "bg-[#0b0c10]/90 border-cyan-500/30"
                             }`}>
-                                {/* Central Cyber Shield Icon */}
-                                <svg className={`w-6 h-6 transition-transform duration-700 ${gameState === 'scanning' ? 'animate-spin' : 'group-hover:rotate-12'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                <svg className={`w-8 h-8 transition-transform duration-1000 ${
+                                    gameState === "scanning" ? "rotate-180" : "group-hover:scale-110"
+                                }`} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
-                                
-                                {/* Sweeper indicator lines */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[#66FCF1]/20 to-transparent translate-y-[-100%] animate-pulse" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#66FCF1]/10 to-transparent pointer-events-none" />
                             </div>
-                            
-                            {/* Orbital Particles effect rings */}
-                            <span className="absolute -inset-1 rounded-lg border border-cyan-500/10 group-hover:scale-110 transition-transform duration-300 pointer-events-none" />
+                            <span className="absolute -inset-1 rounded-xl border border-[#66FCF1]/10 group-hover:scale-105 transition-transform duration-300 pointer-events-none" />
                         </div>
 
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="font-orbitron font-extrabold text-2xl tracking-wider text-white">
-                                    PROJECT <span className="text-[#66FCF1] drop-shadow-[0_0_8px_#66FCF1]">EPIC</span>
+                                <h1 className="font-orbitron font-extrabold text-2xl tracking-widest text-white">
+                                    PROJECT <span className="text-[#66FCF1] drop-shadow-[0_0_8px_rgba(102,252,241,0.5)]">EPIC</span>
                                 </h1>
-                                <span className="bg-[#66FCF1]/10 text-[#66FCF1] text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-[#66FCF1]/20">
+                                <span className="bg-[#66FCF1]/10 text-[#66FCF1] text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-[#66FCF1]/30">
                                     BASE L2
                                 </span>
                             </div>
-                            <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Decentralized AI Escrow & Anti-Cheat Oracle</p>
+                            <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Autonomous AI Referee Escrow & Telemetry Suite</p>
                         </div>
                     </div>
 
                     {/* Navigation System */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 bg-[#0b0c10]/60 p-1 rounded-lg border border-gray-800">
                         <button 
                             onClick={() => { if(!mute) playSound('click'); setActiveTab("dashboard"); }}
-                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "dashboard" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                            className={`px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all ${
+                                activeTab === "dashboard" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white"
+                            }`}
                         >
-                            DASHBOARD
+                            ARENA HUD
                         </button>
                         <button 
                             onClick={() => { if(!mute) playSound('click'); setActiveTab("solidity"); }}
-                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "solidity" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                            className={`px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all ${
+                                activeTab === "solidity" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white"
+                            }`}
                         >
-                            SOLIDITY CONTRACT
+                            USDC SMART CONTRACT
                         </button>
                         <button 
                             onClick={() => { if(!mute) playSound('click'); setActiveTab("architecture"); }}
-                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "architecture" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                            className={`px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all ${
+                                activeTab === "architecture" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white"
+                            }`}
                         >
-                            ARCHITECTURE FLOW
+                            SYSTEM DATAFLOW
                         </button>
                     </div>
 
-                    {/* Right utilities: Wallet Connector, Mute Toggle */}
-                    <div className="flex items-center gap-4">
-                        {/* Audio Toggle */}
+                    {/* Utilities & Connect Wallet Button */}
+                    <div className="flex items-center gap-3">
+                        {/* Audio Controller */}
                         <button 
                             onClick={() => setMute(!mute)}
-                            className="p-2 rounded bg-[#1f2833]/50 border border-[#66FCF1]/10 hover:border-[#66FCF1]/30 text-gray-300 transition-all"
-                            title={mute ? "Unmute Retro Synthesizers" : "Mute Sound FX"}
+                            className="p-2.5 rounded-lg bg-gray-900/60 border border-gray-800 hover:border-[#66FCF1]/25 transition-colors"
+                            title={mute ? "Unmute Retro Feedback Sounds" : "Mute Sound Systems"}
                         >
                             {mute ? (
-                                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                                 </svg>
                             ) : (
-                                <svg className="w-5 h-5 text-[#66FCF1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 text-[#66FCF1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z" />
                                 </svg>
                             )}
                         </button>
 
                         <button 
-                            onClick={connectWallet}
-                            className={`px-5 py-2.5 rounded font-orbitron font-bold tracking-wider text-xs transition-all ${
+                            onClick={handleConnectClick}
+                            className={`px-5 py-2.5 rounded-lg font-orbitron font-black tracking-widest text-xs transition-all relative overflow-hidden ${
                                 connected 
                                 ? "bg-emerald-500/10 border border-emerald-500 text-emerald-400 hover:bg-emerald-500/20" 
-                                : "bg-[#66FCF1] text-[#0B0C10] hover:bg-[#45A29E] font-extrabold cursor-pointer hover:scale-105"
+                                : "bg-[#66FCF1] text-[#030407] hover:bg-[#45a29e] hover:scale-105"
                             }`}
                         >
                             {connected ? `CONNECTED: ${walletAddress}` : "CONNECT WALLET"}
@@ -723,306 +604,368 @@ function App() {
             </header>
 
             {/* MAIN APP CONTAINER */}
-            <main className="max-w-7xl mx-auto w-full px-4 py-8 flex-1 relative z-10 grid grid-cols-1 gap-8">
+            <main className="max-w-7xl mx-auto w-full px-4 py-6 flex-1 relative z-10 grid grid-cols-1 gap-6">
                 
-                {/* GLOBAL HOLOGRAPHIC WARNING FOR CHEATS (Zero-Tolerance Anti-Cheat Engine) */}
+                {/* SIWE INTERACTIVE AUTHENTICATOR MODAL */}
+                {siweModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                        <div className="cyber-panel p-6 max-w-md w-full space-y-4 rounded-xl border-[#66FCF1]/40 neon-cyan-glow relative">
+                            <button 
+                                onClick={() => { if(!mute) playSound('click'); setSiweModal(false); }}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white font-mono text-sm"
+                            >
+                                [X]
+                            </button>
+
+                            <div className="border-b border-[#66FCF1]/20 pb-3">
+                                <h3 className="font-orbitron font-extrabold text-base text-white tracking-widest">SIGN-IN WITH ETHEREUM</h3>
+                                <p className="text-[10px] font-mono text-gray-500 mt-1">SECURE CRYPTOGRAPHIC SESSION VERIFICATION</p>
+                            </div>
+
+                            <div className="bg-[#030407] p-3 rounded border border-gray-800 text-[11px] font-mono text-gray-400 space-y-1">
+                                <p><span className="text-gray-500">Domain:</span> epic-escrow.base</p>
+                                <p><span className="text-gray-500">Statement:</span> Approve and sign in on Project Epic to generate a secure telemetry-tracking session JWT.</p>
+                                <p><span className="text-gray-500">Chain ID:</span> 8453 (Base Network)</p>
+                                <p><span className="text-gray-500">Nonce:</span> {Math.floor(Math.random() * 10000000)}</p>
+                                <p><span className="text-gray-500">Resources:</span> - Telemetry Stream Hook <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Direct Escrow Swapper</p>
+                            </div>
+
+                            <p className="text-[10px] text-gray-500 italic">
+                                Cryptographic signatures ensure verify that your wallet has actual control of the associated private keys, protecting matches from session hijack vectors.
+                            </p>
+
+                            <button 
+                                onClick={executeSIWE}
+                                disabled={siweSigning}
+                                className="w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] rounded font-orbitron font-extrabold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2"
+                            >
+                                {siweSigning ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4 text-black" viewBox="0 0 24 24" fill="none">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        GENERATING CRYPTO PROOF...
+                                    </>
+                                ) : (
+                                    "SIGN CRYPTOGRAPHIC MESSAGE"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* CRITICAL ANTI-CHEAT ALERT OVERLAY SYSTEM */}
                 {gameState === "dispute" && (
-                    <div className="bg-red-950/40 border-2 border-red-500 rounded-xl p-5 relative overflow-hidden neon-red-glow animate-pulse">
+                    <div className="bg-red-950/20 border-2 border-red-500/70 rounded-xl p-5 relative overflow-hidden neon-red-glow animate-pulse">
                         <div className="warning-sweep" />
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-red-600/30 border border-red-500 flex items-center justify-center animate-bounce text-red-500">
-                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+                            <div className="w-14 h-14 rounded-xl bg-red-600/20 border border-red-500 flex items-center justify-center text-red-500 shrink-0">
+                                <svg className="w-8 h-8 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
-                            <div>
-                                <h3 className="font-orbitron font-extrabold text-lg text-red-500 tracking-wider">CRITICAL AI REF INTERVENTION: PACKET TAMPERING DETECTED</h3>
-                                <p className="text-xs text-red-300 font-mono mt-1">
-                                    Zero-tolerance ruleset initiated. Escrow pool locks cheater address instantly. Platform fees Swapped & dispatched. Honest player payouts secured.
+                            <div className="text-center sm:text-left space-y-1">
+                                <h3 className="font-orbitron font-extrabold text-base text-red-500 tracking-wider">SECURE ANTICHEAT ACTION ENFORCED</h3>
+                                <p className="text-xs text-red-300 font-mono leading-relaxed">
+                                    Zero-tolerance active client validation detected client package modification. Counter-signature lock initiated. Swapping platform fee (2.50%) and releasing complete pool to honest Player 2.
                                 </p>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* TAB 1: THE DOCK / INTERACTIVE MAIN DASHBOARD */}
+                {/* VICTORY CELEBRATION HUD OVERLAY */}
+                {gameState === "victory" && (
+                    <div className="bg-emerald-950/15 border border-emerald-500 rounded-xl p-5 relative overflow-hidden animate-pulse">
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-emerald-600/20 border border-emerald-500 flex items-center justify-center text-emerald-400 shrink-0">
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div className="text-center sm:text-left">
+                                <h3 className="font-orbitron font-extrabold text-base text-emerald-400 tracking-wider">MATCH INTEL VERIFIED SECURE</h3>
+                                <p className="text-xs text-emerald-300 font-mono">
+                                    Full telemetry diagnostics returned clean validation. Winner identified and rewards locked inside the smart contract have been authorized.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB CONTENT: ARENA HUD */}
                 {activeTab === "dashboard" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         
-                        {/* LEFT WING: Multi-Asset Swapper & Match Setup (Col: 4) */}
-                        <div className="lg:col-span-4 space-y-6">
+                        {/* LEFT COLUMN: SWAPPER & TELEMETRY SYSTEMS (Col: 5) */}
+                        <div className="lg:col-span-5 space-y-6">
                             
-                            {/* Swapper Panel */}
+                            {/* Direct USDC / Swapping Panel */}
                             <div className="cyber-panel p-5 rounded-xl space-y-4">
                                 <div className="border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between">
-                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">DEX MULTI-ASSET SWAP ROUTER</h2>
-                                    <span className="text-[10px] font-mono text-gray-500 uppercase">UNISWAP V3 STAKE POOL</span>
+                                    <h2 className="font-orbitron font-extrabold text-xs tracking-widest text-white">ESCROW LOCK INTERFACE</h2>
+                                    <span className="text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">USDC NATIVE</span>
                                 </div>
 
-                                <p className="text-xs text-gray-400">
-                                    Choose token to stake. The smart contract automatically executes a single-hop route via Uniswap into Base USDC to back the match escrow.
+                                <p className="text-[11px] text-gray-400 leading-relaxed">
+                                    Fund match pools with standard Base-network native USDC. Verified SIWE wallet is required. Automated 2.50% fee computed on execution.
                                 </p>
 
-                                {/* Token Inputs */}
                                 <div className="space-y-3">
+                                    
+                                    {/* Select Participant */}
                                     <div>
-                                        <label className="block text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-1.5">STAKE TOKEN</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {["ETH", "DEGEN", "OP"].map(t => (
+                                        <label className="block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1">STAKE ON ACCOUNT</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {["Player 1", "Player 2"].map((p) => (
                                                 <button
-                                                    key={t}
-                                                    onClick={() => { if(!mute) playSound('click'); setStakeToken(t); }}
+                                                    key={p}
+                                                    onClick={() => { if(!mute) playSound('click'); setSelectedPlayer(p); }}
                                                     className={`py-2 rounded font-orbitron font-bold text-xs border transition-all ${
-                                                        stakeToken === t 
+                                                        selectedPlayer === p 
                                                         ? "bg-[#66FCF1]/10 text-[#66FCF1] border-[#66FCF1]" 
-                                                        : "bg-[#1F2833]/20 text-gray-400 border-gray-800 hover:border-gray-700"
+                                                        : "bg-gray-900/40 text-gray-400 border-gray-800 hover:border-gray-700"
                                                     }`}
                                                 >
-                                                    {t}
+                                                    {p === "Player 1" ? "PLAYER 1" : "PLAYER 2"}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
+                                    {/* Stake USDC Amount */}
                                     <div>
-                                        <label className="block text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-1">STAKE AMOUNT</label>
+                                        <label className="block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1">STAKE AMOUNT (USDC)</label>
                                         <div className="relative">
                                             <input 
                                                 type="number"
-                                                value={stakeAmount}
-                                                onChange={(e) => setStakeAmount(e.target.value)}
-                                                className="w-full bg-[#0B0C10] border border-gray-800 rounded px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-[#66FCF1]"
+                                                value={stakingAmount}
+                                                onChange={(e) => setStakingAmount(e.target.value)}
+                                                className="w-full bg-[#030407] border border-gray-800 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#66FCF1]"
+                                                placeholder="100"
                                             />
-                                            <span className="absolute right-3 top-2.5 text-xs text-gray-500 font-mono font-bold">{stakeToken}</span>
+                                            <span className="absolute right-3 top-2 text-[10px] text-[#66FCF1] font-mono font-bold">USDC</span>
                                         </div>
                                     </div>
+
                                 </div>
 
-                                {/* Dynamic Swapping Output Predictor */}
-                                <div className="bg-[#0B0C10] border border-gray-800/80 p-3.5 rounded space-y-1.5">
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">Route Path:</span>
-                                        <span className="font-mono text-gray-300 font-bold">{stakeToken} → WETH → USDC (Base)</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">DEX Fee Tier:</span>
-                                        <span className="font-mono text-[#66FCF1] font-bold">0.3% pool fee</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs border-t border-gray-900 pt-2 mt-2">
-                                        <span className="text-gray-400 font-bold">Guaranteed Locks:</span>
-                                        <span className="font-mono text-emerald-400 font-bold">
-                                            ${(parseFloat(stakeAmount || 0) * (stakeToken === "ETH" ? 3500 : stakeToken === "DEGEN" ? 0.03 : 150)).toFixed(2)} USDC
+                                {/* Ledger Metrics Output */}
+                                <div className="bg-[#030407] border border-gray-800/80 p-3 rounded space-y-1.5">
+                                    <div className="flex justify-between text-[11px] font-mono">
+                                        <span className="text-gray-500">Authenticated Session:</span>
+                                        <span className={connected ? "text-emerald-400 font-bold" : "text-red-500 font-bold"}>
+                                            {connected ? "ACTIVE JWT" : "NO ACTIVE AUTH"}
                                         </span>
                                     </div>
+                                    <div className="flex justify-between text-[11px] font-mono">
+                                        <span className="text-gray-500">Network Fee Pool (2.5%):</span>
+                                        <span className="text-gray-300 font-bold">
+                                            ${(parseFloat(stakingAmount || 0) * 0.025).toFixed(2)} USDC
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] font-mono border-t border-gray-900 pt-1.5 mt-1.5">
+                                        <span className="text-gray-400 font-bold">Your Wallet Balance:</span>
+                                        <span className="text-white font-bold">${usdcBalance.toFixed(2)} USDC</span>
+                                    </div>
                                 </div>
 
-                                {/* Stake Action Buttons */}
-                                <div className="grid grid-cols-2 gap-2 pt-2">
-                                    <button 
-                                        onClick={() => handleStakeSwap(1)}
-                                        className="py-3 bg-[#11131a] hover:bg-cyan-500/10 border border-[#66FCF1]/20 rounded text-center font-orbitron font-bold text-xs text-white tracking-wider transition-all"
-                                    >
-                                        STAKE AS P1
-                                    </button>
-                                    <button 
-                                        onClick={() => handleStakeSwap(2)}
-                                        className="py-3 bg-[#11131a] hover:bg-cyan-500/10 border border-[#66FCF1]/20 rounded text-center font-orbitron font-bold text-xs text-white tracking-wider transition-all"
-                                    >
-                                        STAKE AS P2
-                                    </button>
-                                </div>
-
-                                <div className="text-[10px] text-gray-500 font-mono text-center">
-                                    Automatic fee routing strictly verified prior to lock.
-                                </div>
+                                <button 
+                                    onClick={executeStake}
+                                    className="w-full py-3 bg-[#66FCF1]/10 hover:bg-[#66FCF1] text-[#66FCF1] hover:text-[#030407] border border-[#66FCF1]/30 hover:border-[#66FCF1] rounded font-orbitron font-extrabold text-xs tracking-widest uppercase transition-all"
+                                >
+                                    APPROVE & DEPOSIT TO ESCROW
+                                </button>
                             </div>
 
-                            {/* Telemetry Live HUD (Client Inspector) */}
+                            {/* Client Telemetry Console */}
                             <div className="cyber-panel p-5 rounded-xl space-y-4 relative overflow-hidden">
                                 <div className="scanning-sweep" />
-                                
+
                                 <div className="border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between">
-                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">ORACLE CLIENT TELEMETRY</h2>
+                                    <h2 className="font-orbitron font-extrabold text-xs tracking-widest text-white">ORACLE CLIENT TELEMETRY</h2>
                                     <div className="flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full bg-[#66FCF1] animate-ping" />
-                                        <span className="text-[10px] font-mono text-[#66FCF1]">ACTIVE</span>
+                                        <span className="text-[9px] font-mono text-[#66FCF1]">ACTIVE</span>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
-                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">NET PING</span>
-                                        <span className={`text-base font-bold ${ping > 150 ? 'text-red-500' : 'text-white'}`}>{ping} ms</span>
+                                <div className="grid grid-cols-2 gap-3 text-[11px] font-mono">
+                                    <div className="bg-[#030407] p-2.5 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[8px] tracking-wider uppercase">PING DELAY</span>
+                                        <span className={`text-sm font-bold ${ping > 100 ? 'text-red-500' : 'text-white'}`}>{ping} ms</span>
                                     </div>
-                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
-                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">CLIENT RENDER</span>
-                                        <span className="text-base font-bold text-white">{fps} FPS</span>
+                                    <div className="bg-[#030407] p-2.5 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[8px] tracking-wider uppercase">CLIENT FRAMES</span>
+                                        <span className="text-sm font-bold text-white">{fps} FPS</span>
                                     </div>
-                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
-                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">PACKET LOSS</span>
-                                        <span className={`text-base font-bold ${packLoss > 2 ? 'text-red-500' : 'text-white'}`}>{packLoss} %</span>
+                                    <div className="bg-[#030407] p-2.5 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[8px] tracking-wider uppercase">PACKET LOSS</span>
+                                        <span className={`text-sm font-bold ${packetLoss > 5 ? 'text-red-500' : 'text-white'}`}>{packetLoss}%</span>
                                     </div>
-                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
-                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">ESCROW ROUTE</span>
-                                        <span className="text-[10px] text-emerald-400 font-bold block truncate">0xe69aE2...3a071</span>
+                                    <div className="bg-[#030407] p-2.5 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[8px] tracking-wider uppercase">VERIFICATION</span>
+                                        <span className="text-[9px] text-[#66FCF1] font-bold block truncate">BASE:0xe69aE2...</span>
                                     </div>
                                 </div>
 
                                 <div className="p-3 bg-cyan-950/20 border border-cyan-500/20 rounded">
-                                    <div className="flex justify-between items-center text-xs font-mono mb-1">
-                                        <span className="text-gray-400">MEMORY INTEGRITY:</span>
-                                        <span className={`font-bold ${memState === "VERIFIED SECURE" || memState === "SECURE" ? "text-[#66FCF1]" : "text-red-500"}`}>
+                                    <div className="flex justify-between items-center text-[10px] font-mono mb-1">
+                                        <span className="text-gray-400">MEMORY STATE:</span>
+                                        <span className={`font-bold ${memState === "SECURE" || memState === "VERIFIED SECURE" ? "text-[#66FCF1]" : "text-red-500"}`}>
                                             {memState}
                                         </span>
                                     </div>
-                                    <p className="text-[10px] text-gray-500 leading-relaxed">
-                                        Live inspection monitors for modified client instances, overlay memory wrappers, unauthorized APK structures or frame rate manipulation.
+                                    <p className="text-[10px] text-gray-500 leading-normal">
+                                        Active inspections continuously monitor runtime memory tables to identify hook modifications, virtual packet emulators, and overlay manipulators.
                                     </p>
                                 </div>
                             </div>
 
                         </div>
 
-                        {/* CENTER PANEL: Arena Battle Ground, Payout Dashboard & Chat (Col: 8) */}
-                        <div className="lg:col-span-8 space-y-6">
+                        {/* RIGHT COLUMN: INTERACTIVE ARENA & AI REFEREE CHAT (Col: 7) */}
+                        <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
                             
-                            {/* ESCROW MATCH OVERVIEW PANEL */}
-                            <div className="cyber-panel p-6 rounded-xl bg-gradient-to-r from-cyan-950/10 via-[#0B0C10] to-pink-950/10 border-[#66FCF1]/20">
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            {/* Escrow Pool HUD */}
+                            <div className="cyber-panel p-5 rounded-xl bg-gradient-to-r from-cyan-950/5 via-[#030407] to-pink-950/5 border-[#66FCF1]/20">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                                     
-                                    {/* Left Team block */}
-                                    <div className="text-center md:text-left space-y-1">
-                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">PLAYER 1</span>
-                                        <h3 className="font-orbitron font-black text-xl text-white tracking-wide">ELITE_CONQUEROR</h3>
-                                        <span className="text-xs font-mono bg-cyan-500/10 text-[#66FCF1] border border-cyan-500/20 px-2.5 py-0.5 rounded-full inline-block">
-                                            Stake Locked: ${p1Stake.toFixed(2)} USDC
+                                    {/* Player 1 Block */}
+                                    <div className="text-center sm:text-left space-y-1">
+                                        <span className="text-[9px] font-mono text-gray-500 tracking-wider">PLAYER 1</span>
+                                        <h3 className="font-orbitron font-black text-lg text-white">ELITE_CONQUEROR</h3>
+                                        <span className="text-[10px] font-mono bg-cyan-500/10 text-[#66FCF1] border border-cyan-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                            Locked: ${p1Stake.toFixed(2)} USDC
                                         </span>
                                     </div>
 
-                                    {/* Central VS / ESCROW POOL block */}
-                                    <div className="text-center px-6 py-4 bg-[#0a0b10]/90 border border-gray-800 rounded-xl min-w-[200px] relative">
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0a0b10] px-2 text-[10px] font-orbitron font-bold text-yellow-400 tracking-widest uppercase">
+                                    {/* Central Pool Block */}
+                                    <div className="text-center px-6 py-4 bg-[#030407]/90 border border-gray-800 rounded-xl min-w-[170px]">
+                                        <div className="text-[8px] font-orbitron font-bold text-yellow-500 tracking-widest uppercase">
                                             ESCROW POOL
                                         </div>
-                                        <div className="font-orbitron font-black text-3xl text-white tracking-widest">
+                                        <div className="font-orbitron font-black text-2xl text-white tracking-widest">
                                             ${escrowPool.toFixed(2)}
                                         </div>
-                                        <span className="text-[10px] font-mono text-emerald-400 block mt-1">Unified Base Layer-2 USDC</span>
+                                        <span className="text-[9px] font-mono text-emerald-400 block mt-0.5">Base USDC Token</span>
                                     </div>
 
-                                    {/* Right Team block */}
-                                    <div className="text-center md:text-right space-y-1">
-                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">PLAYER 2</span>
-                                        <h3 className="font-orbitron font-black text-xl text-white tracking-wide">DEGEN_KILLER</h3>
-                                        <span className="text-xs font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2.5 py-0.5 rounded-full inline-block">
-                                            Stake Locked: ${p2Stake.toFixed(2)} USDC
+                                    {/* Player 2 Block */}
+                                    <div className="text-center sm:text-right space-y-1">
+                                        <span className="text-[9px] font-mono text-gray-500 tracking-wider">PLAYER 2</span>
+                                        <h3 className="font-orbitron font-black text-lg text-white">DEGEN_KILLER</h3>
+                                        <span className="text-[10px] font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                            Locked: ${p2Stake.toFixed(2)} USDC
                                         </span>
                                     </div>
 
                                 </div>
 
-                                <div className="mt-6 pt-5 border-t border-gray-900 flex flex-wrap items-center justify-between gap-4">
-                                    <div className="space-y-1">
-                                        <span className="text-[9px] font-mono text-gray-500 block uppercase">MATCH IDENTITY</span>
-                                        <span className="text-xs font-mono text-gray-300 bg-gray-950 px-2 py-1 rounded select-all tracking-tight block max-w-[250px] truncate">{matchId}</span>
+                                <div className="mt-5 pt-4 border-t border-gray-900 flex flex-wrap items-center justify-between gap-4">
+                                    <div className="space-y-0.5">
+                                        <span className="text-[8px] font-mono text-gray-500 block">L2 SESSION ID</span>
+                                        <span className="text-[10px] font-mono text-gray-300 bg-black/60 px-2 py-0.5 rounded select-all max-w-[200px] truncate block">{matchId}</span>
                                     </div>
-                                    
-                                    {/* Interactive Simulator actions */}
+
+                                    {/* Sandbox States Controllers */}
                                     <div className="flex gap-2">
                                         {gameState === "idle" && (
                                             <button 
-                                                onClick={simulateMatchStart}
-                                                className="px-5 py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                                onClick={startMatchScan}
+                                                className="px-4 py-2 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
                                             >
-                                                START MATCH SCAN
+                                                ACTIVATE REF SCAN
                                             </button>
                                         )}
                                         {gameState === "scanning" && (
                                             <>
                                                 <button 
-                                                    onClick={simulateCheatDetection}
-                                                    className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                                    onClick={forceCheatViolation}
+                                                    className="px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
                                                 >
-                                                    INJECT CLIENT CHEAT
+                                                    INJECT CHEAT VIOLATION
                                                 </button>
                                                 <button 
-                                                    onClick={simulateHonestVictory}
-                                                    className="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                                    onClick={resolveCleanVictory}
+                                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
                                                 >
-                                                    FINISH CLEAN MATCH
+                                                    RESOLVE VICTORY
                                                 </button>
                                             </>
                                         )}
                                         {(gameState === "dispute" || gameState === "victory") && (
                                             <button 
-                                                onClick={resetSimulator}
-                                                className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
+                                                onClick={resetArena}
+                                                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
                                             >
-                                                RESET ARENA
+                                                RESET SANDBOX
                                             </button>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* CHAT INTERFACE: AI REF FEED STREAM */}
-                            <div className="cyber-panel p-5 rounded-xl flex flex-col h-[420px] bg-[#07080a] relative overflow-hidden">
+                            {/* Chat Interface / Referee Feed */}
+                            <div className="cyber-panel p-5 rounded-xl flex flex-col h-[350px] bg-[#05060b] relative overflow-hidden flex-1">
                                 
-                                {/* Live Equalizer/Telemetry indicators */}
-                                <div className="absolute top-4 right-4 flex items-end gap-1 h-5 w-16" title="AI Referee analysis bandwidth">
-                                    <div className="eq-bar h-1/2 animate-pulse" style={{ animationDelay: '0.1s' }} />
-                                    <div className="eq-bar h-3/4 animate-pulse" style={{ animationDelay: '0.3s' }} />
-                                    <div className="eq-bar h-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                                    <div className="eq-bar h-2/3 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                                    <div className="eq-bar h-2/5 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                                {/* Dynamic Analyzer Equalizer Bars */}
+                                <div className="absolute top-4 right-4 flex items-end gap-1 h-5 w-14" title="AI processing frequency">
+                                    <div className="eq-bar h-1/3 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                                    <div className="eq-bar h-4/5 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                                    <div className="eq-bar h-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                    <div className="eq-bar h-2/3 animate-pulse" style={{ animationDelay: '0.5s' }} />
                                 </div>
 
-                                <div className="border-b border-[#66FCF1]/20 pb-3 mb-4">
-                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">ORACLE CHAT FEED</h2>
-                                    <p className="text-[10px] text-gray-500 font-mono">LIVE MATCH REFEREE & CRYPTOGRAPHIC PROOF VERIFIER</p>
+                                <div className="border-b border-[#66FCF1]/15 pb-2 mb-3">
+                                    <h2 className="font-orbitron font-extrabold text-xs tracking-widest text-white">ORACLE DISCUSSION FEED</h2>
+                                    <p className="text-[9px] text-gray-500 font-mono">AUTOMATED CRYPTOGRAPHIC REF CHANNELS</p>
                                 </div>
 
-                                {/* Chat Logs Area */}
-                                <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
-                                    {chatLog.map((msg, index) => (
+                                {/* Log output area */}
+                                <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                                    {chatLog.map((msg, idx) => (
                                         <div 
-                                            key={index} 
-                                            className={`p-3 rounded-lg text-xs leading-relaxed max-w-[85%] ${
-                                                msg.sender === "AI REFEREE" ? "bg-cyan-950/15 border border-cyan-500/20 text-cyan-200" :
-                                                msg.sender === "SYSTEM" ? "bg-yellow-950/15 border border-yellow-500/20 text-yellow-200" :
-                                                "bg-gray-900 border border-gray-800 text-white ml-auto"
+                                            key={idx} 
+                                            className={`p-2.5 rounded text-xs leading-relaxed max-w-[85%] border ${
+                                                msg.sender === "AI REFEREE" ? "bg-cyan-950/10 border-cyan-500/25 text-cyan-100" :
+                                                msg.sender === "SYSTEM" ? "bg-yellow-950/10 border-yellow-500/25 text-yellow-100" :
+                                                "bg-gray-900/60 border-gray-800 text-white ml-auto"
                                             }`}
                                         >
-                                            <div className="flex items-center justify-between gap-4 mb-1 border-b border-gray-800/40 pb-1">
-                                                <span className={`font-orbitron font-extrabold tracking-wider text-[10px] ${msg.sender === 'AI REFEREE' ? 'text-[#66FCF1]' : msg.sender === 'SYSTEM' ? 'text-yellow-400' : 'text-pink-400'}`}>
+                                            <div className="flex items-center justify-between gap-4 mb-1 border-b border-gray-800/40 pb-0.5">
+                                                <span className={`font-orbitron font-extrabold tracking-wider text-[8px] ${
+                                                    msg.sender === 'AI REFEREE' ? 'text-[#66FCF1]' : msg.sender === 'SYSTEM' ? 'text-yellow-400' : 'text-pink-400'
+                                                }`}>
                                                     {msg.sender}
                                                 </span>
-                                                <span className="text-[8px] text-gray-500 font-mono">{msg.time}</span>
+                                                <span className="text-[7px] text-gray-500 font-mono">{msg.time}</span>
                                             </div>
-                                            <p className="font-mono whitespace-pre-wrap">{msg.text}</p>
+                                            <p className="font-mono text-[11px] whitespace-pre-wrap">{msg.text}</p>
                                         </div>
                                     ))}
                                     {isTyping && (
-                                        <div className="bg-cyan-950/10 border border-cyan-500/10 text-cyan-300 p-3 rounded-lg text-xs w-48 animate-pulse font-mono">
-                                            AI Oracle Analyzing...
+                                        <div className="bg-cyan-950/5 border border-cyan-500/10 text-cyan-400 p-2.5 rounded text-xs w-44 animate-pulse font-mono">
+                                            AI Referee processing query...
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Chat Form */}
-                                <form onSubmit={handleSendChat} className="mt-4 pt-3 border-t border-gray-900 flex gap-2">
+                                {/* Form Submit */}
+                                <form onSubmit={handleSendChat} className="mt-3 pt-2.5 border-t border-gray-900 flex gap-2">
                                     <input 
                                         type="text" 
-                                        placeholder="Ask Referee: 'Explain match telemetry', 'What is the status?'..."
+                                        placeholder="Ask Ref: 'Inspect system telemetry', 'Review rule parameters'..."
                                         value={userInput}
                                         onChange={(e) => setUserInput(e.target.value)}
-                                        className="flex-1 bg-[#0B0C10] border border-gray-800 rounded px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#66FCF1]"
+                                        className="flex-1 bg-[#030407] border border-gray-800 rounded px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#66FCF1]"
                                     />
                                     <button 
                                         type="submit"
-                                        className="px-5 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-black text-xs tracking-wider rounded transition-all uppercase"
+                                        className="px-4 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-[10px] tracking-widest rounded transition-all uppercase"
                                     >
-                                        INQUIRE
+                                        SEND
                                     </button>
                                 </form>
 
@@ -1033,143 +976,144 @@ function App() {
                     </div>
                 )}
 
-                {/* TAB 2: SMART CONTRACT SOLIDITY CODE DISPLAY */}
+                {/* TAB CONTENT: SMART CONTRACT DISPLAY */}
                 {activeTab === "solidity" && (
                     <div className="cyber-panel p-6 rounded-xl space-y-6">
                         <div className="border-b border-[#66FCF1]/20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div>
-                                <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide">
-                                    EPIC GAMING ESCROW SMART CONTRACT
+                                <h2 className="font-orbitron font-extrabold text-base text-white tracking-widest">
+                                    NATIVE USDC ESCROW SOLIDITY CODE
                                 </h2>
                                 <p className="text-xs text-gray-400 font-mono mt-1">
-                                    Built for Base Layer-2 Network featuring automatic Multi-Token Swaps & direct routing to authorized platform wallets.
+                                    Secure non-custodial smart contract locks ERC-20 stakes directly on the Base Layer-2 network.
                                 </p>
                             </div>
                             <div className="flex gap-2">
                                 <span className="bg-yellow-500/10 text-yellow-400 text-xs font-mono px-3 py-1.5 rounded border border-yellow-500/20 flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
                                     SOLIDITY 0.8.20
                                 </span>
                                 <button 
                                     onClick={() => {
                                         navigator.clipboard.writeText(SOLIDITY_CONTRACT_CODE);
                                         if(!mute) playSound('success');
-                                        alert("Contract code copied to clipboard successfully!");
+                                        alert("Solidity source code copied successfully!");
                                     }}
-                                    className="px-4 py-1.5 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-bold text-xs rounded transition-all"
+                                    className="px-4 py-1.5 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-bold text-[10px] tracking-widest rounded transition-all"
                                 >
                                     COPY CODE
                                 </button>
                             </div>
                         </div>
 
-                        {/* Automated Fee Highlights */}
-                        <div className="bg-[#111218]/80 border border-[#66FCF1]/20 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-6">
+                        {/* Automatic platform commission lock */}
+                        <div className="bg-[#030407] border border-[#66FCF1]/15 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="space-y-1">
-                                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block font-bold">AUTOMATED PLATFORM FEE EXECUTION DESTINATION</span>
+                                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-bold">AUTOMATED FEE TARGET BASE ADDRESS</span>
                                 <span className="text-sm font-mono text-white select-all block">0xe69aE274c4D814fDB312120d3db1C5c2BD63a071</span>
-                                <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
+                                <p className="text-[11px] text-gray-400 leading-normal max-w-xl">
                                     The smart contract is programmatically constructed to automatically route a fixed platform service commission (2.5%) of *every* resolved match escrow directly to this Base address.
                                 </p>
                             </div>
-                            <div className="px-5 py-3 bg-[#0B0C10] border border-gray-800 rounded-lg text-center shrink-0 min-w-[150px]">
-                                <span className="text-[10px] font-mono text-gray-500 block uppercase">SERVICE CHARGE</span>
-                                <span className="text-xl font-orbitron font-black text-white">2.50 %</span>
+                            <div className="px-5 py-3 bg-[#0a0b10] border border-gray-800 rounded-lg text-center shrink-0 min-w-[130px]">
+                                <span className="text-[9px] font-mono text-gray-500 block uppercase">COMMISSION</span>
+                                <span className="text-lg font-orbitron font-black text-white">2.50 %</span>
                             </div>
                         </div>
 
-                        {/* Code Box */}
+                        {/* Read-only Code View */}
                         <div className="relative">
-                            <div className="absolute right-3 top-3 text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                                Read-Only Code Viewer
-                            </div>
-                            <pre className="bg-[#050508] border border-gray-800 rounded-lg p-5 overflow-x-auto text-xs text-gray-300 font-mono leading-relaxed max-h-[500px]">
+                            <pre className="bg-[#030407] border border-gray-800 rounded-lg p-5 overflow-x-auto text-[11px] text-gray-300 font-mono leading-relaxed max-h-[450px]">
                                 <code>{SOLIDITY_CONTRACT_CODE}</code>
                             </pre>
                         </div>
                     </div>
                 )}
 
-                {/* TAB 3: SYSTEM ARCHITECTURE FLOWCHART */}
+                {/* TAB CONTENT: INTERACTIVE DATAFLOW CHART */}
                 {activeTab === "architecture" && (
                     <div className="cyber-panel p-6 rounded-xl space-y-6">
                         <div className="border-b border-[#66FCF1]/20 pb-4">
-                            <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide">
-                                PLATFORM SYSTEM ARCHITECTURE & DATA FLOW
+                            <h2 className="font-orbitron font-extrabold text-base text-white tracking-widest">
+                                SYSTEM DATA PIPELINE & SECURITY PROTOCOLS
                             </h2>
                             <p className="text-xs text-gray-400 font-mono mt-1">
-                                Complete pipeline mapping data exchanges between Next.js clients, Telemetry monitoring endpoints, and the Base smart contract locks.
+                                Core interactions mapping client-side SIWE authentication, AI Referee diagnostic queries, and automated L2 transaction payouts.
                             </p>
                         </div>
 
-                        {/* Interactive Graph Display */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                             
-                            {/* Left: Beautiful CSS Dynamic Architecture Diagram */}
-                            <div className="lg:col-span-8 bg-[#0a0b10] border border-gray-800 rounded-xl p-6 flex flex-col justify-center min-h-[400px]">
+                            {/* Graphic SVG Representation */}
+                            <div className="lg:col-span-8 bg-[#05060b] border border-gray-800 rounded-lg p-5 flex flex-col justify-center min-h-[350px]">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center text-xs font-mono relative">
                                     
-                                    {/* Client Box */}
-                                    <div className="bg-[#111218] border border-[#66FCF1] p-4 rounded-lg relative group hover:bg-[#66FCF1]/10 transition-colors">
-                                        <div className="text-[9px] text-gray-500 uppercase">STEP 1</div>
-                                        <h4 className="font-bold text-white mt-1">Next.js Client HUD</h4>
-                                        <p className="text-[10px] text-gray-400 mt-2">Players connect Web3 wallets & initiate game locks.</p>
-                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-[#66FCF1] hidden md:block" />
+                                    {/* Step 1 */}
+                                    <div className="bg-[#030407] border border-[#66FCF1]/40 p-4 rounded relative hover:border-[#66FCF1] transition-colors">
+                                        <div className="text-[9px] text-[#66FCF1] uppercase font-bold mb-1">STAGE 1</div>
+                                        <h4 className="font-bold text-white text-[11px]">Wallet Auth (SIWE)</h4>
+                                        <p className="text-[10px] text-gray-500 mt-2">Signs cryptographic variables and creates JWT session token.</p>
                                     </div>
 
-                                    {/* Swapper Contract Box */}
-                                    <div className="bg-[#111218] border border-[#66FCF1] p-4 rounded-lg relative group hover:bg-[#66FCF1]/10 transition-colors">
-                                        <div className="text-[9px] text-gray-500 uppercase">STEP 2</div>
-                                        <h4 className="font-bold text-white mt-1">Uniswap Router</h4>
-                                        <p className="text-[10px] text-gray-400 mt-2">Swaps diverse tokens into USDC internally.</p>
-                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-[#66FCF1] hidden md:block" />
+                                    {/* Step 2 */}
+                                    <div className="bg-[#030407] border border-[#66FCF1]/40 p-4 rounded relative hover:border-[#66FCF1] transition-colors">
+                                        <div className="text-[9px] text-[#66FCF1] uppercase font-bold mb-1">STAGE 2</div>
+                                        <h4 className="font-bold text-white text-[11px]">Direct USDC Escrow</h4>
+                                        <p className="text-[10px] text-gray-500 mt-2">Transfers and locks native USDC stakes inside Base contract pool.</p>
                                     </div>
 
-                                    {/* Telemetry Box */}
-                                    <div className="bg-[#111218] border border-pink-500 p-4 rounded-lg relative group hover:bg-pink-500/10 transition-colors">
-                                        <div className="text-[9px] text-gray-500 uppercase">STEP 3</div>
-                                        <h4 className="font-bold text-white mt-1">FastAPI Engine</h4>
-                                        <p className="text-[10px] text-gray-400 mt-2">Scans app hooks & processes heavy cheat audits.</p>
-                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-pink-500 hidden md:block" />
+                                    {/* Step 3 */}
+                                    <div className="bg-[#030407] border border-pink-500/40 p-4 rounded relative hover:border-pink-500 transition-colors">
+                                        <div className="text-[9px] text-pink-400 uppercase font-bold mb-1">STAGE 3</div>
+                                        <h4 className="font-bold text-white text-[11px]">AI Referee Audit</h4>
+                                        <p className="text-[10px] text-gray-500 mt-2">Ingests client diagnostic telemetry. Executes threat scans.</p>
                                     </div>
 
-                                    {/* Oracle Contract Box */}
-                                    <div className="bg-[#111218] border border-yellow-400 p-4 rounded-lg relative group hover:bg-yellow-400/10 transition-colors">
-                                        <div className="text-[9px] text-gray-500 uppercase">STEP 4</div>
-                                        <h4 className="font-bold text-white mt-1">Base Escrow Pool</h4>
-                                        <p className="text-[10px] text-gray-400 mt-2">Verifies signatures, routes platform fees (2.5%) & awards clean winners.</p>
+                                    {/* Step 4 */}
+                                    <div className="bg-[#030407] border border-yellow-500/40 p-4 rounded relative hover:border-yellow-500 transition-colors">
+                                        <div className="text-[9px] text-yellow-400 uppercase font-bold mb-1">STAGE 4</div>
+                                        <h4 className="font-bold text-white text-[11px]">L2 Resolution</h4>
+                                        <p className="text-[10px] text-gray-500 mt-2">Routes 2.50% fee directly to storage node. Settles balance.</p>
                                     </div>
 
                                 </div>
 
-                                {/* Payout direction line */}
-                                <div className="mt-8 pt-5 border-t border-gray-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center">
-                                    <div className="p-3 bg-emerald-950/10 border border-emerald-500/20 rounded">
-                                        <h5 className="font-bold text-emerald-400">WINNER AWARD LOCK (97.5%)</h5>
-                                        <p className="text-[10px] text-gray-500 mt-1">Released instantaneously to player wallet upon verified oracle consensus.</p>
+                                <div className="mt-6 pt-5 border-t border-gray-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center">
+                                    <div className="p-3.5 bg-emerald-950/10 border border-emerald-500/20 rounded">
+                                        <h5 className="font-bold text-emerald-400">WINNER SETTLEMENT (97.50%)</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1">Routed to authenticated non-violating account address.</p>
                                     </div>
-                                    <div className="p-3 bg-yellow-950/10 border border-yellow-500/20 rounded">
-                                        <h5 className="font-bold text-yellow-400">PLATFORM FEE ROUTE (2.5%)</h5>
-                                        <p className="text-[10px] text-gray-500 mt-1">Dispatched automatically to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071</p>
+                                    <div className="p-3.5 bg-yellow-950/10 border border-yellow-500/20 rounded">
+                                        <h5 className="font-bold text-yellow-400">PLATFORM ROUTE (2.50%)</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1">Transferred directly to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Right: Raw Mermaid.js code syntax */}
+                            {/* Raw Mermaid.js Blueprint viewer */}
                             <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
-                                <div className="bg-[#050508] border border-gray-800 rounded-xl p-5 flex-1 flex flex-col">
-                                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">RAW MERMAID.JS BLUEPRINT</span>
-                                    <pre className="flex-1 bg-black/60 p-4 rounded text-[11px] font-mono text-gray-400 overflow-y-auto max-h-[300px]">
-                                        {MERMAID_DIAGRAM}
+                                <div className="bg-[#030407] border border-gray-800 rounded-lg p-4 flex-1 flex flex-col">
+                                    <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest block mb-2">MERMAID.JS CODE BLUEPRINT</span>
+                                    <pre className="flex-1 bg-black/50 p-3 rounded text-[10px] font-mono text-gray-400 overflow-y-auto max-h-[220px]">
+{`graph TD
+    P1[Player 1 Wallet] -->|USDC Stake| ESCROW
+    P2[Player 2 Wallet] -->|USDC Stake| ESCROW
+    P1 -.->|Telemetry| API[Telemetry API]
+    P2 -.->|Telemetry| API
+    API -->|Inspect Integrity| REF[AI Referee]
+    REF -->|Sign Verdict| ESCROW[Base Escrow Contract]
+    ESCROW -->|2.5% Fee| FEE[Platform Storage Wallet]
+    ESCROW -->|97.5% Payout| WINNER[Verified Winner]`}
                                     </pre>
                                 </div>
                                 <button 
                                     onClick={() => {
-                                        navigator.clipboard.writeText(MERMAID_DIAGRAM);
+                                        const chartCode = "graph TD\n    P1[Player 1 Wallet] -->|USDC Stake| ESCROW\n    P2[Player 2 Wallet] -->|USDC Stake| ESCROW\n    P1 -.->|Telemetry| API[Telemetry API]\n    P2 -.->|Telemetry| API\n    API -->|Inspect Integrity| REF[AI Referee]\n    REF -->|Sign Verdict| ESCROW[Base Escrow Contract]\n    ESCROW -->|2.5% Fee| FEE[Platform Storage Wallet]\n    ESCROW -->|97.5% Payout| WINNER[Verified Winner]";
+                                        navigator.clipboard.writeText(chartCode);
                                         if(!mute) playSound('success');
-                                        alert("Mermaid diagram code copied successfully!");
+                                        alert("Mermaid chart code copied successfully!");
                                     }}
-                                    className="w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all uppercase"
+                                    className="w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-xs tracking-widest rounded transition-all uppercase"
                                 >
                                     COPY BLUEPRINT CODE
                                 </button>
@@ -1181,16 +1125,16 @@ function App() {
 
             </main>
 
-            {/* CYBERPUNK FOOTER */}
-            <footer className="border-t border-[#66FCF1]/10 bg-[#06070a] py-8 relative z-30">
-                <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+            {/* FOOTER */}
+            <footer className="border-t border-gray-800/60 bg-[#040609] py-6 relative z-30">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono">
                     <div className="flex items-center gap-2 text-gray-500">
-                        <span>© {new Date().getFullYear()} PROJECT EPIC. ALL RIGHTS RESERVED.</span>
+                        <span>© {new Date().getFullYear()} PROJECT EPIC. CODESPACE SYSTEMS.</span>
                         <span>|</span>
-                        <span className="text-[#66FCF1]">BASE L2 STABILITY ROUTE ACTIVE</span>
+                        <span className="text-[#66FCF1]">BASE NETWORK NODE STABILITY CONFIRMED</span>
                     </div>
-                    <div className="flex items-center gap-4 text-gray-400">
-                        <span>Fee Oracle: <b className="text-white select-all">0xe69aE...63a071</b></span>
+                    <div className="text-gray-400">
+                        Secure Escrow Destination: <span className="text-white select-all">0xe69aE...63a071</span>
                     </div>
                 </div>
             </footer>
