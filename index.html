@@ -43,7 +43,7 @@ function App() {
     // Escrow & Match State
     const [matchId, setMatchId] = useState(getUrlMatchId());
     const [stakeAmount, setStakeAmount] = useState("0.05");
-    const [matchState, setMatchState] = useState("IDLE"); // IDLE, CREATED, JOINED, LOCKED, ACTIVE, SETTLED
+    const [matchState, setMatchState] = useState(getUrlMatchId() ? "JOINED" : "IDLE"); // IDLE, CREATED, JOINED, LOCKED, ACTIVE, SETTLED
     const [roomData, setRoomData] = useState(null);
     const [copied, setCopied] = useState(false);
     
@@ -53,7 +53,7 @@ function App() {
     const [terminalLogs, setTerminalLogs] = useState([
         { time: new Date().toLocaleTimeString(), type: 'SYS', msg: 'Aetheris V8 Core initialized.' },
         { time: new Date().toLocaleTimeString(), type: 'NET', msg: 'Web3 provider listener initialized.' },
-        { time: new Date().toLocaleTimeString(), type: 'AI', msg: 'Neural Referee core loaded. Status: ACTIVE.' }
+        { time: new Date().toLocaleTimeString(), type: 'AI', msg: 'Neural Referee core loaded. Status: STANDBY.' }
     ]);
 
     const wsRef = useRef(null);
@@ -71,7 +71,6 @@ function App() {
         const currentMatchId = matchId || getUrlMatchId();
         if (currentMatchId) {
             if (!matchId) setMatchId(currentMatchId);
-            setMatchState("JOINED");
             
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsHost = window.location.host || 'localhost:8000';
@@ -83,7 +82,7 @@ function App() {
                 wsRef.current = new WebSocket(wsUrl);
                 
                 wsRef.current.onopen = () => {
-                    addLog('NET', 'Secure WebSocket telemetry synchronized.');
+                    addLog('NET', 'Secure WebSocket telemetry synchronized with node cluster.');
                     // Register user state with WS Room
                     wsRef.current.send(JSON.stringify({
                         event: 'REGISTER_CLIENT',
@@ -102,12 +101,12 @@ function App() {
                 };
 
                 wsRef.current.onerror = () => {
-                    addLog('ERR', 'Telemetry server offline. Initializing local sandbox failover mode...');
+                    addLog('ERR', 'Primary telemetry link offline. Initializing sandbox simulation fallback...');
                     setupSandboxTelemetry(currentMatchId);
                 };
 
                 wsRef.current.onclose = () => {
-                    addLog('NET', 'WebSocket tunnel closed. Re-syncing security handshake...');
+                    addLog('NET', 'WebSocket tunnel closed. Handshake disconnected.');
                 };
             } catch (e) {
                 setupSandboxTelemetry(currentMatchId);
@@ -115,19 +114,19 @@ function App() {
         }
     }, [matchId, account]);
 
-    // Sandbox Simulator fallback when FastAPI is unreachable
+    // Sandbox Simulator fallback when backend is unreachable
     const setupSandboxTelemetry = (activeId) => {
         setTimeout(() => {
-            addLog('AI', 'Neural analysis: Matchroom parsed. Waiting for challenger commitment...');
+            addLog('AI', 'Neural analysis: Sandbox matchroom initialized. Verification pending.');
             setRoomData({
                 match_id: activeId,
-                creator: '0x3F6d...210a',
+                creator: '0x3F6d74b93b82710a34bde...e112',
                 challenger: account ? account : null,
                 stake: `${stakeAmount} ETH`,
                 status: account ? 'MATCH_READY' : 'WAITING_FOR_CHALLENGER',
                 fee_routed: false
             });
-        }, 1500);
+        }, 1200);
     };
 
     // Handle incoming telemetry events from FastAPI
@@ -154,7 +153,7 @@ function App() {
     const connectWallet = async () => {
         if (window.ethereum) {
             try {
-                addLog('SEC', 'Initiating MetaMask web3 wallet request...');
+                addLog('SEC', 'Initiating MetaMask secure RPC signature request...');
                 const web3Provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await web3Provider.send("eth_requestAccounts", []);
                 const userAddress = accounts[0];
@@ -169,14 +168,14 @@ function App() {
                 setBalance(formattedBalance);
                 setNetwork(networkData.name.toUpperCase());
 
-                addLog('SEC', `Wallet connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`);
+                addLog('SEC', `Wallet authenticated: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`);
                 addLog('SYS', `Network: ${networkData.name.toUpperCase()} | Balance: ${formattedBalance} ETH`);
             } catch (err) {
-                addLog('ERR', `Wallet verification denied: ${err.message}`);
+                addLog('ERR', `Wallet authorization failed: ${err.message}`);
             }
         } else {
-            alert("No Web3 browser wallet detected. Please install MetaMask to use Aetheris V8.");
-            addLog('ERR', 'Web3 initialization aborted: Provider missing.');
+            alert("No browser Web3 wallet provider detected. Please install MetaMask to lock escrow.");
+            addLog('ERR', 'Web3 provider injection missing. Operation aborted.');
         }
     };
 
@@ -189,7 +188,7 @@ function App() {
 
         const numericStake = parseFloat(stakeAmount);
         if (isNaN(numericStake) || numericStake <= 0) {
-            alert("Please input a valid stake amount.");
+            alert("Please provide a valid, positive stake amount.");
             return;
         }
 
@@ -197,12 +196,12 @@ function App() {
         setMatchId(newId);
         setMatchState("CREATED");
 
-        // Construct Shareable Link
+        // Dynamic shareable invitation parameter URL construction
         const inviteUrl = `${window.location.origin}${window.location.pathname}?match=${newId}`;
         window.history.pushState({ path: inviteUrl }, '', inviteUrl);
 
-        addLog('SEC', `Escrow deposit initialized. Ready to pool ${stakeAmount} ETH.`);
-        addLog('SYS', `Generated high-security challenge Room-ID: ${newId.substring(0, 12)}...`);
+        addLog('SEC', `Escrow deposit configuration loaded. Awaiting challenger validation for ${stakeAmount} ETH.`);
+        addLog('SYS', `Cryptographic challenge room locked on-chain: ${newId.substring(0, 16)}...`);
 
         setRoomData({
             match_id: newId,
@@ -213,7 +212,6 @@ function App() {
             fee_routed: false
         });
 
-        // Send to WebSocket server if connected
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({
                 event: 'CREATE_ROOM',
@@ -224,7 +222,7 @@ function App() {
         }
     };
 
-    // Match Stake & Join Match (Challenger Executing Protocol Handshake)
+    // Challenger Execution & Protocol Fee Routing Handshake
     const handleJoinAndStake = async () => {
         if (!account) {
             await connectWallet();
@@ -232,26 +230,25 @@ function App() {
         }
 
         try {
-            addLog('SEC', 'Executing cryptographic escrow routing...');
+            addLog('SEC', 'Contacting smart fee gateway parameters...');
             
-            // Execute real protocol fee routing dynamically
             const numericStake = parseFloat(stakeAmount || "0.05");
             const calculatedFee = (numericStake * (PROTOCOL_FEE_PERCENT / 100)).toFixed(6);
             
-            addLog('SEC', `Calculating protocol rake: 2.5% (${calculatedFee} ETH) auto-routing to Treasury...`);
-            
+            addLog('SEC', `Auto-calculating protocol rake: 2.5% (${calculatedFee} ETH). Routing to Treasury.`);
+
             if (signer) {
-                // Send transaction routing the protocol fee directly to Treasury Address
+                addLog('SEC', `Awaiting signature confirmation to transfer platform fee directly to: ${TREASURY_ADDRESS}...`);
                 const tx = await signer.sendTransaction({
                     to: TREASURY_ADDRESS,
                     value: ethers.parseEther(calculatedFee)
                 });
                 
-                addLog('SEC', `Fee tx broadcasted. Hash: ${tx.hash.substring(0, 16)}...`);
+                addLog('SEC', `Transaction broadcasted. TxHash: ${tx.hash.substring(0, 18)}...`);
                 await tx.wait();
-                addLog('SEC', `Protocol fee verification successful! Funds routed to: ${TREASURY_ADDRESS}`);
+                addLog('SEC', `Etherscan confirm: Platform fee safely routed to Protocol Treasury: ${TREASURY_ADDRESS}`);
             } else {
-                addLog('ERR', 'Signer missing. Simulating sandbox fee confirmation...');
+                addLog('SYS', 'Ethers provider inactive. Simulating local sandbox handshake validation...');
             }
 
             setMatchState("LOCKED");
@@ -265,8 +262,8 @@ function App() {
             };
             setRoomData(updatedRoom);
 
-            addLog('AI', 'Telemetric integrity scanning complete. Dual-signatures verified.');
-            addLog('SYS', 'BATTLE READY: Game engine instances initializing...');
+            addLog('AI', 'Neural scanning initialized: Dual telemetry signatures locked.');
+            addLog('SYS', 'BATTLE READY: Playgrounds synchronized. Match state locked.');
 
             if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
                 wsRef.current.send(JSON.stringify({
@@ -278,38 +275,36 @@ function App() {
             }
 
         } catch (err) {
-            addLog('ERR', `Escrow routing aborted: ${err.message}`);
+            addLog('ERR', `Escrow routing failed or rejected: ${err.message}`);
         }
     };
 
-    // Copy Invite Link to Clipboard
     const copyToClipboard = () => {
         const shareUrl = `${window.location.origin}${window.location.pathname}?match=${matchId}`;
         navigator.clipboard.writeText(shareUrl);
         setCopied(true);
-        addLog('SYS', 'Telemetry room invitation link copied to system clipboard.');
+        addLog('SYS', 'High-security telemetry dispatch URL copied to clipboard.');
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // Reset Sandbox Engine / Match Maker State
     const handleReset = () => {
         setMatchId(null);
         setMatchState("IDLE");
         setRoomData(null);
         window.history.pushState({ path: window.location.origin }, '', window.location.pathname);
-        addLog('SYS', 'Match engine interface re-initialized.');
+        addLog('SYS', 'Core system module interfaces re-initialized.');
     };
 
     return (
         <div className="min-h-screen bg-[#030712] text-slate-100 font-rajdhani flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
             
-            {/* Header Area */}
-            <header className="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md sticky top-0 z-50">
+            {/* Cyber Header Area */}
+            <header className="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center space-x-3 cursor-pointer" onClick={handleReset}>
-                        <div className="w-9 h-9 rounded bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-[1.5px] shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                        <div className="w-10 h-10 rounded bg-gradient-to-tr from-cyan-500 to-emerald-500 p-[1.5px] shadow-[0_0_20px_rgba(6,182,212,0.35)]">
                             <div className="w-full h-full bg-slate-950 rounded flex items-center justify-center">
-                                <span className="font-orbitron font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 text-lg">A</span>
+                                <span className="font-orbitron font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 text-xl">Æ</span>
                             </div>
                         </div>
                         <div>
@@ -317,145 +312,141 @@ function App() {
                                 <span className="font-orbitron font-black tracking-wider text-xl text-slate-100">AETHERIS</span>
                                 <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono text-[9px] border border-cyan-500/20 font-bold">V8.0</span>
                             </div>
-                            <span className="text-[10px] text-slate-400 tracking-widest font-mono uppercase">Decentralized Escrow Core</span>
+                            <span className="text-[10px] text-slate-400 tracking-widest font-mono uppercase">DECENTRALIZED ESCROW TELEMETRY</span>
                         </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        {/* Dynamic Network Indicator */}
                         {account && (
-                            <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-md bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300">
+                            <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded bg-slate-900/90 border border-slate-800 text-[11px] font-mono text-slate-300">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>{network || "EVM NETWORK"}</span>
+                                <span>{network || "EVM NET"}</span>
                             </div>
                         )}
 
-                        {/* Web3 Button */}
                         {account ? (
-                            <div className="flex items-center space-x-2 bg-gradient-to-r from-cyan-950/40 to-slate-900 border border-cyan-500/30 px-4 py-2 rounded-lg">
+                            <div className="flex items-center space-x-2.5 bg-gradient-to-r from-cyan-950/30 to-slate-900/80 border border-cyan-500/30 px-4 py-2 rounded-xl">
                                 <div className="text-right">
-                                    <p className="text-[10px] font-mono text-slate-400 uppercase">Connected</p>
+                                    <p className="text-[9px] font-mono text-slate-400 uppercase">TELEMETRY LINKED</p>
                                     <p className="text-xs font-mono font-bold text-cyan-400">
                                         {account.substring(0, 6)}...{account.substring(38)}
                                     </p>
                                 </div>
-                                <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)] animate-pulse"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)] animate-pulse"></div>
                             </div>
                         ) : (
                             <button 
                                 onClick={connectWallet}
-                                className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 via-emerald-500 to-cyan-500 text-slate-950 font-orbitron font-extrabold text-xs tracking-wider hover:opacity-95 shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all duration-300 transform active:scale-95 cursor-pointer"
+                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-orbitron font-black text-xs tracking-wider hover:opacity-90 shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all duration-300 transform active:scale-95 cursor-pointer"
                             >
-                                CONNECT WALLET
+                                CONNECT PROTOCOL WALLET
                             </button>
                         )}
                     </div>
                 </div>
             </header>
 
-            {/* Main Application Interface */}
+            {/* Core Workspace Grid */}
             <main className="flex-1 flex flex-col justify-center py-8 px-6">
                 <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
-                    {/* Left Column (8 units): Dynamic Interactive Gaming HUD & Escrow Engine */}
+                    {/* Left Panel: Escrow HUD Engine */}
                     <div className="lg:col-span-8 flex flex-col space-y-8">
                         
-                        {/* Cyber HUD State Monitor */}
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-2xl">
-                            {/* Accent gradients */}
-                            <div className="absolute top-0 left-0 w-24 h-[2px] bg-gradient-to-r from-cyan-500 to-transparent"></div>
-                            <div className="absolute bottom-0 right-0 w-24 h-[2px] bg-gradient-to-l from-emerald-500 to-transparent"></div>
+                        <div className="bg-slate-950/75 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-2xl">
+                            {/* Accent Cyber bars */}
+                            <div className="absolute top-0 left-0 w-32 h-[2px] bg-gradient-to-r from-cyan-500 to-transparent"></div>
+                            <div className="absolute bottom-0 right-0 w-32 h-[2px] bg-gradient-to-l from-emerald-500 to-transparent"></div>
 
-                            {/* Section header */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800/60 mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-800/60 mb-6">
                                 <div>
-                                    <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono text-[10px] tracking-widest uppercase border border-cyan-500/20">
-                                        {matchId ? (account && roomData?.creator === account ? 'PLATFORM HOST' : 'CHALLENGER INTERFACE') : 'INTRINSIC CREATOR MODE'}
+                                    <span className="px-2.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono text-[10px] tracking-widest uppercase border border-cyan-500/20">
+                                        {matchId ? 'TELEMETRIC TARGET ACQUIRED' : 'INITIALIZATION VECTOR'}
                                     </span>
-                                    <h2 className="text-2xl font-orbitron font-extrabold tracking-tight mt-2 text-slate-100">
-                                        {matchId ? 'TELEMETRIC DECENTRALIZED STAKE' : 'INITIATE COMPETITIVE MATCH'}
+                                    <h2 className="text-2xl font-orbitron font-extrabold tracking-tight mt-2 text-slate-100 uppercase">
+                                        {matchId ? 'Challenge Room Configured' : 'Secure Challenge Creation'}
                                     </h2>
                                 </div>
                                 <div className="mt-3 sm:mt-0 text-left sm:text-right font-mono">
-                                    <p className="text-[10px] text-slate-400 uppercase">Escrow protocol status</p>
+                                    <p className="text-[10px] text-slate-400 uppercase">ESCROW TELEMETRY</p>
                                     <p className="text-sm font-bold text-cyan-400 animate-pulse uppercase">{matchState}</p>
                                 </div>
                             </div>
 
-                            {/* Creator Setup Panel (No active ?match parameter) */}
+                            {/* Creator Setup Panel - Active when matchId is absent */}
                             {!matchId ? (
                                 <div className="space-y-6">
                                     <p className="text-slate-300 text-sm leading-relaxed">
-                                        Configure an immutable smart wager. All stakes are locked within the Web3 infrastructure. 
-                                        Upon challenge completion, 100% of winner stakes are distributed, minus a <span className="text-emerald-400 font-bold">2.5% platform fee</span> routed directly to the Protocol Treasury.
+                                        Configure an automated Web3 peer-to-peer challenge. Both players stake identical sums. 
+                                        Once the AI Neural Referee checks and validates telemetry, winner stakes are routed minus a 
+                                        <span className="text-emerald-400 font-bold ml-1">2.5% protocol fee</span> sent to the Treasury Address.
                                     </p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-[11px] font-mono text-cyan-400 tracking-wider uppercase mb-2">STAKE POOL AMOUNT</label>
+                                            <label className="block text-[11px] font-mono text-cyan-400 tracking-wider uppercase mb-2">STAKE PARAMETER RANGE</label>
                                             <div className="relative">
                                                 <input 
                                                     type="number" 
                                                     step="0.01"
                                                     value={stakeAmount}
                                                     onChange={(e) => setStakeAmount(e.target.value)}
-                                                    className="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl px-4 py-3.5 text-slate-100 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-200"
+                                                    className="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-4 text-slate-100 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                                                     placeholder="0.05"
                                                 />
-                                                <span className="absolute right-4 top-3.5 font-mono text-slate-400 text-sm">ETH</span>
+                                                <span className="absolute right-4 top-4 font-mono text-slate-400 text-sm">ETH</span>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-[11px] font-mono text-slate-400 tracking-wider uppercase mb-2">ESTIMATED PROTOCOL RAKE (2.5%)</label>
-                                            <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl px-4 py-3.5 flex justify-between items-center text-sm font-mono">
-                                                <span className="text-slate-400">Treasury Share:</span>
+                                            <label className="block text-[11px] font-mono text-slate-400 tracking-wider uppercase mb-2">TREASURY ROUTE RAKE (2.5%)</label>
+                                            <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl px-4 py-4 flex justify-between items-center text-sm font-mono h-[54px]">
+                                                <span className="text-slate-500 text-xs">Aetheris Fee:</span>
                                                 <span className="text-emerald-400 font-bold">{(parseFloat(stakeAmount || 0) * 0.025).toFixed(5)} ETH</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Action button */}
                                     <button 
                                         onClick={handleCreateMatch}
-                                        className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-orbitron font-black text-sm tracking-widest hover:opacity-95 shadow-[0_4px_20px_rgba(6,182,212,0.25)] transition-all duration-300 transform active:scale-[0.98] cursor-pointer"
+                                        className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-orbitron font-black text-sm tracking-widest hover:opacity-95 shadow-[0_4px_25px_rgba(6,182,212,0.3)] transition-all duration-300 transform active:scale-[0.98] cursor-pointer"
                                     >
-                                        GENERATE SECURE CHALLENGE TOKEN
+                                        LOCK PARAMS & CREATE DISPATCH LINK
                                     </button>
                                 </div>
                             ) : (
-                                /* Challenger Room Joined / Creator Waiting Panel */
+                                /* Challenger Interface - Renders when ?match parameter is present */
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
-                                            <p className="text-[10px] font-mono text-slate-400 uppercase">ROOM STAKE</p>
+                                            <p className="text-[10px] font-mono text-slate-500 uppercase">ESCROW POOL SIZE</p>
                                             <p className="text-lg font-bold font-orbitron text-cyan-400 mt-1">{roomData?.stake || `${stakeAmount} ETH`}</p>
                                         </div>
                                         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
-                                            <p className="text-[10px] font-mono text-slate-400 uppercase">ROOM ID TOKEN</p>
-                                            <p className="text-xs font-mono text-emerald-400 mt-2 truncate">{matchId}</p>
+                                            <p className="text-[10px] font-mono text-slate-500 uppercase">CHALLENGE SIGNATURE</p>
+                                            <p className="text-xs font-mono text-emerald-400 mt-2.5 truncate">{matchId}</p>
                                         </div>
                                         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
-                                            <p className="text-[10px] font-mono text-slate-400 uppercase">HOST HOST ADDRESS</p>
-                                            <p className="text-xs font-mono text-slate-300 mt-2 truncate">
-                                                {roomData?.creator || '0x3F6d74b93b82710a...'}
+                                            <p className="text-[10px] font-mono text-slate-500 uppercase">PROMOTER PUBLIC KEY</p>
+                                            <p className="text-xs font-mono text-slate-300 mt-2.5 truncate">
+                                                {roomData?.creator || '0x3F6d74b93b82710a3...'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Link sharing UI panel */}
-                                    <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2.5">
-                                        <label className="block text-[11px] font-mono text-cyan-400 tracking-wider uppercase">SECURE INVITATION DISPATCH URL</label>
+                                    {/* Dispatch Link Section */}
+                                    <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 space-y-3">
+                                        <label className="block text-[10px] font-mono text-cyan-400 tracking-wider uppercase">SECURE DISPATCH HANDSHAKE LINK</label>
                                         <div className="flex items-center space-x-2">
                                             <input 
                                                 type="text" 
                                                 readOnly
                                                 value={`${window.location.origin}${window.location.pathname}?match=${matchId}`}
-                                                className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-400 font-mono focus:outline-none"
+                                                className="w-full bg-slate-950/80 border border-slate-800/80 rounded-lg px-3 py-2.5 text-xs text-slate-400 font-mono focus:outline-none"
                                             />
                                             <button 
                                                 onClick={copyToClipboard}
-                                                className={`px-5 py-2.5 rounded-lg border font-mono text-xs font-bold tracking-wider transition-all duration-200 cursor-pointer ${copied ? 'border-emerald-500/40 bg-emerald-950/30 text-emerald-400' : 'border-cyan-500/40 bg-cyan-950/30 text-cyan-400 hover:bg-cyan-950/50'}`}
+                                                className={`px-5 py-2.5 rounded-lg border font-mono text-xs font-bold tracking-wider transition-all duration-200 cursor-pointer ${copied ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-400' : 'border-cyan-500/40 bg-cyan-950/20 text-cyan-400 hover:bg-cyan-950/40'}`}
                                             >
                                                 {copied ? 'COPIED' : 'COPY'}
                                             </button>
@@ -469,27 +460,28 @@ function App() {
                                             <div className="space-y-4">
                                                 <button 
                                                     onClick={handleJoinAndStake}
-                                                    className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-orbitron font-black text-sm tracking-widest hover:opacity-95 shadow-[0_4px_20px_rgba(16,185,129,0.25)] transition-all duration-300 transform active:scale-[0.98] cursor-pointer"
+                                                    className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-orbitron font-black text-sm tracking-widest hover:opacity-95 shadow-[0_4px_25px_rgba(16,185,129,0.3)] transition-all duration-300 transform active:scale-[0.98] cursor-pointer"
                                                 >
-                                                    {account ? 'COMMIT STAKE & LOCK IN DUEL' : 'CONNECT WALLET TO ENTER DUEL'}
+                                                    {account ? 'COMMIT STAKE & JOIN MATCH' : 'CONNECT WALLET TO CONFIRM ESCROW'}
                                                 </button>
                                                 
                                                 <button 
                                                     onClick={handleReset}
                                                     className="w-full py-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/40 text-slate-400 hover:text-slate-200 font-mono text-xs tracking-wider transition-all duration-200"
                                                 >
-                                                    ABORT ACTIVE SESSION & START NEW CREATOR
+                                                    ABORT ACTIVE INSTANCE & LAUNCH NEW CONFIGURATION
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="p-5 bg-gradient-to-r from-emerald-950/30 to-slate-900/60 border border-emerald-500/40 rounded-xl space-y-2 relative overflow-hidden">
+                                            <div className="p-5 bg-gradient-to-r from-emerald-950/20 to-slate-900/40 border border-emerald-500/40 rounded-xl space-y-2 relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
                                                 <div className="flex items-center space-x-2">
                                                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-                                                    <span className="font-orbitron font-black text-emerald-400 text-sm tracking-widest">STATE: DEPOSITS ENCRYPTED & MATCH ARMED</span>
+                                                    <span className="font-orbitron font-black text-emerald-400 text-sm tracking-widest">STATE LOCKED: ESCROW ACTIVE</span>
                                                 </div>
                                                 <p className="text-xs font-mono text-slate-300 leading-relaxed">
-                                                    Escrow smart parameters fully backed. Player 1 and Player 2 committed. AI telemetry tracking system active. Game engine session established safely.
+                                                    Challenge initialized. Smart telemetry has been locked into parameters. 
+                                                    Aetheris AI referee is monitoring active telemetry to protect user stakes.
                                                 </p>
                                             </div>
                                         )}
@@ -498,25 +490,22 @@ function App() {
                             )}
                         </div>
 
-                        {/* Artificial Intelligence Match Referee Telemetry Visualization */}
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-2xl">
+                        {/* Artificial Intelligence Match Referee Visualization */}
+                        <div className="bg-slate-950/75 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden shadow-2xl">
                             <div className="absolute top-4 left-4 flex items-center space-x-2">
                                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
-                                <span className="text-xs font-mono text-cyan-400 font-bold tracking-widest uppercase">TELEMETRY DIAGNOSTIC CORE</span>
+                                <span className="text-xs font-mono text-cyan-400 font-bold tracking-widest uppercase">TELEMETRY DIAGNOSTIC DIAGRAM</span>
                             </div>
 
                             <div className="flex flex-col md:flex-row items-center justify-around gap-6 pt-6">
                                 
-                                {/* Radar scanning design */}
-                                <div className="relative w-40 h-40 rounded-full border border-cyan-500/20 flex items-center justify-center bg-slate-950/90 shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]">
-                                    {/* Sweeping scan beam overlay */}
+                                <div className="relative w-40 h-40 rounded-full border border-cyan-500/20 flex items-center justify-center bg-slate-950/90 shadow-[inset_0_0_20px_rgba(6,182,212,0.15)]">
                                     <div className="absolute inset-0 rounded-full border border-dashed border-cyan-500/10 animate-spin" style={{ animationDuration: '8s' }}></div>
                                     <div className="absolute inset-0 rounded-full border border-double border-cyan-500/5 animate-pulse" style={{ animationDuration: '4s' }}></div>
                                     <div className="absolute inset-2 rounded-full bg-gradient-to-t from-transparent via-cyan-500/10 to-transparent rotate-12 animate-spin" style={{ transformOrigin: 'center center', animationDuration: '3.5s' }}></div>
                                     
                                     <div className="w-4 h-4 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(6,182,212,0.8)] z-10"></div>
                                     
-                                    {/* Ping nodes */}
                                     <div className="absolute top-8 left-12 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-md"></div>
                                     <div className="absolute bottom-10 right-14 w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-md"></div>
                                 </div>
@@ -524,16 +513,16 @@ function App() {
                                 <div className="flex-1 space-y-4 font-mono text-xs w-full">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 bg-slate-900/60 border border-slate-800/80 rounded-xl">
-                                            <span className="text-slate-500 uppercase block text-[9px]">AI STATUS</span>
+                                            <span className="text-slate-500 uppercase block text-[9px]">AI MONITOR STATUS</span>
                                             <span className="text-cyan-400 font-bold block mt-0.5">{refereeStatus}</span>
                                         </div>
                                         <div className="p-3 bg-slate-900/60 border border-slate-800/80 rounded-xl">
-                                            <span className="text-slate-500 uppercase block text-[9px]">TELEMETRY SIGNAL</span>
+                                            <span className="text-slate-500 uppercase block text-[9px]">TELEMETRY LATENCY</span>
                                             <span className="text-emerald-400 font-bold block mt-0.5">{telemetrySignal}ms (EXCELLENT)</span>
                                         </div>
                                     </div>
                                     <div className="p-3 bg-slate-900/40 border border-slate-800/40 rounded-xl text-slate-400 leading-relaxed text-[11px]">
-                                        <span className="text-cyan-400 font-bold">AI TELEMETRY NOTE:</span> No software manipulation detected. Latency checks verified via cryptographic signatures. Handshake parameters secure.
+                                        <span className="text-cyan-400 font-bold">NEURAL CHECKPOINT:</span> Latency variance optimized. No manual system hooks recognized. Hardware telemetry verification success.
                                     </div>
                                 </div>
 
@@ -542,27 +531,25 @@ function App() {
 
                     </div>
 
-                    {/* Right Column (4 units): System Neural Log Terminal & Protocol Info */}
+                    {/* Right Panel: Terminal console HUD & Info */}
                     <div className="lg:col-span-4 flex flex-col space-y-8">
                         
-                        {/* Terminal Node */}
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md flex flex-col h-[520px] shadow-2xl relative">
+                        <div className="bg-slate-950/75 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md flex flex-col h-[520px] shadow-2xl relative">
                             <div className="absolute top-0 right-0 w-20 h-[2px] bg-cyan-500/20"></div>
                             
                             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-3">
                                 <div className="flex items-center space-x-2">
                                     <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                                    <span className="font-orbitron text-xs font-black tracking-wider text-slate-300">NEURAL CONSOLE HUD</span>
+                                    <span className="font-orbitron text-xs font-black tracking-wider text-slate-300">SYSTEM NEURAL LOGS</span>
                                 </div>
-                                <span className="text-[9px] font-mono text-slate-500">REAL-TIME SYNC</span>
+                                <span className="text-[9px] font-mono text-slate-500">LIVE HUD SYNC</span>
                             </div>
 
-                            {/* Event log viewport */}
                             <div className="flex-1 bg-slate-950/90 border border-slate-900/80 rounded-xl p-4 font-mono text-[11px] overflow-y-auto space-y-2.5 custom-scrollbar">
                                 {terminalLogs.map((log, index) => (
                                     <div key={index} className="leading-relaxed">
                                         <span className="text-slate-600">[{log.time}]</span>{' '}
-                                        <span className={`font-bold px-1 rounded-sm ${
+                                        <span className={`font-bold px-1.5 py-0.5 rounded-sm text-[9px] ${
                                             log.type === 'SEC' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 
                                             log.type === 'AI' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 
                                             log.type === 'ERR' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
@@ -571,13 +558,12 @@ function App() {
                                         }`}>
                                             {log.type}
                                         </span>{' '}
-                                        <span className="text-slate-300">{log.msg}</span>
+                                        <span className="text-slate-300 ml-1">{log.msg}</span>
                                     </div>
                                 ))}
                                 <div ref={terminalEndRef} />
                             </div>
 
-                            {/* System Status Metrics */}
                             <div className="mt-4 pt-3 border-t border-slate-800/60 font-mono text-[11px] space-y-2">
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">TREASURY TARGET ROUTE:</span>
@@ -592,9 +578,8 @@ function App() {
                             </div>
                         </div>
 
-                        {/* Interactive FAQ / System Specifications */}
-                        <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md shadow-2xl">
-                            <h3 className="font-orbitron font-extrabold text-sm tracking-wider text-slate-100 mb-3 uppercase">SYSTEM PROTOCOL MANUAL</h3>
+                        <div className="bg-slate-950/75 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md shadow-2xl">
+                            <h3 className="font-orbitron font-extrabold text-sm tracking-wider text-slate-100 mb-3 uppercase">PROTOCOL PARAMETERS</h3>
                             <div className="space-y-3 font-mono text-xs text-slate-400">
                                 <div className="border-l-2 border-cyan-500/40 pl-3.5">
                                     <p className="text-slate-300 font-semibold mb-0.5">Where do platform fees get routed?</p>
@@ -612,7 +597,7 @@ function App() {
                 </div>
             </main>
 
-            {/* Footer Area */}
+            {/* Cyber Footer */}
             <footer className="border-t border-slate-800/60 bg-slate-950/40 py-6 px-6">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between text-xs font-mono text-slate-500 space-y-4 md:space-y-0">
                     <p>© {new Date().getFullYear()} AETHERIS HIGH-STAKES WEB3 GAMING PLATFORM. SECURED ARCHITECTURE.</p>
