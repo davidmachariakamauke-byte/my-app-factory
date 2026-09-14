@@ -13,7 +13,8 @@ async function fetchWithRetry(contents, maxRetries = 5) {
     try {
       console.log(`Calling Gemini API (Attempt ${attempt}/${maxRetries})...`);
       return await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        // Updated to the exact model recommended by the API error log
+        model: "gemini-3.5-flash",
         contents: contents,
       });
     } catch (error) {
