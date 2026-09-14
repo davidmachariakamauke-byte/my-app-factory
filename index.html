@@ -17,1318 +17,1181 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// Inject custom Google Fonts and global CSS tweaks
+// Injected Web Audio Synth for ultimate immersive cyberpunk interaction
+const playSound = (type) => {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'click') {
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.05, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+        } else if (type === 'warning') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(450, ctx.currentTime + 0.15);
+            osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'success') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+            osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
+        } else if (type === 'scan') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1000, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.03, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.4);
+        }
+    } catch (e) {
+        // Fallback if browser blocks audio autoplay/contexts
+    }
+};
+
+// Global styles and typography injection
 const injectStylesAndFonts = () => {
-    const link1 = document.createElement('link');
-    link1.rel = 'preconnect';
-    link1.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(link1);
-
-    const link2 = document.createElement('link');
-    link2.rel = 'preconnect';
-    link2.href = 'https://fonts.gstatic.com';
-    link2.crossOrigin = 'anonymous';
-    document.head.appendChild(link2);
-
-    const link3 = document.createElement('link');
-    link3.href = 'https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
-    link3.rel = 'stylesheet';
-    document.head.appendChild(link3);
+    const fontLink = document.createElement('link');
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap';
+    fontLink.rel = 'stylesheet';
+    document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.innerHTML = `
         body {
-            background-color: #f8fafc;
-            color: #0f172a;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .heading-font {
-            font-family: 'Sora', sans-serif;
-        }
-        .bg-construction-pattern {
-            background-color: #0f172a;
+            background-color: #050508;
+            color: #d1d5db;
+            font-family: 'Inter', sans-serif;
             background-image: 
-                radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 0),
-                radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 0);
-            background-size: 24px 24px;
-            background-position: 0 0, 12px 12px;
+                radial-gradient(at 50% 0%, rgba(102, 252, 241, 0.08) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(255, 0, 85, 0.05) 0px, transparent 50%),
+                linear-gradient(rgba(18, 18, 24, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 18, 24, 0.4) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            overflow-x: hidden;
         }
-        .yellow-glow {
-            box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.3);
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Custom Cyberpunk glows & clips */
+        .neon-cyan-glow {
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.25);
+            border-color: rgba(102, 252, 241, 0.5);
+        }
+
+        .neon-red-glow {
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.35);
+            border-color: rgba(255, 0, 85, 0.6);
+        }
+
+        .cyber-panel {
+            background: rgba(10, 11, 16, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(102, 252, 241, 0.1);
+            position: relative;
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid #66FCF1;
+            border-left: 2px solid #66FCF1;
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-bottom: 2px solid #66FCF1;
+            border-right: 2px solid #66FCF1;
+        }
+
+        .cyber-panel-red::before { border-color: #ff0055; }
+        .cyber-panel-red::after { border-color: #ff0055; }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .scanline-overlay {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanline-overlay::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .scanning-sweep {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #66FCF1, transparent);
+            animation: scanline 3s linear infinite;
+            top: 0;
+            z-index: 10;
+        }
+
+        .warning-sweep {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ff0055, transparent);
+            animation: scanline 1.5s linear infinite;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0b10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #66FCF1;
+        }
+
+        /* Visual Equalizer Bars */
+        .eq-bar {
+            width: 4px;
+            background-color: #66FCF1;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        /* Cyberpunk Grid Background */
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(102, 252, 241, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(102, 252, 241, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     `;
     document.head.appendChild(style);
 };
 
-// Premium Custom SVGs
-const Icons = {
-    Hammer: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-        </svg>
-    ),
-    HardHat: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2M5 10a7 7 0 0 1 14 0v3h-14v-3zM2 13h20v2H2v-2zM12 4a8 8 0 0 0-8 8v1h16v-1a8 8 0 0 0-8-8z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v9" />
-        </svg>
-    ),
-    Truck: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10M13 16h6l4-4V9a1 1 0 0 0-1-1h-4l-3-3M13 16h-2M5 16H3a1 1 0 0 1-1-1v-2M13 16c0 1.1-.9 2-2 2s-2-.9-2-2M5 16c0 1.1-.9 2-2 2s-2-.9-2-2" />
-            <circle cx="7.5" cy="16.5" r="2.5" stroke="currentColor" strokeWidth="2" />
-            <circle cx="16.5" cy="16.5" r="2.5" stroke="currentColor" strokeWidth="2" />
-        </svg>
-    ),
-    Tools: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-        </svg>
-    ),
-    Calculator: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <rect x="4" y="2" width="16" height="20" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="8" y1="6" x2="16" y2="6" strokeLinecap="round" />
-            <line x1="8" y1="10" x2="16" y2="10" strokeLinecap="round" />
-            <grid x="8" y="14" width="8" height="4" />
-            <circle cx="9" cy="14" r="1" />
-            <circle cx="12" cy="14" r="1" />
-            <circle cx="15" cy="14" r="1" />
-            <circle cx="9" cy="18" r="1" />
-            <circle cx="12" cy="18" r="1" />
-            <circle cx="15" cy="18" r="1" />
-        </svg>
-    ),
-    Search: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-    ),
-    Plus: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-    ),
-    Phone: ({ className = "w-4 h-4" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.506-5.19-3.876-6.697-6.698l1.293-.97c.362-.272.528-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-        </svg>
-    ),
-    Check: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-        </svg>
-    ),
-    MapPin: ({ className = "w-4 h-4" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25gC4.5 6.25 7.85 3 12 3s7.5 3.25 7.5 7.5z" />
-        </svg>
-    ),
-    Briefcase: ({ className = "w-4 h-4" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 .621-.504 1.125-1.125 1.125H4.875c-.621 0-1.125-.504-1.125-1.125v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8a2.18 2.18 0 00-.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-5.697 0C6.183 6.691 5.415 7.625 5.415 8.706v3.783c0 .644-.275 1.256-.75 1.661m16.5 0a2.18 2.18 0 01-.75 1.661v3.293c0 .621-.504 1.125-1.125 1.125H4.875c-.621 0-1.125-.504-1.125-1.125v-3.293a2.18 2.18 0 01-.75-1.661m1.5-7V5.625c0-.621.504-1.125 1.125-1.125h4.25c.621 0 1.125.504 1.125 1.125v1.125m-6 0h6" />
-        </svg>
-    ),
-    Building: ({ className = "w-4 h-4" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h18v18H3V3z" />
-        </svg>
-    ),
-    ArrowRight: ({ className = "w-4 h-4" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-        </svg>
-    ),
-    Notification: ({ className = "w-5 h-5" }) => (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-        </svg>
-    )
-};
+// Raw content templates
+const SOLIDITY_CONTRACT_CODE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title Project Epic: Decentralized AI Referee Gaming Escrow
+ * @notice Combines AI telemetry Oracle signature verification with Uniswap Multi-Asset swapping.
+ * @dev Enforces automated platform fee extraction on payouts.
+ */
+
+interface ISwapRouter {
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 deadline;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
+    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
+}
+
+interface IERC20 {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
+contract EpicGamingEscrow {
+    // Platform Fee Direct Wallet Destination (Base Layer-2)
+    address public constant FEE_ADDRESS = 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071;
+    uint256 public constant FEE_BPS = 250; // 2.5% fee
+
+    address public oracle;
+    address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913; // Base USDC address
+    ISwapRouter public immutable swapRouter;
+
+    struct Match {
+        address player1;
+        address player2;
+        uint256 lockedUsdc;
+        bool active;
+        bool settled;
+    }
+
+    mapping(bytes32 => Match) public matches;
+    mapping(address => bool) public supportedTokens;
+
+    event MatchStaked(bytes32 indexed matchId, address indexed player, uint256 usdcAmount);
+    event MatchSettled(bytes32 indexed matchId, address indexed winner, uint256 winnerPayout, uint256 platformFee);
+    event CheatEnforced(bytes32 indexed matchId, address indexed cheater, address indexed victim, uint256 payout);
+
+    modifier onlyOracle() {
+        require(msg.sender == oracle, "Error: caller must be Authorized AI Referee Oracle");
+        _;
+    }
+
+    constructor(address _oracle, address _swapRouter) {
+        oracle = _oracle;
+        swapRouter = ISwapRouter(_swapRouter);
+    }
+
+    /**
+     * @notice Stakes standard ERC20 token or Native ETH, auto-swaps to USDC via Uniswap v3 & locks in Escrow pool.
+     */
+    function stakeAndSwap(
+        bytes32 matchId,
+        address opponent,
+        address tokenIn,
+        uint256 amountIn,
+        uint24 poolFee,
+        uint256 minUsdcOut
+    ) external payable {
+        require(opponent != address(0), "Invalid opponent");
+        uint256 usdcReceived;
+
+        if (tokenIn == address(0)) {
+            // Swap Native ETH to USDC
+            require(msg.value == amountIn, "ETH amount mismatch");
+            usdcReceived = swapRouter.exactInputSingle{value: msg.value}(
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: 0x4200000000000000000000000000000000000006, // WETH on Base
+                    tokenOut: USDC,
+                    fee: poolFee,
+                    recipient: address(this),
+                    deadline: block.timestamp + 300,
+                    amountIn: amountIn,
+                    amountOutMinimum: minUsdcOut,
+                    sqrtPriceLimitX96: 0
+                })
+            );
+        } else {
+            // Transfer ERC20 from user and Swap to USDC
+            IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
+            IERC20(tokenIn).approve(address(swapRouter), amountIn);
+            
+            usdcReceived = swapRouter.exactInputSingle(
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: tokenIn,
+                    tokenOut: USDC,
+                    fee: poolFee,
+                    recipient: address(this),
+                    deadline: block.timestamp + 300,
+                    amountIn: amountIn,
+                    amountOutMinimum: minUsdcOut,
+                    sqrtPriceLimitX96: 0
+                })
+            );
+        }
+
+        Match storage m = matches[matchId];
+        if (!m.active) {
+            m.player1 = msg.sender;
+            m.player2 = opponent;
+            m.active = true;
+        }
+        
+        m.lockedUsdc += usdcReceived;
+        emit MatchStaked(matchId, msg.sender, usdcReceived);
+    }
+
+    /**
+     * @notice Oracle triggers instant payout to the verified winner.
+     * @dev Automatically extracts platform fee directly to the specified platform wallet.
+     */
+    function executePayout(
+        bytes32 matchId,
+        address winner,
+        bytes calldata signature
+    ) external onlyOracle {
+        Match storage m = matches[matchId];
+        require(m.active && !m.settled, "Match not active or already settled");
+        require(winner == m.player1 || winner == m.player2, "Winner must be a player");
+
+        m.settled = true;
+        m.active = false;
+
+        uint256 totalPool = m.lockedUsdc;
+        uint256 feeAmount = (totalPool * FEE_BPS) / 10000;
+        uint256 winnerPayout = totalPool - feeAmount;
+
+        // Execute automated fee transfer
+        IERC20(USDC).transfer(FEE_ADDRESS, feeAmount);
+        // Execute winner payout
+        IERC20(USDC).transfer(winner, winnerPayout);
+
+        emit MatchSettled(matchId, winner, winnerPayout, feeAmount);
+    }
+
+    /**
+     * @notice Enforce zero-tolerance instant payout adjustment if telemetry detects execution cheats.
+     */
+    function enforceAntiCheatShutdown(
+        bytes32 matchId,
+        address cheater,
+        bytes calldata signature
+    ) external onlyOracle {
+        Match storage m = matches[matchId];
+        require(m.active && !m.settled, "Match state cannot be adjusted");
+        address honestPlayer = (cheater == m.player1) ? m.player2 : m.player1;
+
+        m.settled = true;
+        m.active = false;
+
+        uint256 totalPool = m.lockedUsdc;
+        uint256 feeAmount = (totalPool * FEE_BPS) / 10000;
+        uint256 winnerPayout = totalPool - feeAmount;
+
+        // Punish cheater, award clean player fully minus service fee
+        IERC20(USDC).transfer(FEE_ADDRESS, feeAmount);
+        IERC20(USDC).transfer(honestPlayer, winnerPayout);
+
+        emit CheatEnforced(matchId, cheater, honestPlayer, winnerPayout);
+    }
+}`;
+
+const MERMAID_DIAGRAM = `graph TD
+    %% Base Styling Classes
+    classDef client fill:#1a1c23,stroke:#66FCF1,stroke-width:2px,color:#fff;
+    classDef server fill:#111219,stroke:#ff0055,stroke-width:2px,color:#fff;
+    classDef contract fill:#050508,stroke:#ffd700,stroke-width:2px,color:#fff;
+    classDef base fill:#0B0C10,stroke:#22c55e,stroke-width:1px,color:#a3e635;
+
+    %% Data Flow Nodes
+    P1[Player 1 Client]:::client
+    P2[Player 2 Client]:::client
+    API[FastAPI Telemetry Hub]:::server
+    REF[AI Referee Decision Engine]:::server
+    ROUTER[DEX Multi-Asset Router]:::contract
+    ESCROW[Base L2 Escrow Contract]:::contract
+    FEE[Fee Wallet: 0xe69aE...]:::base
+
+    %% Interactive Links
+    P1 -->|1. Stakes diverse Token| ROUTER
+    P2 -->|1. Stakes diverse Token| ROUTER
+    ROUTER -->|2. Swaps into USDC| ESCROW
+    
+    P1 -.->|3. Sends Live Game Telemetry| API
+    P2 -.->|3. Sends Live Game Telemetry| API
+    
+    API -->|4. Heavy Memory / Cheat Scan| REF
+    REF -->|5. Analytical Verdict / Signature| ESCROW
+    
+    ESCROW -->|6. Platform Fee Direct Route| FEE
+    ESCROW -->|7. Disburses remaining USDC| P1 & P2
+`;
 
 function App() {
-    // Inject fonts and custom styles
     useEffect(() => {
         injectStylesAndFonts();
     }, []);
 
-    // Active Navigation Tab
-    const [activeTab, setActiveTab] = useState("kazi"); // kazi (jobs), vifaa (materials), vifaaRent (tools hire), usafiri (transport), estimator (calculator)
+    // State Variables
+    const [matchId] = useState("0x" + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(""));
+    const [gameState, setGameState] = useState("idle"); // idle, scanning, dispute, victory
+    const [connected, setConnected] = useState(false);
+    const [walletAddress, setWalletAddress] = useState("");
+    const [escrowPool, setEscrowPool] = useState(0); // in USDC
+    const [p1Stake, setP1Stake] = useState(0);
+    const [p2Stake, setP2Stake] = useState(0);
+    const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, solidity, architecture
 
-    // User Profile Simulation
-    const [userRole, setUserRole] = useState("fundi"); // fundi (worker), mkandarasi (contractor/employer)
-    const [mpesaWallet, setMpesaWallet] = useState(4850); // Simulated M-Pesa balance in KES
-    const [searchQuery, setSearchQuery] = useState("");
-    const [countyFilter, setCountyFilter] = useState("Nairobi");
-    
-    // Form States
-    const [showPostJobModal, setShowPostJobModal] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState("");
-    
-    // Application States
-    const [appliedJobs, setAppliedJobs] = useState(new Set());
-    const [cart, setCart] = useState([]);
+    // Swapper variables
+    const [stakeToken, setStakeToken] = useState("ETH");
+    const [stakeAmount, setStakeAmount] = useState("0.1");
 
-    // Live Kenya County choices for construction density
-    const counties = ["Nairobi", "Kiambu", "Mombasa", "Kisumu", "Nakuru", "Uasin Gishu", "Machakos", "Kajiado"];
-
-    // Mock Kenyan Construction Jobs Data
-    const [jobs, setJobs] = useState([
-        {
-            id: 1,
-            title: "Experienced Mason (Fundi wa Mawe) needed for Storey Block",
-            location: "Ruiru, Kiambu",
-            county: "Kiambu",
-            budget: 1800,
-            period: "Daily Wage",
-            skills: ["Masonry", "Plastering"],
-            postedBy: "Mugenda Contractors",
-            phone: "+254 712 345 678",
-            verified: true,
-            urgent: true
-        },
-        {
-            id: 2,
-            title: "Plumber wanted for Modern Apartment Finishes",
-            location: "Kilimani, Nairobi",
-            county: "Nairobi",
-            budget: 2500,
-            period: "Daily Wage",
-            skills: ["Plumbing", "PPR Pipes"],
-            postedBy: "Tri-County Holdings",
-            phone: "+254 722 987 654",
-            verified: true,
-            urgent: false
-        },
-        {
-            id: 3,
-            title: "Casual Workers / Spanners for Site Cleanup & Sand Offloading",
-            location: "Nyali, Mombasa",
-            county: "Mombasa",
-            budget: 850,
-            period: "Daily Wage",
-            skills: ["Casual", "Heavy Lifting"],
-            postedBy: "Coastal Finishes Ltd",
-            phone: "+254 701 445 566",
-            verified: false,
-            urgent: true
-        },
-        {
-            id: 4,
-            title: "Class A Electrical Installer (Domestic)",
-            location: "Milimani, Nakuru",
-            county: "Nakuru",
-            budget: 2200,
-            period: "Daily Wage",
-            skills: ["Wiring", "Conduit Layout"],
-            postedBy: "Apex Engineering",
-            phone: "+254 733 112 233",
-            verified: true,
-            urgent: false
-        },
-        {
-            id: 5,
-            title: "Steel Fixer / Welder for Grid Slabs",
-            location: "Syokimau, Machakos",
-            county: "Machakos",
-            budget: 2000,
-            period: "Daily Wage",
-            skills: ["Steel-Fixing", "Welding"],
-            postedBy: "Falcon Builders",
-            phone: "+254 799 888 777",
-            verified: true,
-            urgent: true
-        }
+    // Chat states
+    const [chatLog, setChatLog] = useState([
+        { sender: "AI REFEREE", text: "Oracle system initialized. Waiting for player telemetry connection...", time: "SYSTEM START" }
     ]);
+    const [userInput, setUserInput] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
 
-    // Mock Materials Market (Local pricing aggregates)
-    const materials = [
-        {
-            id: "mat1",
-            name: "Bamburi Cement Tembo OPC 42.5R",
-            price: 840,
-            unit: "50Kg Bag",
-            supplier: "Kamukunji Hardware Wholesalers",
-            county: "Nairobi",
-            rating: "4.9",
-            deliverySpeed: "Immediate"
-        },
-        {
-            id: "mat2",
-            name: "Savannah Cement Pozzolanic 32.5",
-            price: 790,
-            unit: "50Kg Bag",
-            supplier: "Thika Road Mega Hardwares",
-            county: "Kiambu",
-            rating: "4.7",
-            deliverySpeed: "Same Day"
-        },
-        {
-            id: "mat3",
-            name: "Fine River Sand (High Quality)",
-            price: 14500,
-            unit: "4 Ton Canter Lorry",
-            supplier: "Machakos River Aggregates",
-            county: "Machakos",
-            rating: "4.8",
-            deliverySpeed: "1-2 Days"
-        },
-        {
-            id: "mat4",
-            name: "Deformed Steel Rebar Y12 (Premium)",
-            price: 1420,
-            unit: "Per 12-Meter Bar",
-            supplier: "Apex Steel Hub Mombasa",
-            county: "Mombasa",
-            rating: "5.0",
-            deliverySpeed: "Immediate"
-        },
-        {
-            id: "mat5",
-            name: "Quarry Stones (9x9 Standard)",
-            price: 36000,
-            unit: "Per 1000 Pieces",
-            supplier: "Juja Quarry Dealers",
-            county: "Kiambu",
-            rating: "4.6",
-            deliverySpeed: "1 Day"
-        },
-        {
-            id: "mat6",
-            name: "Machine-Cut Foundation Stones (6x9)",
-            price: 28,
-            unit: "Per Piece",
-            supplier: "Rift Valley Stone Masonry",
-            county: "Nakuru",
-            rating: "4.5",
-            deliverySpeed: "Same Day"
+    // Audio State Toggle
+    const [mute, setMute] = useState(false);
+
+    // Live Telemetry stream variables
+    const [ping, setPing] = useState(12);
+    const [fps, setFps] = useState(144);
+    const [memState, setMemState] = useState("SECURE");
+    const [packLoss, setPackLoss] = useState(0);
+
+    // Mock telemetry updates
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (gameState === "scanning") {
+                setPing(Math.floor(Math.random() * 5) + 15);
+                setFps(Math.floor(Math.random() * 10) + 130);
+                setPackLoss(Math.floor(Math.random() * 2));
+            } else if (gameState === "dispute") {
+                setPing(999);
+                setFps(32);
+                setPackLoss(28);
+            } else {
+                setPing(Math.floor(Math.random() * 4) + 10);
+                setFps(Math.floor(Math.random() * 5) + 140);
+                setPackLoss(0);
+            }
+        }, 1500);
+        return () => clearInterval(interval);
+    }, [gameState]);
+
+    // Wallet simulation
+    const connectWallet = () => {
+        if (!mute) playSound('click');
+        if (connected) {
+            setConnected(false);
+            setWalletAddress("");
+        } else {
+            setConnected(true);
+            setWalletAddress("0x71C765...b2c3");
         }
-    ];
-
-    // Mock Tool Rentals
-    const tools = [
-        {
-            id: "tool1",
-            name: "Diesel Concrete Mixer (1 Bag capacity)",
-            price: 3500,
-            unit: "Per Day",
-            supplier: "Jenga Machinery Hire",
-            securityDeposit: 10000,
-            available: true,
-            location: "Industrial Area, Nairobi"
-        },
-        {
-            id: "tool2",
-            name: "Heavy-Duty Demolition Jackhammer",
-            price: 1800,
-            unit: "Per Day",
-            supplier: "Kiambu Tools & Safety",
-            securityDeposit: 5000,
-            available: true,
-            location: "Ruiru Town"
-        },
-        {
-            id: "tool3",
-            name: "Steel Scaffolding Complete Frames",
-            price: 150,
-            unit: "Per Frame/Day",
-            supplier: "Coastal Scaffolds Ltd",
-            securityDeposit: 2000,
-            available: true,
-            location: "Mombasa Ganjoni"
-        },
-        {
-            id: "tool4",
-            name: "Handheld Electric Wood Router & Planer",
-            price: 800,
-            unit: "Per Day",
-            supplier: "Nuru Woodworking Depot",
-            securityDeposit: 3000,
-            available: false,
-            location: "Nakuru CBD"
-        }
-    ];
-
-    // Mock Transport Fleet
-    const fleet = [
-        {
-            id: "t1",
-            vehicleType: "Mitsubishi Canter Tipper (4 Ton)",
-            baseRate: 6500,
-            perKmRate: 150,
-            driverName: "Mwangi J.",
-            phone: "+254 722 000 111",
-            verified: true,
-            location: "Kamukunji Hub"
-        },
-        {
-            id: "t2",
-            vehicleType: "Isuzu Forward Tipper Lorry (10 Ton)",
-            baseRate: 13500,
-            perKmRate: 220,
-            driverName: "Ali Hassan",
-            phone: "+254 733 999 888",
-            verified: true,
-            location: "Mombasa Port Area"
-        },
-        {
-            id: "t3",
-            vehicleType: "Fuso Fighter Tipper (7 Ton)",
-            baseRate: 9500,
-            perKmRate: 180,
-            driverName: "Omondi Peter",
-            phone: "+254 711 555 444",
-            verified: false,
-            location: "Ruiru Bypass"
-        }
-    ];
-
-    // Mjengo Material Estimator Core Engine State
-    const [calcWallLength, setCalcWallLength] = useState(20); // in meters
-    const [calcWallHeight, setCalcWallHeight] = useState(3);  // in meters
-    const [calcThickness, setCalcThickness] = useState("9inch"); // 6inch or 9inch
-
-    // Custom Toast Alert trigger
-    const triggerToast = (msg) => {
-        setToastMessage(msg);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 4000);
     };
 
-    // Calculate Materials Required
-    const calculations = useMemo(() => {
-        const area = calcWallLength * calcWallHeight;
-        let stonesCount = 0;
-        let cementBags = 0;
-        let sandTons = 0;
-
-        if (calcThickness === "9inch") {
-            // Standard 9x9 stone takes roughly 11-12 stones per square meter with mortar
-            stonesCount = Math.ceil(area * 12.5);
-            // Rough estimation rules for mortar and laying
-            cementBags = Math.ceil(area * 0.45);
-            sandTons = parseFloat((area * 0.08).toFixed(1));
-        } else { // 6inch wall
-            stonesCount = Math.ceil(area * 12.5);
-            cementBags = Math.ceil(area * 0.35);
-            sandTons = parseFloat((area * 0.06).toFixed(1));
-        }
-
-        const estStonesCost = stonesCount * 35; // average 35 KES per stone
-        const estCementCost = cementBags * 820; // average 820 KES per bag
-        const estSandCost = Math.ceil(sandTons) * 3600; // average per ton
-
-        return {
-            area: area.toFixed(1),
-            stonesCount,
-            cementBags,
-            sandTons,
-            totalCost: estStonesCost + estCementCost + estSandCost
-        };
-    }, [calcWallLength, calcWallHeight, calcThickness]);
-
-    // Handle Mock job application
-    const handleApplyJob = (jobId, title) => {
-        const updated = new Set(appliedJobs);
-        updated.add(jobId);
-        setAppliedJobs(updated);
-        triggerToast(`Maombi Yametumwa! Applied for: ${title}. Employer will contact you directly via SMS.`);
-    };
-
-    // Handle adding items to materials/tools cart
-    const handleAddToCart = (item, type) => {
-        setCart([...cart, { ...item, itemType: type }]);
-        triggerToast(`${item.name || item.vehicleType} added to your Mjengo Order Sheet!`);
-    };
-
-    // Simulated Job Posting Handler
-    const [newJobTitle, setNewJobTitle] = useState("");
-    const [newJobLocation, setNewJobLocation] = useState("");
-    const [newJobCounty, setNewJobCounty] = useState("Nairobi");
-    const [newJobBudget, setNewJobBudget] = useState("");
-    const [newJobSkills, setNewJobSkills] = useState("");
-
-    const handleCreateJob = (e) => {
-        e.preventDefault();
-        if (!newJobTitle || !newJobBudget) {
-            triggerToast("Tafadhali jaza nafasi zote zilizo wazi!");
+    // Staking process
+    const handleStakeSwap = (player) => {
+        if (!connected) {
+            alert("Please connect your Web3 wallet first!");
             return;
         }
+        if (!mute) playSound('success');
 
-        const newJobObj = {
-            id: jobs.length + 1,
-            title: newJobTitle,
-            location: newJobLocation,
-            county: newJobCounty,
-            budget: parseInt(newJobBudget),
-            period: "Daily Wage",
-            skills: newJobSkills.split(",").map(s => s.trim()),
-            postedBy: "Me (My Project Hub)",
-            phone: "+254 700 111 222",
-            verified: true,
-            urgent: true
-        };
+        const rate = stakeToken === "ETH" ? 3500 : stakeToken === "DEGEN" ? 0.03 : 150;
+        const usdcEquivalent = parseFloat(stakeAmount) * rate;
 
-        setJobs([newJobObj, ...jobs]);
-        setShowPostJobModal(false);
-        triggerToast("Kazi Imechapishwa! Your project has been listed to all fundis in Kenya.");
-        
-        // Reset inputs
-        setNewJobTitle("");
-        setNewJobLocation("");
-        setNewJobBudget("");
-        setNewJobSkills("");
+        if (player === 1) {
+            setP1Stake(usdcEquivalent);
+            setEscrowPool(prev => prev + usdcEquivalent);
+            addChatMsg("SYSTEM", `Player 1 staked ${stakeAmount} ${stakeToken} (Swapped to ${usdcEquivalent.toFixed(2)} USDC via Uniswap V3 Router)`);
+        } else {
+            setP2Stake(usdcEquivalent);
+            setEscrowPool(prev => prev + usdcEquivalent);
+            addChatMsg("SYSTEM", `Player 2 staked ${stakeAmount} ${stakeToken} (Swapped to ${usdcEquivalent.toFixed(2)} USDC via Uniswap V3 Router)`);
+        }
     };
 
-    // Filtered lists based on search & county filters
-    const filteredJobs = useMemo(() => {
-        return jobs.filter(j => {
-            const matchesSearch = j.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  j.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
-            const matchesCounty = countyFilter === "All" || j.county === countyFilter;
-            return matchesSearch && matchesCounty;
-        });
-    }, [jobs, searchQuery, countyFilter]);
+    // Helper to log chat messages
+    const addChatMsg = (sender, text) => {
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setChatLog(prev => [...prev, { sender, text, time }]);
+    };
 
-    const filteredMaterials = useMemo(() => {
-        return materials.filter(m => {
-            const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  m.supplier.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCounty = countyFilter === "All" || m.county === countyFilter;
-            return matchesSearch && matchesCounty;
-        });
-    }, [materials, searchQuery, countyFilter]);
+    // Trigger AI analytical response
+    const triggerAIResponse = (userPrompt) => {
+        setIsTyping(true);
+        if (!mute) playSound('scan');
+        setTimeout(() => {
+            setIsTyping(false);
+            let reply = "";
+            if (userPrompt.toLowerCase().includes("status") || userPrompt.toLowerCase().includes("telemetry")) {
+                reply = `[TELEMETRY REPORT] All player hooks verified. Network Ping: ${ping}ms. Client processes checked. Integrity Score: 99.8%. No anomalies recorded.`;
+            } else if (userPrompt.toLowerCase().includes("cheat") || userPrompt.toLowerCase().includes("hack")) {
+                reply = "Warning: Zero-tolerance policies active. Memory integrity blocks scan game modules continuously. Client manipulations trigger instantaneous payout forfeiture.";
+            } else if (userPrompt.toLowerCase().includes("winner") || userPrompt.toLowerCase().includes("payout")) {
+                reply = escrowPool > 0 
+                    ? `Match pool contains $${escrowPool.toFixed(2)} USDC. AI Oracle referee evaluates active telemetry continuously. Perform 'Complete Match' action or trigger 'Simulate Cheat Action' to force AI verdict.`
+                    : "No stakes detected inside the Base escrow contract. Deposit USDC tokens using the multi-asset staking swapper first.";
+            } else {
+                reply = `Oracle processed inquiry: "${userPrompt}". Monitoring live telemetry for Match L2 Hash [${matchId.substring(0, 10)}...]. Standing by for match completion.`;
+            }
+            addChatMsg("AI REFEREE", reply);
+            if (!mute) playSound('click');
+        }, 1200);
+    };
+
+    // Send chat text
+    const handleSendChat = (e) => {
+        e.preventDefault();
+        if (!userInput.trim()) return;
+        const query = userInput;
+        addChatMsg("USER", query);
+        setUserInput("");
+        triggerAIResponse(query);
+    };
+
+    // Game simulator controllers
+    const simulateMatchStart = () => {
+        if (escrowPool === 0) {
+            alert("No funds locked in Escrow. Please deposit stakes using the Swapper panel first!");
+            return;
+        }
+        if (!mute) playSound('scan');
+        setGameState("scanning");
+        addChatMsg("AI REFEREE", "Match telemetry ingestion actively tracking. Scanning memory space, client application checksum, lag limits...");
+    };
+
+    const simulateCheatDetection = () => {
+        if (gameState !== "scanning") {
+            alert("Please start the match telemetry scan first!");
+            return;
+        }
+        if (!mute) playSound('warning');
+        setGameState("dispute");
+        setMemState("VIOLATION: MEMORY INJECTION");
+        addChatMsg("AI REFEREE", "CRITICAL THREAT: Unauthorized cheat client detected on Player 1! Packet modification matched unauthorized memory offset signature.");
+        
+        setTimeout(() => {
+            addChatMsg("AI REFEREE", "ACTION ENFORCED: Zero-tolerance policy violation. Initiating emergency shutdown. Automated escrow override triggered.");
+            if (!mute) playSound('success');
+            // Distribute full payout minus fee to clean player (Player 2)
+            const fee = escrowPool * 0.025;
+            const payout = escrowPool - fee;
+            addChatMsg("SYSTEM", `Base Contract Transaction: Executed Escrow release. ${payout.toFixed(2)} USDC transferred to honest Player 2. Fee of ${fee.toFixed(2)} USDC routed to Base address: 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071`);
+            setEscrowPool(0);
+            setP1Stake(0);
+            setP2Stake(0);
+        }, 2500);
+    };
+
+    const simulateHonestVictory = () => {
+        if (gameState !== "scanning") {
+            alert("Please start the match telemetry scan first!");
+            return;
+        }
+        if (!mute) playSound('success');
+        setGameState("victory");
+        setMemState("VERIFIED SECURE");
+        addChatMsg("AI REFEREE", "MATCH COMPLETE: Integrity verification passed. High telemetry evaluation complete. Winner identified: Player 2 (Clean Victory).");
+
+        setTimeout(() => {
+            const fee = escrowPool * 0.025;
+            const payout = escrowPool - fee;
+            addChatMsg("SYSTEM", `Base Contract Resolution: Disbursed ${payout.toFixed(2)} USDC to Winner (Player 2). Swapped platform fee of ${fee.toFixed(2)} USDC routed directly to address: 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071`);
+            setEscrowPool(0);
+            setP1Stake(0);
+            setP2Stake(0);
+        }, 2000);
+    };
+
+    const resetSimulator = () => {
+        if (!mute) playSound('click');
+        setGameState("idle");
+        setMemState("SECURE");
+        setEscrowPool(0);
+        setP1Stake(0);
+        setP2Stake(0);
+        setChatLog([{ sender: "AI REFEREE", text: "Oracle reset. Interactive telemetry connection standby...", time: "RESET COMPLETE" }]);
+    };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col antialiased selection:bg-amber-500 selection:text-slate-900">
+        <div className="min-h-screen bg-transparent flex flex-col justify-between selection:bg-[#66FCF1] selection:text-black">
             
-            {/* TOP DYNAMIC SYSTEM BANNER */}
-            <div className="bg-slate-900 border-b border-amber-500/20 py-2 px-4 relative z-20 text-white">
-                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs font-mono">
-                    <div className="flex items-center space-x-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-amber-400 font-bold tracking-wider">JENGA-LINK PLATFORM: LIVE IN KENYA</span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-1.5 sm:mt-0">
-                        <span>🚀 Connecting <b>45,210+</b> Fundis & Suppliers</span>
-                        <span className="hidden md:inline">|</span>
-                        <span className="hidden md:inline">🔥 Bamboo Cement Temp index: <b className="text-amber-400">KES 820</b></span>
-                    </div>
-                </div>
+            {/* Ambient Background Particles simulation */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40 overflow-hidden z-0">
+                <div className="absolute top-[20%] left-[10%] w-[15vw] h-[15vw] bg-cyan-500/10 rounded-full blur-[80px]" />
+                <div className="absolute bottom-[20%] right-[10%] w-[20vw] h-[20vw] bg-pink-500/5 rounded-full blur-[100px]" />
             </div>
 
-            {/* PLATFORM HEADER */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            {/* CYBERPUNK HEADER */}
+            <header className="border-b border-[#66FCF1]/20 bg-[#07080a]/90 backdrop-blur-md relative z-30">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     
-                    {/* Brand Emblem */}
-                    <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md yellow-glow">
-                            <Icons.HardHat className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <div className="flex items-center space-x-2">
-                                <h1 className="heading-font font-extrabold text-2xl tracking-tight text-slate-950">Jenga<span className="text-amber-500">Link</span></h1>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold uppercase tracking-widest">Kenya Hub</span>
+                    {/* Brand Dynamic Animated Logo */}
+                    <div className="flex items-center gap-3">
+                        <div className="relative group cursor-pointer" onClick={() => { if (!mute) playSound('click'); }}>
+                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-500 relative overflow-hidden ${
+                                gameState === "dispute" ? "bg-red-500/20 border-red-500 border-2 neon-red-glow" :
+                                gameState === "scanning" ? "bg-cyan-500/20 border-[#66FCF1] border-2 neon-cyan-glow" :
+                                gameState === "victory" ? "bg-yellow-500/20 border-yellow-400 border-2" :
+                                "bg-[#1F2833]/80 border-[#66FCF1]/40 border"
+                            }`}>
+                                {/* Central Cyber Shield Icon */}
+                                <svg className={`w-6 h-6 transition-transform duration-700 ${gameState === 'scanning' ? 'animate-spin' : 'group-hover:rotate-12'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                
+                                {/* Sweeper indicator lines */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[#66FCF1]/20 to-transparent translate-y-[-100%] animate-pulse" />
                             </div>
-                            <p className="text-xs text-slate-500 tracking-wide font-medium">Connecting Mjengo Workers with Real-Time Markets</p>
+                            
+                            {/* Orbital Particles effect rings */}
+                            <span className="absolute -inset-1 rounded-lg border border-cyan-500/10 group-hover:scale-110 transition-transform duration-300 pointer-events-none" />
+                        </div>
+
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="font-orbitron font-extrabold text-2xl tracking-wider text-white">
+                                    PROJECT <span className="text-[#66FCF1] drop-shadow-[0_0_8px_#66FCF1]">EPIC</span>
+                                </h1>
+                                <span className="bg-[#66FCF1]/10 text-[#66FCF1] text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-[#66FCF1]/20">
+                                    BASE L2
+                                </span>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Decentralized AI Escrow & Anti-Cheat Oracle</p>
                         </div>
                     </div>
 
-                    {/* M-Pesa Simulated Wallet Balance */}
-                    <div className="flex items-center space-x-4">
-                        
-                        {/* Role Switcher */}
-                        <div className="hidden lg:flex items-center bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-                            <button 
-                                onClick={() => setUserRole("fundi")}
-                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${userRole === "fundi" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
-                            >
-                                Mimba Fundi (Worker)
-                            </button>
-                            <button 
-                                onClick={() => setUserRole("mkandarasi")}
-                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${userRole === "mkandarasi" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
-                            >
-                                Mkandarasi (Contractor)
-                            </button>
-                        </div>
+                    {/* Navigation System */}
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => { if(!mute) playSound('click'); setActiveTab("dashboard"); }}
+                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "dashboard" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                        >
+                            DASHBOARD
+                        </button>
+                        <button 
+                            onClick={() => { if(!mute) playSound('click'); setActiveTab("solidity"); }}
+                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "solidity" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                        >
+                            SOLIDITY CONTRACT
+                        </button>
+                        <button 
+                            onClick={() => { if(!mute) playSound('click'); setActiveTab("architecture"); }}
+                            className={`px-4 py-2 text-xs font-orbitron font-bold tracking-wider rounded transition-all ${activeTab === "architecture" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/50" : "text-gray-400 hover:text-white"}`}
+                        >
+                            ARCHITECTURE FLOW
+                        </button>
+                    </div>
 
-                        {/* M-PESA Wallet Panel */}
-                        <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl px-4 py-2 flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm">
-                                M
-                            </div>
-                            <div>
-                                <span className="text-[9px] text-emerald-800 font-bold tracking-widest uppercase block">M-PESA BALANCE</span>
-                                <span className="text-sm font-extrabold text-emerald-950 font-mono">KES {mpesaWallet.toLocaleString()}</span>
-                            </div>
-                            <button 
-                                onClick={() => {
-                                    setMpesaWallet(prev => prev + 5000);
-                                    triggerToast("Ksh 5,000 top up simulated successfully!");
-                                }}
-                                className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-900 flex items-center justify-center hover:bg-emerald-300 transition-colors"
-                                title="Simulate Top-Up"
-                            >
-                                <Icons.Plus className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
+                    {/* Right utilities: Wallet Connector, Mute Toggle */}
+                    <div className="flex items-center gap-4">
+                        {/* Audio Toggle */}
+                        <button 
+                            onClick={() => setMute(!mute)}
+                            className="p-2 rounded bg-[#1f2833]/50 border border-[#66FCF1]/10 hover:border-[#66FCF1]/30 text-gray-300 transition-all"
+                            title={mute ? "Unmute Retro Synthesizers" : "Mute Sound FX"}
+                        >
+                            {mute ? (
+                                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                </svg>
+                            ) : (
+                                <svg className="w-5 h-5 text-[#66FCF1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z" />
+                                </svg>
+                            )}
+                        </button>
 
+                        <button 
+                            onClick={connectWallet}
+                            className={`px-5 py-2.5 rounded font-orbitron font-bold tracking-wider text-xs transition-all ${
+                                connected 
+                                ? "bg-emerald-500/10 border border-emerald-500 text-emerald-400 hover:bg-emerald-500/20" 
+                                : "bg-[#66FCF1] text-[#0B0C10] hover:bg-[#45A29E] font-extrabold cursor-pointer hover:scale-105"
+                            }`}
+                        >
+                            {connected ? `CONNECTED: ${walletAddress}` : "CONNECT WALLET"}
+                        </button>
                     </div>
 
                 </div>
             </header>
 
-            {/* MAIN APP SHELL CONTAINER */}
-            <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* MAIN APP CONTAINER */}
+            <main className="max-w-7xl mx-auto w-full px-4 py-8 flex-1 relative z-10 grid grid-cols-1 gap-8">
                 
-                {/* LEFT / CENTER COLUMN - SEARCH & MAIN SECTIONS (Col Span 9) */}
-                <div className="lg:col-span-9 space-y-6">
-                    
-                    {/* SYSTEM INTRO & HERO CAROUSEL */}
-                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden bg-construction-pattern shadow-xl">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-                        <div className="relative z-10 max-w-2xl">
-                            <span className="text-amber-400 font-bold text-xs tracking-wider uppercase bg-amber-500/10 px-3 py-1 rounded-full border border-amber-400/20">
-                                Soko la Mjengo Kenya (Market Ready)
-                            </span>
-                            <h2 className="heading-font font-black text-3xl sm:text-4xl tracking-tight mt-3 text-slate-100">
-                                Connect with Tools, Materials, Transport & Premium Jobs Today.
-                            </h2>
-                            <p className="text-slate-300 mt-3 text-sm sm:text-base leading-relaxed">
-                                JengaLink brings Nairobi, Mombasa, Nakuru and the entire country onto one digital construction platform. No middlemen. Direct contact. Fair daily wages.
-                            </p>
-
-                            {/* Action Buttons for Role Swapping */}
-                            <div className="mt-6 flex flex-wrap gap-4">
-                                {userRole === "fundi" ? (
-                                    <button 
-                                        onClick={() => {
-                                            setActiveTab("kazi");
-                                            triggerToast("Showing you active construction tenders & daily gigs.");
-                                        }}
-                                        className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm px-6 py-3 rounded-xl transition-all shadow-lg yellow-glow flex items-center space-x-2"
-                                    >
-                                        <Icons.HardHat className="w-5 h-5 text-slate-900" />
-                                        <span>Tafuta Kazi ya Leo (Find Daily Wage)</span>
-                                    </button>
-                                ) : (
-                                    <button 
-                                        onClick={() => setShowPostJobModal(true)}
-                                        className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm px-6 py-3 rounded-xl transition-all shadow-lg yellow-glow flex items-center space-x-2"
-                                    >
-                                        <Icons.Plus className="w-5 h-5 text-slate-900" />
-                                        <span>Chapisha Kazi Mpya (Post New Gig)</span>
-                                    </button>
-                                )}
-                                <button 
-                                    onClick={() => {
-                                        setActiveTab("estimator");
-                                        triggerToast("Ready to estimate your materials.");
-                                    }}
-                                    className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-extrabold text-sm px-6 py-3 rounded-xl transition-all flex items-center space-x-2"
-                                >
-                                    <Icons.Calculator className="w-5 h-5 text-amber-500" />
-                                    <span>Piga Mahesabu (Estimator)</span>
-                                </button>
+                {/* GLOBAL HOLOGRAPHIC WARNING FOR CHEATS (Zero-Tolerance Anti-Cheat Engine) */}
+                {gameState === "dispute" && (
+                    <div className="bg-red-950/40 border-2 border-red-500 rounded-xl p-5 relative overflow-hidden neon-red-glow animate-pulse">
+                        <div className="warning-sweep" />
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-red-600/30 border border-red-500 flex items-center justify-center animate-bounce text-red-500">
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* DYNAMIC SEARCH & FILTER PANEL */}
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-                        <div className="flex flex-col md:flex-row gap-4 items-center">
-                            
-                            {/* Main Search Input */}
-                            <div className="relative flex-1 w-full">
-                                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <Icons.Search />
-                                </span>
-                                <input 
-                                    type="text" 
-                                    placeholder="Tafuta 'Bamburi Cement', 'Fundi wa Mabati', 'Heavy Mixer' au eneo yako..." 
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl font-medium focus:outline-none focus:border-amber-500 focus:bg-white transition-all text-sm"
-                                />
-                            </div>
-
-                            {/* County Selector Dropdown */}
-                            <div className="w-full md:w-64">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Mkoa / County</label>
-                                <select 
-                                    value={countyFilter}
-                                    onChange={(e) => setCountyFilter(e.target.value)}
-                                    className="w-full py-3.5 px-3.5 bg-slate-50 border border-slate-200 text-slate-950 rounded-xl font-semibold text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
-                                >
-                                    <option value="All">All Counties (Kenya Nzima)</option>
-                                    {counties.map(c => (
-                                        <option key={c} value={c}>{c} County</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* INTERACTIVE NAVIGATION TABS */}
-                    <div className="border-b border-slate-200 flex space-x-1 sm:space-x-4 overflow-x-auto pb-px">
-                        {[
-                            { id: "kazi", label: "👷 Kazi za Mjengo (Gigs)", count: filteredJobs.length },
-                            { id: "vifaa", label: "🧱 Vifaa Market (Materials)", count: filteredMaterials.length },
-                            { id: "vifaaRent", label: "🛠️ Kukodisha Tool (Rental)", count: tools.length },
-                            { id: "usafiri", label: "🚚 Usafiri Lorry (Logistics)", count: fleet.length },
-                            { id: "estimator", label: "🧮 Mjengo Estimator (Wall Calc)", count: null }
-                        ].map((t) => (
-                            <button
-                                key={t.id}
-                                onClick={() => {
-                                    setActiveTab(t.id);
-                                    setSearchQuery("");
-                                }}
-                                className={`pb-3 px-3 text-xs sm:text-sm font-extrabold tracking-tight whitespace-nowrap border-b-2 transition-all flex items-center space-x-2 ${
-                                    activeTab === t.id 
-                                    ? "border-amber-500 text-amber-600" 
-                                    : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
-                                }`}
-                            >
-                                <span>{t.label}</span>
-                                {t.count !== null && (
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeTab === t.id ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"}`}>
-                                        {t.count}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* DYNAMIC CONTENT PANELS */}
-
-                    {/* 1. JOBS / KAZI PORTAL */}
-                    {activeTab === "kazi" && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="heading-font font-extrabold text-lg text-slate-950 flex items-center space-x-2">
-                                    <Icons.HardHat className="text-amber-500" />
-                                    <span>Vibarua na Kazi Zilizopo Tayari Sokoni</span>
-                                </h3>
-                                <span className="text-xs font-semibold text-slate-500">
-                                    Showing {filteredJobs.length} verified listings
-                                </span>
-                            </div>
-
-                            {filteredJobs.length === 0 ? (
-                                <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-                                    <p className="text-slate-500 font-medium">Hakuna kazi iliyopatikana kwa sasa katika sehemu hii.</p>
-                                    <button 
-                                        onClick={() => {setSearchQuery(""); setCountyFilter("All");}}
-                                        className="mt-3 text-amber-600 font-bold text-xs hover:underline"
-                                    >
-                                        Weka upya kichujio chako (Reset Filters)
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {filteredJobs.map(job => (
-                                        <div key={job.id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/40 hover:shadow-md transition-all flex flex-col justify-between relative">
-                                            {job.urgent && (
-                                                <span className="absolute top-4 right-4 bg-red-100 text-red-700 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse">
-                                                    Haraka Sana (Urgent)
-                                                </span>
-                                            )}
-                                            
-                                            <div>
-                                                <div className="flex items-center space-x-2 text-xs text-slate-500 font-bold mb-2">
-                                                    <Icons.MapPin className="text-amber-500" />
-                                                    <span>{job.location}</span>
-                                                </div>
-                                                <h4 className="heading-font font-bold text-base text-slate-950 hover:text-amber-600 cursor-pointer">
-                                                    {job.title}
-                                                </h4>
-                                                
-                                                <div className="flex items-center space-x-3 mt-3">
-                                                    <span className="text-[11px] bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded-md">
-                                                        Kazi ya Siku
-                                                    </span>
-                                                    <span className="text-[11px] bg-amber-50 text-amber-800 font-bold px-2 py-1 rounded-md">
-                                                        Verified Payout
-                                                    </span>
-                                                </div>
-
-                                                <div className="mt-4 flex items-wrap gap-1.5">
-                                                    {job.skills.map((skill, index) => (
-                                                        <span key={index} className="text-[10px] bg-slate-50 border border-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold">
-                                                            #{skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                                <div>
-                                                    <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">LIPWA NA (Daily Budget)</span>
-                                                    <span className="text-lg font-black text-slate-950 font-mono text-emerald-600">KES {job.budget.toLocaleString()} <span className="text-xs font-normal text-slate-500">/day</span></span>
-                                                </div>
-                                                
-                                                {appliedJobs.has(job.id) ? (
-                                                    <span className="bg-emerald-100 text-emerald-800 font-bold text-xs py-2 px-4 rounded-xl flex items-center space-x-1">
-                                                        <Icons.Check className="w-4 h-4" />
-                                                        <span>Umetuma (Applied)</span>
-                                                    </span>
-                                                ) : (
-                                                    <button 
-                                                        onClick={() => handleApplyJob(job.id, job.title)}
-                                                        className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs py-2 px-4 rounded-xl transition-all"
-                                                    >
-                                                        Omba Kazi (Apply via SMS)
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 2. MATERIALS MARKET */}
-                    {activeTab === "vifaa" && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="heading-font font-extrabold text-lg text-slate-950 flex items-center space-x-2">
-                                    <Icons.Tools className="text-amber-500" />
-                                    <span>Vifaa vya Mjengo Vilivyopo Karibu Nawe</span>
-                                </h3>
-                                <span className="text-xs font-semibold text-slate-500">
-                                    Latest aggregates updated 5m ago
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {filteredMaterials.map(m => (
-                                    <div key={m.id} className="bg-white border border-slate-200 rounded-2xl p-4 hover:border-amber-500/40 transition-all flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold uppercase">
-                                                    {m.county}
-                                                </span>
-                                                <span className="text-xs font-bold text-amber-600">★ {m.rating}</span>
-                                            </div>
-                                            <h4 className="heading-font font-bold text-sm text-slate-950 mt-1 leading-snug">
-                                                {m.name}
-                                            </h4>
-                                            <p className="text-[11px] text-slate-400 font-medium mt-1">Supplier: <b>{m.supplier}</b></p>
-                                            
-                                            <div className="mt-3 bg-slate-50 p-2 rounded-lg flex justify-between items-center text-xs">
-                                                <span className="text-slate-500">Delivery timeframe:</span>
-                                                <span className="text-emerald-700 font-extrabold">{m.deliverySpeed}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                            <div>
-                                                <span className="text-[9px] text-slate-400 block font-bold uppercase">PRICE (BEI)</span>
-                                                <span className="text-base font-black text-slate-950 font-mono">
-                                                    KES {m.price.toLocaleString()} <span className="text-[10px] font-normal text-slate-400">/{m.unit}</span>
-                                                </span>
-                                            </div>
-                                            
-                                            <button 
-                                                onClick={() => handleAddToCart(m, "material")}
-                                                className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
-                                                title="Add to site list"
-                                            >
-                                                <Icons.Plus className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 3. TOOLS HIRE */}
-                    {activeTab === "vifaaRent" && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="heading-font font-extrabold text-lg text-slate-950 flex items-center space-x-2">
-                                    <Icons.Tools className="text-amber-500" />
-                                    <span>Kukodisha Mashine na Vyombo vya Kazi (Rental Tools)</span>
-                                </h3>
-                                <span className="text-xs font-semibold text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                                    M-Pesa Escrow Lock Enabled
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {tools.map(tool => (
-                                    <div key={tool.id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row justify-between gap-4">
-                                        <div className="flex-1 space-y-2">
-                                            <div className="flex items-center space-x-2 text-xs text-amber-600 font-bold">
-                                                <span>✓ Available Now</span>
-                                                <span className="text-slate-300">|</span>
-                                                <span className="text-slate-500 font-medium">{tool.location}</span>
-                                            </div>
-                                            <h4 className="heading-font font-bold text-base text-slate-950">{tool.name}</h4>
-                                            <p className="text-xs text-slate-500 font-semibold">Leased by: <b>{tool.supplier}</b></p>
-                                            
-                                            <div className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">
-                                                Security Deposit: KES {tool.securityDeposit.toLocaleString()}
-                                            </div>
-                                        </div>
-
-                                        <div className="sm:text-right flex sm:flex-col justify-between items-end shrink-0 pt-4 sm:pt-0 sm:border-l sm:border-slate-100 sm:pl-4">
-                                            <div>
-                                                <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">RENTAL FEE</span>
-                                                <span className="text-lg font-black text-slate-950 font-mono">
-                                                    KES {tool.price.toLocaleString()} <span className="text-xs font-normal text-slate-500">/{tool.unit}</span>
-                                                </span>
-                                            </div>
-                                            
-                                            <button 
-                                                onClick={() => handleAddToCart(tool, "tool")}
-                                                className="mt-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center space-x-1.5"
-                                            >
-                                                <span>Book Lease</span>
-                                                <Icons.ArrowRight className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 4. TRANSPORT / LOGISTICS */}
-                    {activeTab === "usafiri" && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="heading-font font-extrabold text-lg text-slate-950 flex items-center space-x-2">
-                                    <Icons.Truck className="text-amber-500" />
-                                    <span>Usafiri wa Vifaa - Malori ya Mchanga, Kokoto na Matofali</span>
-                                </h3>
-                                <span className="text-xs font-semibold text-slate-500">
-                                    Compare rates per KM
-                                </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {fleet.map(truck => (
-                                    <div key={truck.id} className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-500/40 transition-all">
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">
-                                                    {truck.location}
-                                                </span>
-                                                {truck.verified && (
-                                                    <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 rounded-full border border-emerald-100">
-                                                        NTSA Verified
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <h4 className="heading-font font-bold text-sm text-slate-950 leading-snug">
-                                                {truck.vehicleType}
-                                            </h4>
-                                            <p className="text-xs text-slate-500 mt-2">Driver: <b>{truck.driverName}</b></p>
-                                            
-                                            <div className="mt-3 p-2 bg-amber-50 rounded-lg space-y-1 text-xs">
-                                                <div className="flex justify-between font-bold text-slate-700">
-                                                    <span>Base Rate:</span>
-                                                    <span>KES {truck.baseRate.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between text-slate-500">
-                                                    <span>Rate per KM:</span>
-                                                    <span>KES {truck.perKmRate}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                                            <a 
-                                                href={`tel:${truck.phone}`} 
-                                                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center space-x-1.5 transition-colors"
-                                            >
-                                                <Icons.Phone className="w-3.5 h-3.5" />
-                                                <span>Piga Simu</span>
-                                            </a>
-                                            <button 
-                                                onClick={() => handleAddToCart(truck, "transport")}
-                                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 p-2 rounded-lg transition-colors"
-                                                title="Book Driver"
-                                            >
-                                                <Icons.Plus className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 5. MJENGO ESTIMATOR */}
-                    {activeTab === "estimator" && (
-                        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6">
-                            <div className="border-b border-slate-100 pb-4">
-                                <h3 className="heading-font font-extrabold text-xl text-slate-950 flex items-center space-x-2">
-                                    <Icons.Calculator className="text-amber-500" />
-                                    <span>Calculator ya Kukadiria Vifaa (Mjengo Wall Estimator)</span>
-                                </h3>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Calculate estimate bags of Bamburi cement, sand tons & stone count based on standard Kenyan masonry parameters.
+                            <div>
+                                <h3 className="font-orbitron font-extrabold text-lg text-red-500 tracking-wider">CRITICAL AI REF INTERVENTION: PACKET TAMPERING DETECTED</h3>
+                                <p className="text-xs text-red-300 font-mono mt-1">
+                                    Zero-tolerance ruleset initiated. Escrow pool locks cheater address instantly. Platform fees Swapped & dispatched. Honest player payouts secured.
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                
-                                {/* Input controls */}
-                                <div className="space-y-4">
-                                    <h4 className="heading-font font-bold text-sm text-slate-950 uppercase tracking-wider text-amber-600">1. Vipimo vya Ukuta</h4>
-                                    
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1">Urefu wa Ukuta (Wall Length in Meters)</label>
-                                        <input 
-                                            type="number" 
-                                            value={calcWallLength} 
-                                            onChange={(e) => setCalcWallLength(Math.max(1, parseInt(e.target.value) || 0))}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-mono text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                        />
-                                    </div>
+                {/* TAB 1: THE DOCK / INTERACTIVE MAIN DASHBOARD */}
+                {activeTab === "dashboard" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        
+                        {/* LEFT WING: Multi-Asset Swapper & Match Setup (Col: 4) */}
+                        <div className="lg:col-span-4 space-y-6">
+                            
+                            {/* Swapper Panel */}
+                            <div className="cyber-panel p-5 rounded-xl space-y-4">
+                                <div className="border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between">
+                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">DEX MULTI-ASSET SWAP ROUTER</h2>
+                                    <span className="text-[10px] font-mono text-gray-500 uppercase">UNISWAP V3 STAKE POOL</span>
+                                </div>
 
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1">Kimo cha Ukuta (Wall Height in Meters)</label>
-                                        <input 
-                                            type="number" 
-                                            value={calcWallHeight} 
-                                            onChange={(e) => setCalcWallHeight(Math.max(1, parseInt(e.target.value) || 0))}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-mono text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                        />
-                                    </div>
+                                <p className="text-xs text-gray-400">
+                                    Choose token to stake. The smart contract automatically executes a single-hop route via Uniswap into Base USDC to back the match escrow.
+                                </p>
 
+                                {/* Token Inputs */}
+                                <div className="space-y-3">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Unene wa Mawe (Stone Thickness)</label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {["9inch", "6inch"].map(t => (
+                                        <label className="block text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-1.5">STAKE TOKEN</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {["ETH", "DEGEN", "OP"].map(t => (
                                                 <button
                                                     key={t}
-                                                    onClick={() => setCalcThickness(t)}
-                                                    className={`py-2 rounded-lg text-xs font-bold transition-all border ${
-                                                        calcThickness === t 
-                                                        ? "bg-amber-50 border-amber-500 text-amber-700 shadow-sm" 
-                                                        : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                                                    onClick={() => { if(!mute) playSound('click'); setStakeToken(t); }}
+                                                    className={`py-2 rounded font-orbitron font-bold text-xs border transition-all ${
+                                                        stakeToken === t 
+                                                        ? "bg-[#66FCF1]/10 text-[#66FCF1] border-[#66FCF1]" 
+                                                        : "bg-[#1F2833]/20 text-gray-400 border-gray-800 hover:border-gray-700"
                                                     }`}
                                                 >
-                                                    {t === "9inch" ? "9x9 Inch Wall" : "6x9 Inch Wall"}
+                                                    {t}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Calculated output fields */}
-                                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-4 md:col-span-2">
-                                    <h4 className="heading-font font-bold text-sm text-slate-950 uppercase tracking-wider text-slate-700">2. Makadirio ya Vifaa Yanayohitajika</h4>
-                                    
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Matofali ya Quarry (Stones)</span>
-                                            <span className="text-2xl font-black text-slate-950 font-mono mt-1 block">
-                                                {calculations.stonesCount.toLocaleString()} <span className="text-xs font-normal text-slate-500">pcs</span>
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 mt-2 block">Avg cost: KES {(calculations.stonesCount * 35).toLocaleString()}</span>
+                                    <div>
+                                        <label className="block text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-1">STAKE AMOUNT</label>
+                                        <div className="relative">
+                                            <input 
+                                                type="number"
+                                                value={stakeAmount}
+                                                onChange={(e) => setStakeAmount(e.target.value)}
+                                                className="w-full bg-[#0B0C10] border border-gray-800 rounded px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-[#66FCF1]"
+                                            />
+                                            <span className="absolute right-3 top-2.5 text-xs text-gray-500 font-mono font-bold">{stakeToken}</span>
                                         </div>
-
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Simiti (Bamburi Cement)</span>
-                                            <span className="text-2xl font-black text-slate-950 font-mono mt-1 block">
-                                                {calculations.cementBags} <span className="text-xs font-normal text-slate-500">bags</span>
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 mt-2 block">Avg cost: KES {(calculations.cementBags * 820).toLocaleString()}</span>
-                                        </div>
-
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Mchanga (River Sand)</span>
-                                            <span className="text-2xl font-black text-slate-950 font-mono mt-1 block">
-                                                {calculations.sandTons} <span className="text-xs font-normal text-slate-500">Tons</span>
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 mt-2 block">Avg cost: KES {Math.ceil(calculations.sandTons * 3600).toLocaleString()}</span>
-                                        </div>
-
-                                    </div>
-
-                                    <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                        <div>
-                                            <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">TOTAL ESTIMATED MATERIAL COST</span>
-                                            <span className="text-2xl font-black text-amber-600 font-mono">KES {calculations.totalCost.toLocaleString()}</span>
-                                        </div>
-                                        <button 
-                                            onClick={() => {
-                                                triggerToast("Estimations exported! Added items to your Cart.");
-                                                setCart([
-                                                    ...cart, 
-                                                    { name: `Quarry Stones (${calculations.stonesCount} pcs)`, price: calculations.stonesCount * 35, unit: "Pcs", itemType: "material" },
-                                                    { name: `Bamburi Cement (${calculations.cementBags} Bags)`, price: calculations.cementBags * 820, unit: "Bags", itemType: "material" }
-                                                ]);
-                                            }}
-                                            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-5 py-3 rounded-xl transition-all shadow-md flex items-center space-x-1.5"
-                                        >
-                                            <span>Add Materials to Site Sheet</span>
-                                            <Icons.ArrowRight className="w-4 h-4" />
-                                        </button>
                                     </div>
                                 </div>
 
-                            </div>
-                        </div>
-                    )}
-
-                </div>
-
-                {/* RIGHT COLUMN - LIVE ORDER SHEET & LOCAL INSIGHTS (Col Span 3) */}
-                <div className="lg:col-span-3 space-y-6">
-                    
-                    {/* Live Order Sheet / Quick Quote Calculator */}
-                    <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-xl border border-slate-800 relative overflow-hidden bg-construction-pattern">
-                        <h3 className="heading-font font-extrabold text-sm tracking-wider uppercase text-amber-400 pb-3 border-b border-slate-800 mb-4 flex items-center space-x-2">
-                            <Icons.Briefcase />
-                            <span>Kikapu cha Leo (Order Sheet)</span>
-                        </h3>
-
-                        {cart.length === 0 ? (
-                            <div className="text-center py-8 text-slate-400">
-                                <p className="text-xs font-semibold">Your site basket is empty.</p>
-                                <p className="text-[10px] text-slate-500 mt-1">Select materials, rental tools, or logistics options on the left to add them here.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
-                                    {cart.map((item, idx) => (
-                                        <div key={idx} className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
-                                            <div>
-                                                <span className="font-bold block truncate max-w-[140px]">{item.name || item.vehicleType}</span>
-                                                <span className="text-[10px] text-slate-400">{item.itemType}</span>
-                                            </div>
-                                            <span className="font-mono font-bold text-amber-400">KES {item.price ? item.price.toLocaleString() : item.baseRate.toLocaleString()}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="border-t border-slate-800 pt-3 mt-3 space-y-2">
-                                    <div className="flex justify-between text-xs text-slate-400">
-                                        <span>Items count:</span>
-                                        <span className="font-bold text-white">{cart.length}</span>
+                                {/* Dynamic Swapping Output Predictor */}
+                                <div className="bg-[#0B0C10] border border-gray-800/80 p-3.5 rounded space-y-1.5">
+                                    <div className="flex justify-between text-xs">
+                                        <span className="text-gray-500">Route Path:</span>
+                                        <span className="font-mono text-gray-300 font-bold">{stakeToken} → WETH → USDC (Base)</span>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="font-bold text-amber-400">Total Price:</span>
-                                        <span className="font-mono font-black text-white">
-                                            KES {cart.reduce((acc, curr) => acc + (curr.price || curr.baseRate), 0).toLocaleString()}
+                                    <div className="flex justify-between text-xs">
+                                        <span className="text-gray-500">DEX Fee Tier:</span>
+                                        <span className="font-mono text-[#66FCF1] font-bold">0.3% pool fee</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs border-t border-gray-900 pt-2 mt-2">
+                                        <span className="text-gray-400 font-bold">Guaranteed Locks:</span>
+                                        <span className="font-mono text-emerald-400 font-bold">
+                                            ${(parseFloat(stakeAmount || 0) * (stakeToken === "ETH" ? 3500 : stakeToken === "DEGEN" ? 0.03 : 150)).toFixed(2)} USDC
                                         </span>
                                     </div>
                                 </div>
 
+                                {/* Stake Action Buttons */}
+                                <div className="grid grid-cols-2 gap-2 pt-2">
+                                    <button 
+                                        onClick={() => handleStakeSwap(1)}
+                                        className="py-3 bg-[#11131a] hover:bg-cyan-500/10 border border-[#66FCF1]/20 rounded text-center font-orbitron font-bold text-xs text-white tracking-wider transition-all"
+                                    >
+                                        STAKE AS P1
+                                    </button>
+                                    <button 
+                                        onClick={() => handleStakeSwap(2)}
+                                        className="py-3 bg-[#11131a] hover:bg-cyan-500/10 border border-[#66FCF1]/20 rounded text-center font-orbitron font-bold text-xs text-white tracking-wider transition-all"
+                                    >
+                                        STAKE AS P2
+                                    </button>
+                                </div>
+
+                                <div className="text-[10px] text-gray-500 font-mono text-center">
+                                    Automatic fee routing strictly verified prior to lock.
+                                </div>
+                            </div>
+
+                            {/* Telemetry Live HUD (Client Inspector) */}
+                            <div className="cyber-panel p-5 rounded-xl space-y-4 relative overflow-hidden">
+                                <div className="scanning-sweep" />
+                                
+                                <div className="border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between">
+                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">ORACLE CLIENT TELEMETRY</h2>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-[#66FCF1] animate-ping" />
+                                        <span className="text-[10px] font-mono text-[#66FCF1]">ACTIVE</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">NET PING</span>
+                                        <span className={`text-base font-bold ${ping > 150 ? 'text-red-500' : 'text-white'}`}>{ping} ms</span>
+                                    </div>
+                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">CLIENT RENDER</span>
+                                        <span className="text-base font-bold text-white">{fps} FPS</span>
+                                    </div>
+                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">PACKET LOSS</span>
+                                        <span className={`text-base font-bold ${packLoss > 2 ? 'text-red-500' : 'text-white'}`}>{packLoss} %</span>
+                                    </div>
+                                    <div className="bg-[#0B0C10] p-3 rounded border border-gray-800">
+                                        <span className="text-gray-500 block text-[9px] uppercase tracking-wider">ESCROW ROUTE</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold block truncate">0xe69aE2...3a071</span>
+                                    </div>
+                                </div>
+
+                                <div className="p-3 bg-cyan-950/20 border border-cyan-500/20 rounded">
+                                    <div className="flex justify-between items-center text-xs font-mono mb-1">
+                                        <span className="text-gray-400">MEMORY INTEGRITY:</span>
+                                        <span className={`font-bold ${memState === "VERIFIED SECURE" || memState === "SECURE" ? "text-[#66FCF1]" : "text-red-500"}`}>
+                                            {memState}
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 leading-relaxed">
+                                        Live inspection monitors for modified client instances, overlay memory wrappers, unauthorized APK structures or frame rate manipulation.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* CENTER PANEL: Arena Battle Ground, Payout Dashboard & Chat (Col: 8) */}
+                        <div className="lg:col-span-8 space-y-6">
+                            
+                            {/* ESCROW MATCH OVERVIEW PANEL */}
+                            <div className="cyber-panel p-6 rounded-xl bg-gradient-to-r from-cyan-950/10 via-[#0B0C10] to-pink-950/10 border-[#66FCF1]/20">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                    
+                                    {/* Left Team block */}
+                                    <div className="text-center md:text-left space-y-1">
+                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">PLAYER 1</span>
+                                        <h3 className="font-orbitron font-black text-xl text-white tracking-wide">ELITE_CONQUEROR</h3>
+                                        <span className="text-xs font-mono bg-cyan-500/10 text-[#66FCF1] border border-cyan-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                            Stake Locked: ${p1Stake.toFixed(2)} USDC
+                                        </span>
+                                    </div>
+
+                                    {/* Central VS / ESCROW POOL block */}
+                                    <div className="text-center px-6 py-4 bg-[#0a0b10]/90 border border-gray-800 rounded-xl min-w-[200px] relative">
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0a0b10] px-2 text-[10px] font-orbitron font-bold text-yellow-400 tracking-widest uppercase">
+                                            ESCROW POOL
+                                        </div>
+                                        <div className="font-orbitron font-black text-3xl text-white tracking-widest">
+                                            ${escrowPool.toFixed(2)}
+                                        </div>
+                                        <span className="text-[10px] font-mono text-emerald-400 block mt-1">Unified Base Layer-2 USDC</span>
+                                    </div>
+
+                                    {/* Right Team block */}
+                                    <div className="text-center md:text-right space-y-1">
+                                        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">PLAYER 2</span>
+                                        <h3 className="font-orbitron font-black text-xl text-white tracking-wide">DEGEN_KILLER</h3>
+                                        <span className="text-xs font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2.5 py-0.5 rounded-full inline-block">
+                                            Stake Locked: ${p2Stake.toFixed(2)} USDC
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <div className="mt-6 pt-5 border-t border-gray-900 flex flex-wrap items-center justify-between gap-4">
+                                    <div className="space-y-1">
+                                        <span className="text-[9px] font-mono text-gray-500 block uppercase">MATCH IDENTITY</span>
+                                        <span className="text-xs font-mono text-gray-300 bg-gray-950 px-2 py-1 rounded select-all tracking-tight block max-w-[250px] truncate">{matchId}</span>
+                                    </div>
+                                    
+                                    {/* Interactive Simulator actions */}
+                                    <div className="flex gap-2">
+                                        {gameState === "idle" && (
+                                            <button 
+                                                onClick={simulateMatchStart}
+                                                className="px-5 py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                            >
+                                                START MATCH SCAN
+                                            </button>
+                                        )}
+                                        {gameState === "scanning" && (
+                                            <>
+                                                <button 
+                                                    onClick={simulateCheatDetection}
+                                                    className="px-4 py-3 bg-red-600 hover:bg-red-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                                >
+                                                    INJECT CLIENT CHEAT
+                                                </button>
+                                                <button 
+                                                    onClick={simulateHonestVictory}
+                                                    className="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all transform hover:scale-105"
+                                                >
+                                                    FINISH CLEAN MATCH
+                                                </button>
+                                            </>
+                                        )}
+                                        {(gameState === "dispute" || gameState === "victory") && (
+                                            <button 
+                                                onClick={resetSimulator}
+                                                className="px-5 py-3 bg-gray-800 hover:bg-gray-700 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
+                                            >
+                                                RESET ARENA
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CHAT INTERFACE: AI REF FEED STREAM */}
+                            <div className="cyber-panel p-5 rounded-xl flex flex-col h-[420px] bg-[#07080a] relative overflow-hidden">
+                                
+                                {/* Live Equalizer/Telemetry indicators */}
+                                <div className="absolute top-4 right-4 flex items-end gap-1 h-5 w-16" title="AI Referee analysis bandwidth">
+                                    <div className="eq-bar h-1/2 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                                    <div className="eq-bar h-3/4 animate-pulse" style={{ animationDelay: '0.3s' }} />
+                                    <div className="eq-bar h-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                                    <div className="eq-bar h-2/3 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                                    <div className="eq-bar h-2/5 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                                </div>
+
+                                <div className="border-b border-[#66FCF1]/20 pb-3 mb-4">
+                                    <h2 className="font-orbitron font-extrabold text-sm tracking-wider text-white">ORACLE CHAT FEED</h2>
+                                    <p className="text-[10px] text-gray-500 font-mono">LIVE MATCH REFEREE & CRYPTOGRAPHIC PROOF VERIFIER</p>
+                                </div>
+
+                                {/* Chat Logs Area */}
+                                <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+                                    {chatLog.map((msg, index) => (
+                                        <div 
+                                            key={index} 
+                                            className={`p-3 rounded-lg text-xs leading-relaxed max-w-[85%] ${
+                                                msg.sender === "AI REFEREE" ? "bg-cyan-950/15 border border-cyan-500/20 text-cyan-200" :
+                                                msg.sender === "SYSTEM" ? "bg-yellow-950/15 border border-yellow-500/20 text-yellow-200" :
+                                                "bg-gray-900 border border-gray-800 text-white ml-auto"
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-4 mb-1 border-b border-gray-800/40 pb-1">
+                                                <span className={`font-orbitron font-extrabold tracking-wider text-[10px] ${msg.sender === 'AI REFEREE' ? 'text-[#66FCF1]' : msg.sender === 'SYSTEM' ? 'text-yellow-400' : 'text-pink-400'}`}>
+                                                    {msg.sender}
+                                                </span>
+                                                <span className="text-[8px] text-gray-500 font-mono">{msg.time}</span>
+                                            </div>
+                                            <p className="font-mono whitespace-pre-wrap">{msg.text}</p>
+                                        </div>
+                                    ))}
+                                    {isTyping && (
+                                        <div className="bg-cyan-950/10 border border-cyan-500/10 text-cyan-300 p-3 rounded-lg text-xs w-48 animate-pulse font-mono">
+                                            AI Oracle Analyzing...
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Chat Form */}
+                                <form onSubmit={handleSendChat} className="mt-4 pt-3 border-t border-gray-900 flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ask Referee: 'Explain match telemetry', 'What is the status?'..."
+                                        value={userInput}
+                                        onChange={(e) => setUserInput(e.target.value)}
+                                        className="flex-1 bg-[#0B0C10] border border-gray-800 rounded px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#66FCF1]"
+                                    />
+                                    <button 
+                                        type="submit"
+                                        className="px-5 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-black text-xs tracking-wider rounded transition-all uppercase"
+                                    >
+                                        INQUIRE
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                )}
+
+                {/* TAB 2: SMART CONTRACT SOLIDITY CODE DISPLAY */}
+                {activeTab === "solidity" && (
+                    <div className="cyber-panel p-6 rounded-xl space-y-6">
+                        <div className="border-b border-[#66FCF1]/20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide">
+                                    EPIC GAMING ESCROW SMART CONTRACT
+                                </h2>
+                                <p className="text-xs text-gray-400 font-mono mt-1">
+                                    Built for Base Layer-2 Network featuring automatic Multi-Token Swaps & direct routing to authorized platform wallets.
+                                </p>
+                            </div>
+                            <div className="flex gap-2">
+                                <span className="bg-yellow-500/10 text-yellow-400 text-xs font-mono px-3 py-1.5 rounded border border-yellow-500/20 flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                                    SOLIDITY 0.8.20
+                                </span>
                                 <button 
                                     onClick={() => {
-                                        const total = cart.reduce((acc, curr) => acc + (curr.price || curr.baseRate), 0);
-                                        if (mpesaWallet < total) {
-                                            triggerToast("M-Pesa balance is too low! Please top up first.");
-                                        } else {
-                                            setMpesaWallet(prev => prev - total);
-                                            setCart([]);
-                                            triggerToast("Order placed successfully! M-Pesa transaction complete. Driver/Supplier has been booked.");
-                                        }
+                                        navigator.clipboard.writeText(SOLIDITY_CONTRACT_CODE);
+                                        if(!mute) playSound('success');
+                                        alert("Contract code copied to clipboard successfully!");
                                     }}
-                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-3 rounded-xl transition-all mt-4 flex items-center justify-center space-x-1"
+                                    className="px-4 py-1.5 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-bold text-xs rounded transition-all"
                                 >
-                                    <span>Pay with M-Pesa</span>
+                                    COPY CODE
                                 </button>
-                                
-                                <button 
-                                    onClick={() => setCart([])}
-                                    className="w-full text-center text-[10px] text-slate-400 hover:text-white mt-1"
-                                >
-                                    Clear Sheet
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Local Kenyan Regulatory Advisory */}
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-                        <h4 className="heading-font font-bold text-xs text-slate-900 uppercase tracking-widest flex items-center space-x-1.5">
-                            <Icons.HardHat className="text-amber-500" />
-                            <span>Sheria na Kibali (Compliance)</span>
-                        </h4>
-                        <div className="space-y-2.5 text-xs text-slate-600">
-                            <div className="p-2.5 bg-slate-50 rounded-lg">
-                                <span className="font-bold block text-[11px] text-slate-800">NCA Registration</span>
-                                <p className="text-[10px] text-slate-500 mt-0.5">All structural builders & Fundis should check registration mandates with National Construction Authority (NCA) of Kenya.</p>
-                            </div>
-                            <div className="p-2.5 bg-slate-50 rounded-lg">
-                                <span className="font-bold block text-[11px] text-slate-800">NEMA Permit Checks</span>
-                                <p className="text-[10px] text-slate-500 mt-0.5">Sand & heavy concrete machinery operations near river beds require environmental audits from NEMA.</p>
                             </div>
                         </div>
-                    </div>
 
-                </div>
+                        {/* Automated Fee Highlights */}
+                        <div className="bg-[#111218]/80 border border-[#66FCF1]/20 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block font-bold">AUTOMATED PLATFORM FEE EXECUTION DESTINATION</span>
+                                <span className="text-sm font-mono text-white select-all block">0xe69aE274c4D814fDB312120d3db1C5c2BD63a071</span>
+                                <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
+                                    The smart contract is programmatically constructed to automatically route a fixed platform service commission (2.5%) of *every* resolved match escrow directly to this Base address.
+                                </p>
+                            </div>
+                            <div className="px-5 py-3 bg-[#0B0C10] border border-gray-800 rounded-lg text-center shrink-0 min-w-[150px]">
+                                <span className="text-[10px] font-mono text-gray-500 block uppercase">SERVICE CHARGE</span>
+                                <span className="text-xl font-orbitron font-black text-white">2.50 %</span>
+                            </div>
+                        </div>
+
+                        {/* Code Box */}
+                        <div className="relative">
+                            <div className="absolute right-3 top-3 text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                                Read-Only Code Viewer
+                            </div>
+                            <pre className="bg-[#050508] border border-gray-800 rounded-lg p-5 overflow-x-auto text-xs text-gray-300 font-mono leading-relaxed max-h-[500px]">
+                                <code>{SOLIDITY_CONTRACT_CODE}</code>
+                            </pre>
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB 3: SYSTEM ARCHITECTURE FLOWCHART */}
+                {activeTab === "architecture" && (
+                    <div className="cyber-panel p-6 rounded-xl space-y-6">
+                        <div className="border-b border-[#66FCF1]/20 pb-4">
+                            <h2 className="font-orbitron font-extrabold text-lg text-white tracking-wide">
+                                PLATFORM SYSTEM ARCHITECTURE & DATA FLOW
+                            </h2>
+                            <p className="text-xs text-gray-400 font-mono mt-1">
+                                Complete pipeline mapping data exchanges between Next.js clients, Telemetry monitoring endpoints, and the Base smart contract locks.
+                            </p>
+                        </div>
+
+                        {/* Interactive Graph Display */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            
+                            {/* Left: Beautiful CSS Dynamic Architecture Diagram */}
+                            <div className="lg:col-span-8 bg-[#0a0b10] border border-gray-800 rounded-xl p-6 flex flex-col justify-center min-h-[400px]">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center text-xs font-mono relative">
+                                    
+                                    {/* Client Box */}
+                                    <div className="bg-[#111218] border border-[#66FCF1] p-4 rounded-lg relative group hover:bg-[#66FCF1]/10 transition-colors">
+                                        <div className="text-[9px] text-gray-500 uppercase">STEP 1</div>
+                                        <h4 className="font-bold text-white mt-1">Next.js Client HUD</h4>
+                                        <p className="text-[10px] text-gray-400 mt-2">Players connect Web3 wallets & initiate game locks.</p>
+                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-[#66FCF1] hidden md:block" />
+                                    </div>
+
+                                    {/* Swapper Contract Box */}
+                                    <div className="bg-[#111218] border border-[#66FCF1] p-4 rounded-lg relative group hover:bg-[#66FCF1]/10 transition-colors">
+                                        <div className="text-[9px] text-gray-500 uppercase">STEP 2</div>
+                                        <h4 className="font-bold text-white mt-1">Uniswap Router</h4>
+                                        <p className="text-[10px] text-gray-400 mt-2">Swaps diverse tokens into USDC internally.</p>
+                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-[#66FCF1] hidden md:block" />
+                                    </div>
+
+                                    {/* Telemetry Box */}
+                                    <div className="bg-[#111218] border border-pink-500 p-4 rounded-lg relative group hover:bg-pink-500/10 transition-colors">
+                                        <div className="text-[9px] text-gray-500 uppercase">STEP 3</div>
+                                        <h4 className="font-bold text-white mt-1">FastAPI Engine</h4>
+                                        <p className="text-[10px] text-gray-400 mt-2">Scans app hooks & processes heavy cheat audits.</p>
+                                        <div className="absolute top-1/2 -right-2 w-4 h-0.5 bg-pink-500 hidden md:block" />
+                                    </div>
+
+                                    {/* Oracle Contract Box */}
+                                    <div className="bg-[#111218] border border-yellow-400 p-4 rounded-lg relative group hover:bg-yellow-400/10 transition-colors">
+                                        <div className="text-[9px] text-gray-500 uppercase">STEP 4</div>
+                                        <h4 className="font-bold text-white mt-1">Base Escrow Pool</h4>
+                                        <p className="text-[10px] text-gray-400 mt-2">Verifies signatures, routes platform fees (2.5%) & awards clean winners.</p>
+                                    </div>
+
+                                </div>
+
+                                {/* Payout direction line */}
+                                <div className="mt-8 pt-5 border-t border-gray-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center">
+                                    <div className="p-3 bg-emerald-950/10 border border-emerald-500/20 rounded">
+                                        <h5 className="font-bold text-emerald-400">WINNER AWARD LOCK (97.5%)</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1">Released instantaneously to player wallet upon verified oracle consensus.</p>
+                                    </div>
+                                    <div className="p-3 bg-yellow-950/10 border border-yellow-500/20 rounded">
+                                        <h5 className="font-bold text-yellow-400">PLATFORM FEE ROUTE (2.5%)</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1">Dispatched automatically to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right: Raw Mermaid.js code syntax */}
+                            <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
+                                <div className="bg-[#050508] border border-gray-800 rounded-xl p-5 flex-1 flex flex-col">
+                                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block mb-2">RAW MERMAID.JS BLUEPRINT</span>
+                                    <pre className="flex-1 bg-black/60 p-4 rounded text-[11px] font-mono text-gray-400 overflow-y-auto max-h-[300px]">
+                                        {MERMAID_DIAGRAM}
+                                    </pre>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(MERMAID_DIAGRAM);
+                                        if(!mute) playSound('success');
+                                        alert("Mermaid diagram code copied successfully!");
+                                    }}
+                                    className="w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#0B0C10] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all uppercase"
+                                >
+                                    COPY BLUEPRINT CODE
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                )}
 
             </main>
 
-            {/* SIMULATED POST JOB MODAL */}
-            {showPostJobModal && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="heading-font font-extrabold text-xl text-slate-950">Tangaza Kazi Mpya ya Mjengo</h3>
-                                <p className="text-xs text-slate-500">Post a new gig to thousands of Kenyan construction workers instantly.</p>
-                            </div>
-                            <button 
-                                onClick={() => setShowPostJobModal(false)}
-                                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-950"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateJob} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 mb-1">Kichwa cha Kazi (Job Title)</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g., Fundi wa Mabati au Plumber needed"
-                                    value={newJobTitle}
-                                    onChange={(e) => setNewJobTitle(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Eneo (Location / Road)</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g., Ruiru Stage, Thika Road"
-                                        value={newJobLocation}
-                                        onChange={(e) => setNewJobLocation(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Mkoa (County)</label>
-                                    <select 
-                                        value={newJobCounty}
-                                        onChange={(e) => setNewJobCounty(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                    >
-                                        {counties.map(c => (
-                                            <option key={c} value={c}>{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Malipo kwa Siku (Wage per Day KES)</label>
-                                    <input 
-                                        type="number" 
-                                        placeholder="e.g., 1500"
-                                        value={newJobBudget}
-                                        onChange={(e) => setNewJobBudget(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white font-mono"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">Ujuzi Unaohitajika (Comma separated)</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Masonry, Plastering, Wood"
-                                        value={newJobSkills}
-                                        onChange={(e) => setNewJobSkills(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <button 
-                                type="submit"
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-extrabold text-sm py-3 rounded-xl transition-all shadow-md yellow-glow"
-                            >
-                                Tuma Tangazo la Kazi (Publish Job)
-                            </button>
-                        </form>
+            {/* CYBERPUNK FOOTER */}
+            <footer className="border-t border-[#66FCF1]/10 bg-[#06070a] py-8 relative z-30">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+                    <div className="flex items-center gap-2 text-gray-500">
+                        <span>© {new Date().getFullYear()} PROJECT EPIC. ALL RIGHTS RESERVED.</span>
+                        <span>|</span>
+                        <span className="text-[#66FCF1]">BASE L2 STABILITY ROUTE ACTIVE</span>
                     </div>
-                </div>
-            )}
-
-            {/* DYNAMIC TOAST NOTIFICATION */}
-            {showToast && (
-                <div className="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-4 rounded-2xl border border-amber-500/30 shadow-2xl z-50 max-w-sm animate-bounce flex items-start space-x-3">
-                    <span className="p-1 rounded-full bg-amber-500 text-slate-950">
-                        <Icons.Check className="w-4 h-4" />
-                    </span>
-                    <div>
-                        <p className="text-xs font-bold text-slate-100">{toastMessage}</p>
-                        <span className="text-[10px] text-slate-400 font-mono">Just now • JengaLink Notification</span>
+                    <div className="flex items-center gap-4 text-gray-400">
+                        <span>Fee Oracle: <b className="text-white select-all">0xe69aE...63a071</b></span>
                     </div>
-                </div>
-            )}
-
-            {/* PLATFORM FOOTER */}
-            <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 py-12 mt-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-                    
-                    <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-900">
-                                <Icons.HardHat className="w-4 h-4" />
-                            </div>
-                            <h2 className="heading-font font-bold text-lg text-white">JengaLink Kenya</h2>
-                        </div>
-                        <p className="text-xs leading-relaxed text-slate-400">
-                            Connecting all construction fundis, material suppliers, tool rental dealers, and truckers in Kenya. Raising the standards of Mjengo builders.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h4 className="heading-font font-bold text-sm text-white mb-3 uppercase tracking-wider">Quick Links</h4>
-                        <ul className="space-y-2 text-xs">
-                            <li><button onClick={() => setActiveTab("kazi")} className="hover:text-amber-400 transition-colors">Vibarua na Kazi Zilizopo</button></li>
-                            <li><button onClick={() => setActiveTab("vifaa")} className="hover:text-amber-400 transition-colors font-medium">Soko la Vifaa vya Mjengo</button></li>
-                            <li><button onClick={() => setActiveTab("vifaaRent")} className="hover:text-amber-400 transition-colors">Kukodisha Mixer na Scaffold</button></li>
-                            <li><button onClick={() => setActiveTab("estimator")} className="hover:text-amber-400 transition-colors">Mjengo Material Calculator</button></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="heading-font font-bold text-sm text-white mb-3 uppercase tracking-wider">Major Hubs Covered</h4>
-                        <ul className="space-y-1.5 text-xs">
-                            <li>• Gikomba & Kamukunji Hardwares</li>
-                            <li>• Ruiru & Juja Stone Quarries</li>
-                            <li>• Machakos Sand Aggregates</li>
-                            <li>• Mombasa Cement Distributors</li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="heading-font font-bold text-sm text-white mb-3 uppercase tracking-wider">Hotlines / Support</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed mb-3">Reach out to our JengaLink County administrators for dispute resolutions or bulk materials procurement.</p>
-                        <span className="inline-flex items-center space-x-1.5 bg-slate-800 text-amber-400 px-3 py-1.5 rounded-lg text-xs font-bold">
-                            <Icons.Phone className="w-3.5 h-3.5" />
-                            <span>0700-JENGA-LINK</span>
-                        </span>
-                    </div>
-
-                </div>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800 mt-8 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-                    <p>© {new Date().getFullYear()} JengaLink Kenya (Soko la Mjengo). Under National Construction Authority Regulatory Audits.</p>
-                    <p className="mt-2 sm:mt-0 font-mono text-amber-500">Built with pride for local Kenyan Fundis & Contractors</p>
                 </div>
             </footer>
 
