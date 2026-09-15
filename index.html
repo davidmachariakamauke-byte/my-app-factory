@@ -17,7 +17,7 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// High-Fidelity Web Audio Synthesizer for Immersive Esports UI Audio Feedback
+// Audio synthesis for immersive Kenyan marketplace sound cues (M-Pesa chimes, site warning alarms, spade clinks)
 const playSound = function(type) {
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -29,1297 +29,1639 @@ const playSound = function(type) {
         gain.connect(ctx.destination);
 
         if (type === 'click') {
-            osc.frequency.setValueAtTime(880, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
-            gain.gain.setValueAtTime(0.03, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+            // Light metal hammer tap
+            osc.frequency.setValueAtTime(1000, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
             osc.start();
-            osc.stop(ctx.currentTime + 0.06);
-        } else if (type === 'warning') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(320, ctx.currentTime + 0.15);
-            osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.06, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.3);
-        } else if (type === 'success') {
+            osc.stop(ctx.currentTime + 0.1);
+        } else if (type === 'mpesa') {
+            // Double upbeat chime resembling Safaricom signature sound
             osc.type = 'sine';
-            const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            const chord = [523.25, 659.25, 783.99, 1046.50]; // C Major
             chord.forEach(function(freq, idx) {
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
                 o.connect(g);
                 g.connect(ctx.destination);
-                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
-                g.gain.setValueAtTime(0.02, ctx.currentTime + idx * 0.07);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.35);
-                o.start(ctx.currentTime + idx * 0.07);
-                o.stop(ctx.currentTime + idx * 0.07 + 0.35);
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+                g.gain.setValueAtTime(0.03, ctx.currentTime + idx * 0.08);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
+                o.start(ctx.currentTime + idx * 0.08);
+                o.stop(ctx.currentTime + idx * 0.08 + 0.3);
             });
-        } else if (type === 'scan') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1200, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.6);
-            gain.gain.setValueAtTime(0.015, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+        } else if (type === 'horn') {
+            // Boda/Truck dual-tone horn
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(320, ctx.currentTime);
+            gain.gain.setValueAtTime(0.03, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
             osc.start();
-            osc.stop(ctx.currentTime + 0.6);
-        } else if (type === 'tick') {
+            osc.stop(ctx.currentTime + 0.25);
+
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.type = 'sawtooth';
+            osc2.frequency.setValueAtTime(380, ctx.currentTime);
+            gain2.gain.setValueAtTime(0.03, ctx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            osc2.start();
+            osc2.stop(ctx.currentTime + 0.25);
+        } else if (type === 'shovel') {
+            // Metal friction spade sound
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(1800, ctx.currentTime);
-            gain.gain.setValueAtTime(0.01, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.01);
+            osc.frequency.setValueAtTime(200, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.02, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
             osc.start();
-            osc.stop(ctx.currentTime + 0.01);
+            osc.stop(ctx.currentTime + 0.15);
         }
     } catch (e) {
-        // Ignored if user interaction limits apply
+        // Ignored if user gesture restrictions apply
     }
 };
 
 const injectStylesAndFonts = function() {
     const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.innerHTML = "" +
         "body {\n" +
-        "    background-color: #020204;\n" +
-        "    color: #f1f5f9;\n" +
-        "    font-family: 'Inter', sans-serif;\n" +
+        "    background-color: #0b0f17;\n" +
+        "    color: #f8fafc;\n" +
+        "    font-family: 'Plus Jakarta Sans', sans-serif;\n" +
         "    background-image: \n" +
-        "        radial-gradient(at 50% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 60%),\n" +
-        "        radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),\n" +
-        "        linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),\n" +
-        "        linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);\n" +
-        "    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;\n" +
-        "    overflow-x: hidden;\n" +
+        "        radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),\n" +
+        "        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),\n" +
+        "        linear-gradient(rgba(255, 255, 255, 0.004) 1px, transparent 1px),\n" +
+        "        linear-gradient(90deg, rgba(255, 255, 255, 0.004) 1px, transparent 1px);\n" +
+        "    background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;\n" +
         "}\n" +
-        ".font-orbitron { font-family: 'Orbitron', sans-serif; }\n" +
+        ".font-grotesk { font-family: 'Space Grotesk', sans-serif; }\n" +
         ".font-mono { font-family: 'JetBrains Mono', monospace; }\n" +
-        ".neon-cyan-glow {\n" +
-        "    box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);\n" +
-        "    border-color: rgba(6, 182, 212, 0.5);\n" +
+        ".jenga-shadow {\n" +
+        "    box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.15);\n" +
         "}\n" +
-        ".neon-red-glow {\n" +
-        "    box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);\n" +
-        "    border-color: rgba(239, 68, 68, 0.7);\n" +
+        ".mpesa-glow {\n" +
+        "    box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);\n" +
         "}\n" +
-        ".cyber-panel {\n" +
-        "    background: rgba(10, 11, 18, 0.85);\n" +
-        "    backdrop-filter: blur(16px);\n" +
-        "    border: 1px solid rgba(6, 182, 212, 0.15);\n" +
-        "    position: relative;\n" +
+        ".jenga-panel {\n" +
+        "    background: rgba(18, 24, 38, 0.8);\n" +
+        "    backdrop-filter: blur(12px);\n" +
+        "    border: 1px solid rgba(255, 255, 255, 0.05);\n" +
+        "    border-radius: 16px;\n" +
         "}\n" +
-        ".cyber-panel::before {\n" +
-        "    content: '';\n" +
-        "    position: absolute;\n" +
-        "    top: 0; left: 0; width: 14px; height: 14px;\n" +
-        "    border-top: 2px solid #06b6d4; border-left: 2px solid #06b6d4;\n" +
+        "input, select, textarea {\n" +
+        "    background: rgba(11, 15, 23, 0.8) !important;\n" +
+        "    border: 1px solid rgba(255, 255, 255, 0.08) !important;\n" +
+        "    color: #ffffff !important;\n" +
+        "    transition: all 0.2s ease;\n" +
         "}\n" +
-        ".cyber-panel::after {\n" +
-        "    content: '';\n" +
-        "    position: absolute;\n" +
-        "    bottom: 0; right: 0; width: 14px; height: 14px;\n" +
-        "    border-bottom: 2px solid #06b6d4; border-right: 2px solid #06b6d4;\n" +
+        "input:focus, select:focus, textarea:focus {\n" +
+        "    border-color: #f59e0b !important;\n" +
+        "    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;\n" +
+        "    outline: none !important;\n" +
         "}\n" +
-        ".cyber-panel-red::before { border-color: #ef4444; }\n" +
-        ".cyber-panel-red::after { border-color: #ef4444; }\n" +
-        ".scanning-sweep {\n" +
-        "    position: absolute;\n" +
-        "    width: 100%; height: 3px;\n" +
-        "    background: linear-gradient(90deg, transparent, #06b6d4, transparent);\n" +
-        "    animation: scanline 4s linear infinite;\n" +
-        "    top: 0; z-index: 10;\n" +
-        "}\n" +
-        ".warning-sweep {\n" +
-        "    position: absolute;\n" +
-        "    width: 100%; height: 5px;\n" +
-        "    background: linear-gradient(90deg, transparent, #ef4444, transparent);\n" +
-        "    animation: scanline 1.5s linear infinite;\n" +
-        "    top: 0; z-index: 10;\n" +
-        "}\n" +
-        "@keyframes scanline {\n" +
-        "    0% { transform: translateY(0); }\n" +
-        "    100% { transform: translateY(500px); }\n" +
-        "}\n" +
-        "::-webkit-scrollbar { width: 6px; height: 6px; }\n" +
-        "::-webkit-scrollbar-track { background: #020204; }\n" +
-        "::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }\n" +
-        "::-webkit-scrollbar-thumb:hover { background: #06b6d4; }\n" +
-        ".eq-bar {\n" +
-        "    width: 4px;\n" +
-        "    background-color: #06b6d4;\n" +
-        "    border-radius: 2px;\n" +
-        "    transition: height 0.1s ease;\n" +
-        "}\n" +
-        ".glitch-text {\n" +
-        "    text-shadow: 2px 0 0 rgba(236, 72, 153, 0.5), -2px 0 0 rgba(6, 182, 212, 0.5);\n" +
-        "}\n" +
-        ".grid-bg {\n" +
-        "    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);\n" +
-        "    background-size: 16px 16px;\n" +
-        "}\n";
+        "::-webkit-scrollbar { width: 8px; height: 8px; }\n" +
+        "::-webkit-scrollbar-track { background: #0b0f17; }\n" +
+        "::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }\n" +
+        "::-webkit-scrollbar-thumb:hover { background: #f59e0b; }\n";
     document.head.appendChild(style);
 };
 
-const SOLIDITY_CONTRACT_CODE = "" +
-    "// SPDX-License-Identifier: MIT\n" +
-    "pragma solidity ^0.8.20;\n\n" +
-    "/**\n" +
-    " * @title Autonomous AI Referee & Gaming Escrow Platform\n" +
-    " * @notice Escrows and settles native USDC stakes on the Base Network with EIP-712 support.\n" +
-    " * @dev Authenticated platform matching engine protected by isolated HSM wallet signatures.\n" +
-    " */\n\n" +
-    "interface IERC20 {\n" +
-    "    function transfer(address to, uint256 amount) external returns (bool);\n" +
-    "    function transferFrom(address from, address to, uint256 amount) external returns (bool);\n" +
-    "    function balanceOf(address account) external view returns (uint256);\n" +
-    "}\n\n" +
-    "contract AutonomousUSDCGamingEscrow {\n" +
-    "    // Platform fee recipient and flat rate parameter\n" +
-    "    address public constant FEE_RECIPIENT = 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071;\n" +
-    "    uint256 public constant PLATFORM_FEE_BPS = 250; // 2.5% Flat platform fee\n\n" +
-    "    address public immutable aiRefereeOracleAddress;\n" +
-    "    address public immutable usdcTokenAddress; // Native Base USDC\n\n" +
-    "    bytes32 public constant SETTLEMENT_TYPEHASH = keccak256(\n" +
-    "        \"Settlement(bytes32 matchId,address winner,uint256 amount,uint256 nonce)\"\n" +
-    "    );\n" +
-    "    bytes32 public immutable DOMAIN_SEPARATOR;\n\n" +
-    "    struct MatchLobby {\n" +
-    "        address playerOne;\n" +
-    "        address playerTwo;\n" +
-    "        uint256 currentEscrowedBalance;\n" +
-    "        bool isActive;\n" +
-    "        bool isSettled;\n" +
-    "        uint256 validationNonce;\n" +
-    "    }\n\n" +
-    "    mapping(bytes32 => MatchLobby) public activeMatchLobbies;\n\n" +
-    "    event EscrowStaked(bytes32 indexed matchId, address indexed participant, uint256 stakedAmount);\n" +
-    "    event EscrowSettled(bytes32 indexed matchId, address indexed matchWinner, uint256 winnerPayoutAmount, uint256 routedFee);\n" +
-    "    event AnticheatEmergencyEnforced(bytes32 indexed matchId, address indexed violatingCheater, address indexed honestVictim, uint256 penaltyPayout);\n\n" +
-    "    constructor(address _aiRefereeOracle, address _usdcToken) {\n" +
-    "        require(_aiRefereeOracle != address(0), \"Oracle endpoint cannot be zero address\");\n" +
-    "        require(_usdcToken != address(0), \"USDC ERC20 cannot be zero address\");\n" +
-    "        aiRefereeOracleAddress = _aiRefereeOracle;\n" +
-    "        usdcTokenAddress = _usdcToken;\n\n" +
-    "        DOMAIN_SEPARATOR = keccak256(\n" +
-    "            abi.encode(\n" +
-    "                keccak256(\"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)\"),\n" +
-    "                keccak256(bytes(\"AutonomousUSDCGamingEscrow\")),\n" +
-    "                keccak256(bytes(\"1\")),\n" +
-    "                block.chainid,\n" +
-    "                address(this)\n" +
-    "            )\n" +
-    "        );\n" +
-    "    }\n\n" +
-    "    function stakeEscrow(bytes32 matchId, address opponentPlayer, uint256 usdcAmount) external {\n" +
-    "        require(opponentPlayer != address(0) && opponentPlayer != msg.sender, \"Invalid opponent address\");\n" +
-    "        require(usdcAmount > 0, \"USDC stake value must exceed zero\");\n\n" +
-    "        IERC20(usdcTokenAddress).transferFrom(msg.sender, address(this), usdcAmount);\n\n" +
-    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
-    "        if (!lobby.isActive && !lobby.isSettled) {\n" +
-    "            lobby.playerOne = msg.sender;\n" +
-    "            lobby.playerTwo = opponentPlayer;\n" +
-    "            lobby.isActive = true;\n" +
-    "            lobby.validationNonce++;\n" +
-    "        }\n\n" +
-    "        lobby.currentEscrowedBalance += usdcAmount;\n" +
-    "        emit EscrowStaked(matchId, msg.sender, usdcAmount);\n" +
-    "    }\n\n" +
-    "    function executeSettleMatchEIP712(\n" +
-    "        bytes32 matchId,\n" +
-    "        address winner,\n" +
-    "        uint256 amount,\n" +
-    "        uint8 v,\n" +
-    "        bytes32 r,\n" +
-    "        bytes32 s\n" +
-    "    ) external {\n" +
-    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
-    "        require(lobby.isActive && !lobby.isSettled, \"Match is already resolved or inactive\");\n" +
-    "        require(winner == lobby.playerOne || winner == lobby.playerTwo, \"Winner must be validated participant\");\n" +
-    "        require(amount == lobby.currentEscrowedBalance, \"Staked amount validation anomaly\");\n\n" +
-    "        bytes32 structHash = keccak256(\n" +
-    "            abi.encode(SETTLEMENT_TYPEHASH, matchId, winner, amount, lobby.validationNonce)\n" +
-    "        );\n" +
-    "        bytes32 digest = keccak256(abi.encodePacked(\"\\x19\\x01\", DOMAIN_SEPARATOR, structHash));\n" +
-    "        address recoveredOracleSigner = ecrecover(digest, v, r, s);\n" +
-    "        require(recoveredOracleSigner == aiRefereeOracleAddress, \"Invalid cryptographic AI Oracle signature\");\n\n" +
-    "        lobby.isSettled = true;\n" +
-    "        lobby.isActive = false;\n\n" +
-    "        uint256 totalPool = lobby.currentEscrowedBalance;\n" +
-    "        uint256 feeContribution = (totalPool * PLATFORM_FEE_BPS) / 10000;\n" +
-    "        uint256 payoutToWinner = totalPool - feeContribution;\n\n" +
-    "        require(IERC20(usdcTokenAddress).transfer(FEE_RECIPIENT, feeContribution), \"Platform fee transfer rejected\");\n" +
-    "        require(IERC20(usdcTokenAddress).transfer(winner, payoutToWinner), \"Winner payout settlement rejected\");\n\n" +
-    "        emit EscrowSettled(matchId, winner, payoutToWinner, feeContribution);\n" +
-    "    }\n\n" +
-    "    function enforceAntiCheatShutdown(bytes32 matchId, address cheaterAddress) external {\n" +
-    "        // Triggered only by authenticated Oracle logic on proven hardware/client memory tamper vectors\n" +
-    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
-    "        require(lobby.isActive && !lobby.isSettled, \"Match parameters are currently locked\");\n" +
-    "        address honestPlayer = (cheaterAddress == lobby.playerOne) ? lobby.playerTwo : lobby.playerOne;\n\n" +
-    "        lobby.isSettled = true;\n" +
-    "        lobby.isActive = false;\n\n" +
-    "        uint256 totalPool = lobby.currentEscrowedBalance;\n" +
-    "        uint256 feeContribution = (totalPool * PLATFORM_FEE_BPS) / 10000;\n" +
-    "        uint256 payoutToHonestPlayer = totalPool - feeContribution;\n\n" +
-    "        require(IERC20(usdcTokenAddress).transfer(FEE_RECIPIENT, feeContribution), \"Anticheat process: platform fee failed\");\n" +
-    "        require(IERC20(usdcTokenAddress).transfer(honestPlayer, payoutToHonestPlayer), \"Anticheat process: recovery transfer failed\");\n\n" +
-    "        emit AnticheatEmergencyEnforced(matchId, cheaterAddress, honestPlayer, payoutToHonestPlayer);\n" +
-    "    }\n" +
-    "}";
+// INITIAL MOCK DATA TAILORED FOR KENYAN COMMUNITIES
+const INITIAL_JOBS = [
+    {
+        id: "job-1",
+        title: "5 Masonry Fundis Needed for Slab Reinforcement",
+        category: "Masonry",
+        location: "Ruaka, Kiambu County",
+        budget: 1800, // per day in KES
+        duration: "5 Days",
+        postedBy: "Mugo Builders Ltd",
+        verified: true,
+        urgency: "Immediate",
+        phone: "+254 712 345678",
+        description: "Looking for qualified fundis to lay concrete slab for a residential apartment block. Must have own toolset (trowel, level, plumb line). Shovel work handles are provided on-site.",
+        bidsCount: 14,
+        requirements: ["Own float & trowel", "Experience with standard C25 mix", "Ref check from previous site foreman"]
+    },
+    {
+        id: "job-2",
+        title: "Licensed Plumber for Multi-Story Piping Installation",
+        category: "Plumbing",
+        location: "Syokimau, Machakos County",
+        budget: 2500,
+        duration: "2 Weeks",
+        postedBy: "Eng. Dennis Omondi",
+        verified: true,
+        urgency: "This Week",
+        phone: "+254 722 987654",
+        description: "Piping works installation for a 4-bedroom townhouse estate. Installing high-quality PPR pipes, drainage fitting and sanitary wares. Escrow deposit already processed through Safaricom Till.",
+        bidsCount: 8,
+        requirements: ["NITA Certification or equivalent", "Experience with PPR hot-fusion machines"]
+    },
+    {
+        id: "job-3",
+        title: "12 Casual Workers for Site Offloading (Mjengo)",
+        category: "Casual Work",
+        location: "Industrial Area, Nairobi",
+        budget: 800,
+        duration: "2 Days",
+        postedBy: "JengaFast Logistics",
+        verified: false,
+        urgency: "Immediate",
+        phone: "+254 733 444555",
+        description: "Urgent contract to offload two bulk trucks of Bamburi Tembo Cement (approx 1,200 bags) and partition timber blocks. Paid daily strictly at 5:00 PM.",
+        bidsCount: 32,
+        requirements: ["Safety boots required", "Heavy lifting ability"]
+    },
+    {
+        id: "job-4",
+        title: "Interiors and Gypsum Board Installer",
+        category: "Finishing & Gypsum",
+        location: "Nyali, Mombasa County",
+        budget: 3500,
+        duration: "3 Days",
+        postedBy: "Coastal Dream Homes",
+        verified: true,
+        urgency: "Next Monday",
+        phone: "+254 701 112233",
+        description: "Need an elite gypsum ceiling technician for a modern penthouse studio design. High quality finishes needed, shadow gaps and LED light cove setups.",
+        bidsCount: 5,
+        requirements: ["Laser level alignment expertise", "Provide photo catalog of past gypsum ceilings"]
+    },
+    {
+        id: "job-5",
+        title: "Electrical Wiring for Commercial Warehouse",
+        category: "Electrical",
+        location: "Nakuru East, Nakuru County",
+        budget: 4000,
+        duration: "10 Days",
+        postedBy: "Nakuru Wholesalers Hub",
+        verified: true,
+        urgency: "Flexible",
+        phone: "+254 715 888999",
+        description: "Full trunking and wiring works for industrial solar inverter setups, commercial power sockets and automated breaker boards. Sub-contracting certified wiremen only.",
+        bidsCount: 11,
+        requirements: ["EPRA Class B License", "Strict adherence to safety grounding standards"]
+    }
+];
+
+const INITIAL_MATERIALS = [
+    {
+        id: "mat-1",
+        name: "Bamburi Tembo Cement CEM IV (50Kg Bag)",
+        category: "Cement & Aggregates",
+        price: 790, // KES
+        unit: "Bag",
+        stock: 350,
+        seller: "Athi River Hardwares",
+        location: "Athi River",
+        rating: 4.8,
+        image: "🧱",
+        description: "Premium grade 32.5R Portland Composite cement suitable for structural masonry, concrete screed, and general bricklaying plaster."
+    },
+    {
+        id: "mat-2",
+        name: "Clean River Sand (10 Tonne Tipper)",
+        category: "Cement & Aggregates",
+        price: 32000,
+        unit: "Truck Load",
+        stock: 12,
+        seller: "Machakos Sand Suppliers Syndicate",
+        location: "Mlolongo Yard",
+        rating: 4.9,
+        image: "⏳",
+        description: "Triple-sieved, clay-free river sand harvested from clean waters. Excellent binder performance for high-strength mortar blocks."
+    },
+    {
+        id: "mat-3",
+        name: "Deformed Steel Reinforcement Bar (Y12 - 12mm)",
+        category: "Steel & Timber",
+        price: 1450,
+        unit: "6-Meter Piece",
+        stock: 400,
+        seller: "Apex Steel Merchants",
+        location: "Industrial Area",
+        rating: 4.7,
+        image: "🪙",
+        description: "High-grade ribbed steel reinforcement bars (rebar) matching KEBS structural building standards."
+    },
+    {
+        id: "mat-4",
+        name: "High-Grade Cyprus Timber (2x2 Inches)",
+        category: "Steel & Timber",
+        price: 85,
+        unit: "Running Foot",
+        stock: 1500,
+        seller: "Nyeri Timber & Sawmill Yard",
+        location: "Dagoretti Corner",
+        rating: 4.5,
+        image: "🪵",
+        description: "Straight, well-seasoned soft wood framing timber ideal for structural roofing trusses and formwork support."
+    },
+    {
+        id: "mat-5",
+        name: "Heavy Duty Concrete Mixer (Double-Bag Diesel)",
+        category: "Equipment & Tools",
+        price: 4500,
+        unit: "Daily Rental",
+        stock: 4,
+        seller: "JengaRent Equipment Hub",
+        location: "Westlands Yard",
+        rating: 5.0,
+        image: "⚙️",
+        description: "Fitted with reliable Lister-type single cylinder water-cooled diesel engines. Daily delivery on-site across Nairobi/Kiambu."
+    },
+    {
+        id: "mat-6",
+        name: "Professional Angle Grinder (Bosch 900W)",
+        category: "Equipment & Tools",
+        price: 8500,
+        unit: "Outright Purchase",
+        stock: 18,
+        seller: "Nairobi Tool Depot",
+        location: "Nyamakima, CBD",
+        rating: 4.6,
+        image: "⚡",
+        description: "Original heavy duty 115mm angle grinder with adjustable guards. Ideal for cutting steel rebars and quarry brick sizing."
+    }
+];
+
+const INITIAL_TRANSPORT = [
+    {
+        id: "trans-1",
+        vehicle: "Mitsubishi Canter Tipper (4-Tonne Limit)",
+        driver: "Kamau wa Canter",
+        basePrice: 5000,
+        perKmRate: 150,
+        location: "Kasarani / Thika Road",
+        phone: "+254 722 000111",
+        status: "Available",
+        rating: 4.9
+    },
+    {
+        id: "trans-2",
+        vehicle: "Isuzu Forward Crane Truck (8-Tonne Limit)",
+        driver: "Ali Mohamed",
+        basePrice: 12000,
+        perKmRate: 250,
+        location: "Mombasa Road Yard",
+        phone: "+254 733 999888",
+        status: "In Service",
+        rating: 4.8
+    },
+    {
+        id: "trans-3",
+        vehicle: "Suzuki Carry Pick-up (1-Tonne Limit)",
+        driver: "Brayo Boda Boda & Carry",
+        basePrice: 2000,
+        perKmRate: 80,
+        location: "Rongai / Ngong Area",
+        phone: "+254 705 444333",
+        status: "Available",
+        rating: 4.7
+    }
+];
+
+const INITIAL_FUNDIS = [
+    {
+        id: "fundi-1",
+        name: "George 'Fundi' Mwangi",
+        specialization: "Master Mason & Structural Foreman",
+        county: "Nairobi",
+        rating: 4.9,
+        jobsDone: 84,
+        badge: "Verified Expert",
+        dailyRate: 1800,
+        status: "Available",
+        skills: ["Formwork", "Plastering", "Slab Cast", "Quarry Bricklaying"]
+    },
+    {
+        id: "fundi-2",
+        name: "Wanjiku Njuguna",
+        specialization: "Electrical Wireman & Solar Installer",
+        county: "Kiambu",
+        rating: 4.8,
+        jobsDone: 53,
+        badge: "Certified Epra",
+        dailyRate: 2200,
+        status: "On-site Until Friday",
+        skills: ["Commercial Wiring", "Breaker Mounting", "EPRA Phase 3", "Inverters"]
+    },
+    {
+        id: "fundi-3",
+        name: "Onyango 'Plumber' Juma",
+        specialization: "PPR Piping & Drainage Expert",
+        county: "Kisumu",
+        rating: 4.7,
+        jobsDone: 69,
+        badge: "Highly Rated",
+        dailyRate: 2000,
+        status: "Available",
+        skills: ["PPR Hot Fusion", "Bio-digesters", "Kitchen Fit-out", "Borehole Piping"]
+    }
+];
 
 function App() {
     useEffect(function() {
         injectStylesAndFonts();
     }, []);
 
-    // Core State variables
-    const [matchId, setMatchId] = useState("m_8f9a2b" + Math.floor(Math.random() * 90000 + 10000));
-    const [gameState, setGameState] = useState("idle"); // idle, scanning, dispute, victory
-    const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, solidity, architecture
+    // Navigation and core layout tabs
+    const [activeTab, setActiveTab] = useState("kazi"); // kazi (jobs), soko (materials/tools), calculator (estimator), fundis (worker index), usafiri (delivery)
+    
+    // Core database state allowing updates
+    const [jobs, setJobs] = useState(INITIAL_JOBS);
+    const [materials, setMaterials] = useState(INITIAL_MATERIALS);
+    const [transport, setTransport] = useState(INITIAL_TRANSPORT);
+    const [fundis, setFundis] = useState(INITIAL_FUNDIS);
+    
+    // Filters & Search
+    const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("All");
 
-    // SIWE Authentications
-    const [connected, setConnected] = useState(false);
-    const [walletAddress, setWalletAddress] = useState("");
-    const [usdcBalance, setUsdcBalance] = useState(0);
-    const [siweModal, setSiweModal] = useState(false);
-    const [siweSigning, setSiweSigning] = useState(false);
-    const [jwtSession, setJwtSession] = useState(null);
-    const [walletProvider, setWalletProvider] = useState(""); 
+    // Interactive Cart State
+    const [cart, setCart] = useState([]);
+    const [isCartOpen, setIsCartOpen] = useState(false);
 
-    // Match Lobby Details
-    const [antiCheatThreshold, setAntiCheatThreshold] = useState("Zero Tolerance Ramp Check");
-    const [gameParam, setGameParam] = useState("Valorant Custom 1v1");
-    const [baseStakeAmount, setBaseStakeAmount] = useState("100");
-    const [inviteCopied, setInviteCopied] = useState(false);
+    // Dynamic Job Application Modal / Bidding Process
+    const [selectedJobForBid, setSelectedJobForBid] = useState(null);
+    const [bidAmount, setBidAmount] = useState("");
+    const [bidCoverLetter, setBidCoverLetter] = useState("");
+    const [userProfileRole, setUserProfileRole] = useState("Fundi"); // "Fundi" or "Site Owner/Developer"
 
-    // Escrow metrics
-    const [escrowPool, setEscrowPool] = useState(0);
-    const [p1Stake, setP1Stake] = useState(0);
-    const [p2Stake, setP2Stake] = useState(0);
-    const [selectedPlayer, setSelectedPlayer] = useState("Player 1");
+    // Material Estimator Calculator Inputs and State
+    const [calcType, setCalcType] = useState("slab"); // slab, wall, plaster
+    const [slabLength, setSlabLength] = useState("10"); // meters
+    const [slabWidth, setSlabWidth] = useState("8"); // meters
+    const [slabThickness, setSlabThickness] = useState("0.15"); // meters (150mm)
+    const [wallLength, setWallLength] = useState("20");
+    const [wallHeight, setWallHeight] = useState("3");
+    const [plasterArea, setPlasterArea] = useState("100"); // sq meters
 
-    // Chat with live Typewriter streaming Response
-    const [chatLog, setChatLog] = useState([
-        { sender: "AI REFEREE", text: "Secure AI Oracle session initialized on Base Network. Standard memory registers and client network pipelines are mapped.", time: "00:00:01" }
-    ]);
-    const [userInput, setUserInput] = useState("");
-    const [isTyping, setIsTyping] = useState(false);
-    const [mute, setMute] = useState(false);
+    // M-Pesa Interactive Escrow Engine Simulation
+    const [mpesaModal, setMpesaModal] = useState(null); // active checkout target details
+    const [mpesaPhoneNumber, setMpesaPhoneNumber] = useState("");
+    const [mpesaStatus, setMpesaStatus] = useState("idle"); // idle, sending, prompt-shown, verified
+    const [mpesaTxCode, setMpesaTxCode] = useState("");
 
-    // Screen/OCR Simulation
-    const [ocrFile, setOcrFile] = useState(null);
-    const [ocrStatus, setOcrStatus] = useState("Inactive. Ready to ingest telemetry data screenshot.");
-    const [analyzingOcr, setAnalyzingOcr] = useState(false);
+    // Job Posting State for developers/site owners
+    const [isPostingJob, setIsPostingJob] = useState(false);
+    const [newJobTitle, setNewJobTitle] = useState("");
+    const [newJobCategory, setNewJobCategory] = useState("Masonry");
+    const [newJobLocation, setNewJobLocation] = useState("Nairobi County");
+    const [newJobBudget, setNewJobBudget] = useState("");
+    const [newJobDuration, setNewJobDuration] = useState("1 Day");
+    const [newJobDescription, setNewJobDescription] = useState("");
+    const [newJobRequirements, setNewJobRequirements] = useState("");
 
-    // Hardware/Device Fingerprinting Sim
-    const [deviceFingerprint, setDeviceFingerprint] = useState("");
-    useEffect(function() {
-        const ua = navigator.userAgent;
-        const screenStr = window.screen.width + "x" + window.screen.height + "x" + window.screen.colorDepth;
-        let hash = 0;
-        const totalStr = ua + screenStr + "ESPORTS-FINGERPRINT-X9";
-        for (let i = 0; i < totalStr.length; i++) {
-            const char = totalStr.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        setDeviceFingerprint("SECURE-HW-" + Math.abs(hash).toString(16).toUpperCase().substring(0, 10));
-    }, []);
+    // Chat Simulator with foremen/fundis
+    const [chatTarget, setChatTarget] = useState(null);
+    const [chatMessage, setChatMessage] = useState("");
+    const [chatLogs, setChatLogs] = useState({
+        "job-1": [
+            { sender: "System", text: "Welcome to Secure Escrow Chat. Your deposits are protected via JengaEscrow till-no parameters.", time: "10:30 AM" },
+            { sender: "Mugo Builders Ltd", text: "Sasa Fundi, can you begin on Monday morning 7:00 AM? We need active plastering works completed fast.", time: "10:32 AM" }
+        ]
+    });
 
-    // Live Telemetry Logs
-    const [ping, setPing] = useState(12);
-    const [fps, setFps] = useState(240);
-    const [packetLoss, setPacketLoss] = useState(0);
-    const [memState, setMemState] = useState("SECURE/PROTECTED");
+    // Compute dynamic cart totals
+    const cartTotal = useMemo(() => {
+        return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }, [cart]);
 
-    // Equalizer bars simulated height array
-    const [eqHeights, setEqHeights] = useState([20, 45, 15, 60, 30]);
-
-    // EIP-712 dynamic signature showcase
-    const [showEipSignature, setShowEipSignature] = useState(false);
-    const [mockEipPayload, setMockEipPayload] = useState(null);
-
-    // Canvas matrix/network background animation
-    const canvasRef = useRef(null);
-    useEffect(function() {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
-
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-
-        const handleResize = () => {
-            if (canvas) {
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientHeight;
+    const addToCart = function(material) {
+        if (!mute) playSound('shovel');
+        setCart(prevCart => {
+            const existing = prevCart.find(item => item.id === material.id);
+            if (existing) {
+                return prevCart.map(item => item.id === material.id ? { ...item, quantity: item.quantity + 1 } : item);
             }
-        };
-        window.addEventListener('resize', handleResize);
+            return [...prevCart, { ...material, quantity: 1 }];
+        });
+        setIsCartOpen(true);
+    };
 
-        const particles = [];
-        const maxParticles = 40;
-        for (let i = 0; i < maxParticles; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                alpha: Math.random() * 0.5 + 0.1
-            });
+    const removeFromCart = function(itemId) {
+        if (!mute) playSound('click');
+        setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+    };
+
+    const handleApplyBid = function(e) {
+        e.preventDefault();
+        if (!bidAmount) {
+            alert("Please input a standard daily wage bid!");
+            return;
         }
-
-        const draw = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
-            ctx.lineWidth = 0.8;
-
-            // Connect lines
-            for (let i = 0; i < maxParticles; i++) {
-                for (let j = i + 1; j < maxParticles; j++) {
-                    const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
+        if (!mute) playSound('mpesa');
+        
+        // Append bid to the specific job
+        setJobs(prevJobs => {
+            return prevJobs.map(j => {
+                if (j.id === selectedJobForBid.id) {
+                    return { ...j, bidsCount: j.bidsCount + 1 };
                 }
-            }
+                return j;
+            });
+        });
 
-            // Draw and move particles
-            for (let p of particles) {
-                ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-            }
-
-            animationFrameId = requestAnimationFrame(draw);
-        };
-
-        draw();
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
-    // Live Telemetry Loop
-    useEffect(function() {
-        const interval = setInterval(function() {
-            if (gameState === "scanning") {
-                setPing(Math.floor(Math.random() * 4) + 11);
-                setFps(Math.floor(Math.random() * 10) + 235);
-                setPacketLoss(Math.random() > 0.96 ? 1 : 0);
-                setEqHeights([
-                    Math.floor(Math.random() * 40) + 10,
-                    Math.floor(Math.random() * 70) + 20,
-                    Math.floor(Math.random() * 30) + 10,
-                    Math.floor(Math.random() * 80) + 15,
-                    Math.floor(Math.random() * 50) + 10
-                ]);
-            } else if (gameState === "dispute") {
-                setPing(650);
-                setFps(35);
-                setPacketLoss(38);
-                setEqHeights([5, 95, 5, 95, 5]);
-            } else {
-                setPing(Math.floor(Math.random() * 2) + 9);
-                setFps(Math.floor(Math.random() * 5) + 241);
-                setPacketLoss(0);
-                setEqHeights([20, 45, 15, 60, 30]);
-            }
-        }, 1200);
-        return function() { clearInterval(interval); };
-    }, [gameState]);
-
-    // Handle universal dynamic invite link copying
-    const handleCopyInviteLink = function() {
-        if (!mute) playSound('click');
-        const link = "https://app.projectepic.gg/lobby/" + matchId;
-        navigator.clipboard.writeText(link);
-        setInviteCopied(true);
-        setTimeout(function() { setInviteCopied(false); }, 2200);
+        alert(`Bid of KES ${bidAmount} per day submitted securely! Mugo Builders will contact you via SMS or chat.`);
+        setSelectedJobForBid(null);
+        setBidAmount("");
+        setBidCoverLetter("");
     };
 
-    // Open SIWE process with chosen wallet provider
-    const startWalletConnect = function(provider) {
-        if (!mute) playSound('click');
-        setWalletProvider(provider);
-        setSiweModal(true);
+    const handlePostNewJob = function(e) {
+        e.preventDefault();
+        if (!newJobTitle || !newJobBudget || !newJobDescription) {
+            alert("Kindly fill in all the building project parameters!");
+            return;
+        }
+        const createdJob = {
+            id: "job-" + (jobs.length + 1),
+            title: newJobTitle,
+            category: newJobCategory,
+            location: newJobLocation,
+            budget: parseInt(newJobBudget),
+            duration: newJobDuration,
+            postedBy: "Your Project Site",
+            verified: true,
+            urgency: "Immediate",
+            phone: "+254 700 000000",
+            description: newJobDescription,
+            bidsCount: 0,
+            requirements: newJobRequirements.split(',').map(r => r.trim()).filter(Boolean)
+        };
+        setJobs([createdJob, ...jobs]);
+        setIsPostingJob(false);
+        setNewJobTitle("");
+        setNewJobBudget("");
+        setNewJobDescription("");
+        setNewJobRequirements("");
+        if (!mute) playSound('mpesa');
     };
 
-    // Simulated verification of the SIWE signature
-    const executeSIWE = function() {
-        if (!mute) playSound('scan');
-        setSiweSigning(true);
-        setTimeout(function() {
-            setSiweSigning(false);
-            setSiweModal(false);
-            setConnected(true);
-            const mockAddrs = {
-                "Coinbase": "0x0A9e...e071",
-                "MetaMask": "0xf39F...2266",
-                "Rainbow": "0x7099...1154",
-                "WalletConnect": "0x3C44...9012"
+    // Concrete & Brick estimation algorithms matching standard Kenyan building benchmarks
+    const estimationResults = useMemo(() => {
+        if (calcType === "slab") {
+            const l = parseFloat(slabLength) || 0;
+            const w = parseFloat(slabWidth) || 0;
+            const t = parseFloat(slabThickness) || 0;
+            const volume = l * w * t; // cubic meters
+            
+            // Standard Class 25 concrete mix ratio (1:2:4)
+            // Approx 320kg (6.4 bags) cement per cubic meter
+            // Approx 0.4 tonnes of river sand per cubic meter
+            // Approx 0.8 tonnes of ballast per cubic meter
+            const cementBags = Math.ceil(volume * 6.5);
+            const sandTonnes = (volume * 0.45).toFixed(1);
+            const ballastTonnes = (volume * 0.85).toFixed(1);
+            const estimatedCost = (cementBags * 790) + (parseFloat(sandTonnes) * 3200) + (parseFloat(ballastTonnes) * 2800);
+
+            return {
+                volume: volume.toFixed(2),
+                cement: cementBags,
+                sand: sandTonnes,
+                ballast: ballastTonnes,
+                cost: estimatedCost
             };
-            const addr = mockAddrs[walletProvider] || "0xf39F...2266";
-            setWalletAddress(addr);
-            setUsdcBalance(1500.00); 
-            const jwt = "SIWE_JWT_BASE_L2_" + btoa(JSON.stringify({ adr: addr, fp: deviceFingerprint, exp: Date.now() + 3600000 }));
-            setJwtSession(jwt);
-            addChatMsg("SYSTEM", "Cryptographic SIWE session generated. Pinned device environment to HSM-signed gateway.");
-            addChatMsg("AI REFEREE", "Lobby node sync online. Native USDC stake requested to initiate telemetry pipeline.");
-            if (!mute) playSound('success');
+        } else if (calcType === "wall") {
+            const l = parseFloat(wallLength) || 0;
+            const h = parseFloat(wallHeight) || 0;
+            const area = l * h;
+            
+            // Assuming standard 9x4x3 inch quarry stone bricks
+            // Approx 55 blocks/bricks per square meter of wall (inclusive of mortar joints)
+            const brickCount = Math.ceil(area * 52);
+            // Cement & sand for joint mortar
+            const cementBags = Math.ceil(area * 0.4);
+            const sandTonnes = (area * 0.05).toFixed(1);
+            const estimatedCost = (brickCount * 45) + (cementBags * 790) + (parseFloat(sandTonnes) * 3200);
+
+            return {
+                area: area.toFixed(1),
+                bricks: brickCount,
+                cement: cementBags,
+                sand: sandTonnes,
+                cost: estimatedCost
+            };
+        } else {
+            const area = parseFloat(plasterArea) || 0;
+            // 15mm plaster thickness, ratio 1:4
+            const cementBags = Math.ceil(area * 0.25);
+            const sandTonnes = (area * 0.02).toFixed(1);
+            const estimatedCost = (cementBags * 790) + (parseFloat(sandTonnes) * 3200);
+
+            return {
+                area: area.toFixed(1),
+                cement: cementBags,
+                sand: sandTonnes,
+                cost: estimatedCost
+            };
+        }
+    }, [calcType, slabLength, slabWidth, slabThickness, wallLength, wallHeight, plasterArea]);
+
+    // Handle interactive M-Pesa simulated flow
+    const triggerMpesaCheckout = function(payload) {
+        if (!mute) playSound('click');
+        setMpesaPhoneNumber("");
+        setMpesaStatus("idle");
+        setMpesaModal(payload);
+    };
+
+    const processMpesaEscrowSimulation = function() {
+        if (!mpesaPhoneNumber.startsWith("07") && !mpesaPhoneNumber.startsWith("01") && !mpesaPhoneNumber.startsWith("+254")) {
+            alert("Kindly enter a valid Safaricom phone number starting with 07 or 01!");
+            return;
+        }
+        if (!mute) playSound('mpesa');
+        setMpesaStatus("sending");
+
+        setTimeout(() => {
+            setMpesaStatus("prompt-shown");
         }, 1500);
     };
 
-    const handleDisconnect = function() {
-        if (!mute) playSound('click');
-        setConnected(false);
-        setWalletAddress("");
-        setUsdcBalance(0);
-        setJwtSession(null);
-        addChatMsg("SYSTEM", "SIWE credentials detached. Node session cleared.");
-    };
-
-    const addChatMsg = function(sender, text) {
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        setChatLog(function(prev) {
-            return [...prev, { sender: sender, text: text, time: time }];
-        });
-    };
-
-    // Native USDC Stake Simulation
-    const executeStake = function() {
-        if (!connected) {
-            if (!mute) playSound('warning');
-            alert("Mandatory wallet authorization. Please authenticate with SIWE first.");
-            return;
-        }
-        const parsedAmount = parseFloat(baseStakeAmount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-            alert("Please input a valid USDC stake amount.");
-            return;
-        }
-        if (parsedAmount > usdcBalance) {
-            if (!mute) playSound('warning');
-            alert("Insufficient Native USDC Balance.");
-            return;
-        }
-
-        if (!mute) playSound('success');
-        setUsdcBalance(function(prev) { return prev - parsedAmount; });
-
-        if (selectedPlayer === "Player 1") {
-            setP1Stake(function(prev) { return prev + parsedAmount; });
-            setEscrowPool(function(prev) { return prev + parsedAmount; });
-            addChatMsg("SYSTEM", "Player 1 (ELITE_CONQUEROR) deposited " + parsedAmount + " USDC in the escrow pool.");
-        } else {
-            setP2Stake(function(prev) { return prev + parsedAmount; });
-            setEscrowPool(function(prev) { return prev + parsedAmount; });
-            addChatMsg("SYSTEM", "Player 2 (DEGEN_KILLER) deposited " + parsedAmount + " USDC in the escrow pool.");
-        }
-    };
-
-    // Streaming response logic
-    const streamRefereeText = function(fullText) {
-        setIsTyping(true);
-        let currentString = "";
-        let index = 0;
-        const interval = setInterval(() => {
-            if (index < fullText.length) {
-                currentString += fullText.charAt(index);
-                if (index % 4 === 0 && !mute) {
-                    playSound('tick');
-                }
-                setChatLog(prev => {
-                    const latest = [...prev];
-                    if (latest[latest.length - 1] && latest[latest.length - 1].sender === "AI REFEREE" && latest[latest.length - 1].text.startsWith(currentString.substring(0, 3))) {
-                        latest[latest.length - 1].text = currentString;
-                        return latest;
-                    } else {
-                        return [...prev, { sender: "AI REFEREE", text: currentString, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }];
-                    }
-                });
-                index++;
-            } else {
-                clearInterval(interval);
-                setIsTyping(false);
-            }
-        }, 15);
-    };
-
-    const handleSendChat = function(e) {
-        e.preventDefault();
-        if (!userInput.trim()) return;
-        const msg = userInput;
-        addChatMsg("USER", msg);
-        setUserInput("");
-
+    const confirmMpesaPinInput = function() {
+        setMpesaStatus("verifying");
         setTimeout(() => {
-            let reply = "";
-            const norm = msg.toLowerCase();
-            if (norm.includes("status") || norm.includes("telemetry") || norm.includes("ping")) {
-                reply = `[TELEMETRY CORE] Active scanning active on hardware footprint: ${deviceFingerprint}. Core latency is ${ping}ms. All local hooks verified clear.`;
-            } else if (norm.includes("cheat") || norm.includes("hack") || norm.includes("violation")) {
-                reply = "Zero-Tolerance Active Memory validation filters are deployed. Any injection array detected automatically terminates match, releasing net stake to honest counterparty minus 2.50% fee.";
-            } else if (norm.includes("payout") || norm.includes("fee") || norm.includes("recipient")) {
-                reply = "Upon resolution, the contract automatically executes fee separation: 2.50% to flat destination 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071. Remainder released instantly.";
-            } else if (norm.includes("signature") || norm.includes("712") || norm.includes("eip")) {
-                reply = "Oracle structures use EIP-712 typed structure hash formats (Domain Separator & Settlement parameters) to secure the settlement and prevent frontrunning.";
-            } else {
-                reply = "Telemetry registers analyzed. Standing by for screen metadata inputs or match execution state signals.";
+            // Generate valid simulated M-Pesa transaction ID
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let tx = "S";
+            for(let i=0; i<9; i++) {
+                tx += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            streamRefereeText(reply);
-        }, 800);
+            setMpesaTxCode(tx);
+            setMpesaStatus("verified");
+            if (!mute) playSound('mpesa');
+
+            // If paying for materials, clear cart
+            if (mpesaModal.type === "cart") {
+                setCart([]);
+            }
+        }, 2000);
     };
 
-    // Telemetry Pipeline Controls
-    const startMatchTelemetryScan = function() {
-        if (escrowPool === 0) {
-            if (!mute) playSound('warning');
-            alert("USDC Escrow Pool must be funded before initializing match telemetry monitoring.");
-            return;
-        }
-        if (!mute) playSound('scan');
-        setGameState("scanning");
-        addChatMsg("AI REFEREE", "Active memory registers and performance channels synced. Ingesting frame loops & packet data.");
-    };
-
-    const forceCheatAnomaly = function() {
-        if (gameState !== "scanning") return;
-        if (!mute) playSound('warning');
-        setGameState("dispute");
-        setMemState("CRITICAL: PARSING ERROR - HOOK INJECTION");
-        addChatMsg("AI REFEREE", "CRITICAL TAMPER EVENT DETECTED: Illegal dynamic packet choke detected on P1 network registers.");
-
-        setTimeout(function() {
-            addChatMsg("AI REFEREE", "CRITICAL RESOLUTION: Cheater flagged. Executing smart contract anticheat emergency clause. Routed USDC balance to non-violating player.");
-            if (!mute) playSound('success');
-            const fee = escrowPool * 0.025;
-            const payout = escrowPool - fee;
-            addChatMsg("SYSTEM", "Base Contract Event: routed Platform Fee of " + fee.toFixed(2) + " USDC to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071. Awarded " + payout.toFixed(2) + " USDC to Player 2 (DEGEN_KILLER).");
-            setEscrowPool(0);
-            setP1Stake(0);
-            setP2Stake(0);
-        }, 2500);
-    };
-
-    const resolveNormalVictory = function() {
-        if (gameState !== "scanning") return;
-        if (!mute) playSound('success');
-        setGameState("victory");
-        setMemState("SECURE/CLEAN RUN");
-        addChatMsg("AI REFEREE", "Match parameters completed successfully. Validated no memory layer deviations. Winner confirmed: Player 2.");
-
-        // Create the EIP-712 typed signature format
-        const mockSig = {
-            domain: {
-                name: "AutonomousUSDCGamingEscrow",
-                version: "1",
-                chainId: 8453, // Base Network
-                verifyingContract: "0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913"
-            },
-            message: {
-                matchId: "0x" + Math.random().toString(16).substring(2, 10).padEnd(64, '0'),
-                winner: "0x3C44C2700D600000000000000000000000009012",
-                amount: escrowPool.toString() + " USDC",
-                nonce: "1"
-            },
-            signature: "0x25a987d6e42df152bc23aa12dfd91fae620582dbe048bce954de8f32109825bcf84ab011beb92131920ac34bc449ad15c9284cfde1102dbd63251aa30df93fc849ca1c"
-        };
-        setMockEipPayload(mockSig);
-        setShowEipSignature(true);
-
-        setTimeout(function() {
-            const fee = escrowPool * 0.025;
-            const payout = escrowPool - fee;
-            addChatMsg("SYSTEM", "Base Contract Resolved: Transferred " + payout.toFixed(2) + " USDC to winning player. Sent service fee of " + fee.toFixed(2) + " USDC to platform account.");
-            setEscrowPool(0);
-            setP1Stake(0);
-            setP2Stake(0);
-        }, 3200);
-    };
-
-    const resetMatchSimulation = function() {
-        if (!mute) playSound('click');
-        setGameState("idle");
-        setMemState("SECURE/PROTECTED");
-        setEscrowPool(0);
-        setP1Stake(0);
-        setP2Stake(0);
-        setOcrFile(null);
-        setOcrStatus("Inactive. Ready to ingest telemetry data screenshot.");
-        setShowEipSignature(false);
-        addChatMsg("SYSTEM", "Lobby registers flushed. Match simulator in idle status.");
-    };
-
-    // Post-Match Screens OCR analyzer simulator
-    const handleVisionScreenUpload = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        setOcrFile(file);
-        setAnalyzingOcr(true);
-        setOcrStatus("Loading OCR Convolutional Core... Inspecting canvas coordinates.");
-        if (!mute) playSound('scan');
-
-        setTimeout(function() {
-            setOcrStatus("Cross-checking telemetry logs with screen OCR markers. Inspecting layer profiles for Photoshop distortion.");
-            setTimeout(function() {
-                setOcrStatus("Integrity Verified. Scoreboard numbers fully sync with telemetry metadata logs. Layers clean.");
-                setAnalyzingOcr(false);
-                addChatMsg("AI REFEREE", "VISION ANALYSER REPORT: Target screenshot matches runtime log events. Integrity score: 99.9%.");
-                if (!mute) playSound('success');
-            }, 1200);
-        }, 1200);
-    };
-
-    return React.createElement("div", { className: "min-h-screen flex flex-col justify-between select-none relative z-10" },
+    // Chat function
+    const sendChatMessage = function(e) {
+        e.preventDefault();
+        if (!chatMessage.trim()) return;
         
-        // Background Particle Canvas
-        React.createElement("canvas", { ref: canvasRef, className: "absolute top-0 left-0 w-full h-full pointer-events-none z-0" }),
+        const targetId = chatTarget.id;
+        const currentMsgs = chatLogs[targetId] || [];
+        const newMsg = {
+            sender: "You",
+            text: chatMessage,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
 
-        // HEADER/NAVIGATION
-        React.createElement("header", { className: "border-b border-cyan-500/10 bg-[#07080d]/90 backdrop-blur-md relative z-30" },
+        setChatLogs({
+            ...chatLogs,
+            [targetId]: [...currentMsgs, newMsg]
+        });
+        setChatMessage("");
+
+        // Simulated fundi/client reply after brief timeout
+        setTimeout(() => {
+            const replies = [
+                "Sawa kabisa. My tools are sharp and fully ready for the task.",
+                "Niko tayari, let's process the JengaEscrow contract and I'll deploy instantly on Monday.",
+                "Let me share coordinates for my location. Are materials like cement already delivered to the site?",
+                "Kindly verify if sand tipper has passed the security gate.",
+                "Asante sana. We can finalize the work terms right away."
+            ];
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            const replyMsg = {
+                sender: chatTarget.title || chatTarget.name,
+                text: randomReply,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            setChatLogs(prevLogs => ({
+                ...prevLogs,
+                [targetId]: [...(prevLogs[targetId] || []), replyMsg]
+            }));
+            if (!mute) playSound('mpesa');
+        }, 1500);
+    };
+
+    const [mute, setMute] = useState(false);
+
+    // Filtered lists
+    const filteredJobs = useMemo(() => {
+        return jobs.filter(job => {
+            const matchesQuery = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                 job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                 job.postedBy.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCat = categoryFilter === "All" || job.category === categoryFilter;
+            return matchesQuery && matchesCat;
+        });
+    }, [jobs, searchQuery, categoryFilter]);
+
+    const filteredMaterials = useMemo(() => {
+        return materials.filter(mat => {
+            const matchesQuery = mat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                 mat.seller.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                 mat.location.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCat = categoryFilter === "All" || mat.category === categoryFilter;
+            return matchesQuery && matchesCat;
+        });
+    }, [materials, searchQuery, categoryFilter]);
+
+    return React.createElement("div", { className: "min-h-screen flex flex-col relative z-10" },
+        
+        // TOP GLOBAL EMERGENCY ALERT FOR KENYAN CONSTRUCTION WORKERS
+        React.createElement("div", { className: "bg-gradient-to-r from-amber-600 to-amber-700 text-slate-900 py-2.5 px-4 font-grotesk font-semibold text-xs md:text-sm text-center relative z-40 flex items-center justify-center gap-2 shadow-lg" },
+            React.createElement("span", { className: "bg-slate-900 text-amber-400 font-mono text-[10px] px-2 py-0.5 rounded-full" }, "KENYA JENGA NETWORK"),
+            React.createElement("p", { className: "text-slate-900 font-bold" }, 
+                "Connecting over 25,000+ certified Fundis, Casual workers, Hardware Dealers, and Logistics across Nairobi, Kiambu, Nakuru & Coastal Counties."
+            )
+        ),
+
+        // HEADER & NAVIGATION
+        React.createElement("header", { className: "border-b border-slate-800 bg-[#121826]/90 backdrop-blur-md sticky top-0 z-30" },
             React.createElement("div", { className: "max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4" },
                 
-                // Esports Branding Logo
+                // Jenga Hub Branding
                 React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("div", { 
-                        className: "relative group cursor-pointer",
-                        onClick: function() { if (!mute) playSound('click'); }
-                    },
-                        React.createElement("div", { className: "w-12 h-12 rounded-lg flex items-center justify-center border transition-all duration-300 relative overflow-hidden " + (
-                            gameState === "dispute" ? "bg-red-500/10 border-red-500 neon-red-glow" :
-                            gameState === "scanning" ? "bg-cyan-500/10 border-cyan-400 neon-cyan-glow animate-pulse" :
-                            gameState === "victory" ? "bg-emerald-500/10 border-emerald-400" :
-                            "bg-slate-900 border-cyan-500/20 hover:border-cyan-400"
-                        ) },
-                            React.createElement("svg", { className: "w-7 h-7 text-cyan-400", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
-                                React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.5", d: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" })
-                            )
-                        )
-                    ),
+                        onClick: () => { if (!mute) playSound('click'); },
+                        className: "w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-slate-900 font-grotesk font-black text-xl shadow-md cursor-pointer hover:rotate-6 transition-transform"
+                    }, "J"),
                     React.createElement("div", null,
                         React.createElement("div", { className: "flex items-center gap-2" },
-                            React.createElement("h1", { className: "font-orbitron font-black text-xl tracking-wider text-white" },
-                                "EPIC ",
-                                React.createElement("span", { className: "text-cyan-400" }, "REFEREE")
+                            React.createElement("h1", { className: "font-grotesk font-bold text-lg md:text-xl text-white tracking-tight" },
+                                "JENGA",
+                                React.createElement("span", { className: "text-amber-500" }, "KAZI")
                             ),
-                            React.createElement("span", { className: "bg-cyan-400/10 text-cyan-400 text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-cyan-400/30" }, "BASE")
+                            React.createElement("span", { className: "bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20" }, "M-Pesa Verified")
                         ),
-                        React.createElement("p", { className: "text-[9px] text-slate-400 font-mono tracking-widest uppercase" }, "USDC Cryptographic Autonomous Escrow")
+                        React.createElement("p", { className: "text-[11px] text-slate-400 font-medium" }, "Soko Kuu la Mafundi na Vifaa vya Mjengo")
                     )
                 ),
 
-                // Navigation Tabs
-                React.createElement("div", { className: "flex items-center gap-1 bg-[#0d0f17] p-1 rounded-lg border border-slate-800" },
-                    React.createElement("button", { 
-                        onClick: function() { if (!mute) playSound('click'); setActiveTab("dashboard"); },
-                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "dashboard" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
-                    }, "MATCH HUD"),
-                    React.createElement("button", { 
-                        onClick: function() { if (!mute) playSound('click'); setActiveTab("solidity"); },
-                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "solidity" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
-                    }, "SOLIDITY ESCROW"),
-                    React.createElement("button", { 
-                        onClick: function() { if (!mute) playSound('click'); setActiveTab("architecture"); },
-                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "architecture" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
-                    }, "CORE DIAGRAM")
+                // Responsive Tab Switchers
+                React.createElement("nav", { className: "flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800" },
+                    [
+                        { id: "kazi", name: "TAFUTA KAZI", icon: "🏗️" },
+                        { id: "soko", name: "SOKO (MATERIALS)", icon: "🧱" },
+                        { id: "calculator", name: "ESTIMATOR", icon: "📐" },
+                        { id: "fundis", name: "VERIFIED FUNDIS", icon: "👷" },
+                        { id: "usafiri", name: "USAFIRI (LOGISTICS)", icon: "🚛" }
+                    ].map(tab => (
+                        React.createElement("button", {
+                            key: tab.id,
+                            onClick: () => { if (!mute) playSound('click'); setActiveTab(tab.id); },
+                            className: "px-3.5 py-2 text-xs font-grotesk font-bold tracking-wide rounded-lg transition-all flex items-center gap-1.5 " + (
+                                activeTab === tab.id 
+                                ? "bg-amber-500 text-slate-950 font-bold shadow-md" 
+                                : "text-slate-400 hover:text-white hover:bg-slate-900/50"
+                            )
+                        }, 
+                            React.createElement("span", null, tab.icon),
+                            React.createElement("span", null, tab.name)
+                        )
+                    ))
                 ),
 
-                // Wallet Connection Area
+                // Cart Icon & Config
                 React.createElement("div", { className: "flex items-center gap-3" },
-                    // Mute synth switch
-                    React.createElement("button", { 
-                        onClick: function() { setMute(!mute); },
-                        className: "p-2 rounded bg-[#0d0f17] border border-slate-800 hover:border-cyan-500/30 text-slate-400 hover:text-cyan-400 transition-colors"
+                    
+                    // Sound switch
+                    React.createElement("button", {
+                        onClick: () => setMute(!mute),
+                        className: "p-2.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/30 text-slate-400 hover:text-amber-400 transition-colors"
                     }, mute ? 
-                        React.createElement("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-                            React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" }),
-                            React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" })
-                        ) :
-                        React.createElement("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-                            React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z" })
-                        )
+                        React.createElement("span", null, "🔇") : 
+                        React.createElement("span", null, "🔊")
                     ),
 
-                    connected ? 
-                    React.createElement("div", { className: "flex items-center gap-2 bg-[#0c0d14] border border-cyan-500/20 rounded px-3 py-1.5 font-mono text-xs" },
-                        React.createElement("span", { className: "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" }),
-                        React.createElement("span", { className: "text-slate-300 font-semibold" }, walletAddress),
-                        React.createElement("span", { className: "text-cyan-400 font-bold ml-1" }, "$" + usdcBalance.toFixed(2) + " USDC"),
-                        React.createElement("button", { onClick: handleDisconnect, className: "text-red-400 hover:text-red-300 font-bold ml-2 underline" }, "Disconnect")
-                    ) :
-                    React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { 
-                            onClick: function() { startWalletConnect("MetaMask"); },
-                            className: "px-3 py-2 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 text-[11px] font-orbitron font-bold rounded transition-all"
-                        }, "MetaMask"),
-                        React.createElement("button", { 
-                            onClick: function() { startWalletConnect("Coinbase"); },
-                            className: "px-3 py-2 bg-[#0052ff]/10 border border-[#0052ff]/30 hover:border-[#0052ff]/80 text-[#8ea7ff] text-[11px] font-orbitron font-bold rounded transition-all"
-                        }, "Coinbase Wallet"),
-                        React.createElement("button", { 
-                            onClick: function() { startWalletConnect("Rainbow"); },
-                            className: "px-3 py-2 bg-gradient-to-r from-red-500/10 to-yellow-500/10 border border-yellow-500/30 hover:border-yellow-500/80 text-yellow-200 text-[11px] font-orbitron font-bold rounded transition-all"
-                        }, "Rainbow")
+                    // Toggle Role button
+                    React.createElement("button", {
+                        onClick: () => {
+                            if (!mute) playSound('click');
+                            setUserProfileRole(userProfileRole === "Fundi" ? "Foreman" : "Fundi");
+                        },
+                        className: "px-3 py-2 bg-slate-900 border border-slate-800 text-xs font-grotesk font-semibold text-slate-300 hover:border-amber-500/20 rounded-lg flex items-center gap-2"
+                    }, 
+                        React.createElement("span", { className: "w-2 h-2 rounded-full bg-amber-500 animate-pulse" }),
+                        "Role: ", React.createElement("span", { className: "text-amber-400" }, userProfileRole)
+                    ),
+
+                    // Shopping Cart trigger
+                    React.createElement("button", {
+                        onClick: () => { if (!mute) playSound('click'); setIsCartOpen(!isCartOpen); },
+                        className: "relative px-4 py-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:border-amber-500/40 text-xs font-grotesk font-bold rounded-lg flex items-center gap-2"
+                    },
+                        React.createElement("span", null, "🛒 Soko Cart"),
+                        cart.length > 0 && React.createElement("span", { className: "absolute -top-2 -right-2 w-5 h-5 rounded-full bg-emerald-500 text-white font-mono text-[10px] flex items-center justify-center animate-bounce shadow" }, 
+                            cart.reduce((sum, item) => sum + item.quantity, 0)
+                        )
                     )
                 )
 
             )
         ),
 
-        // MAIN CONTENT
-        React.createElement("main", { className: "max-w-7xl mx-auto w-full px-4 py-6 flex-1 relative z-10 grid grid-cols-1 gap-6" },
-
-            // SIWE AUTHENTICATION MODAL
-            siweModal && React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" },
-                React.createElement("div", { className: "cyber-panel p-6 max-w-md w-full space-y-4 rounded-lg neon-cyan-glow relative" },
-                    React.createElement("button", { 
-                        onClick: function() { if (!mute) playSound('click'); setSiweModal(false); },
-                        className: "absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-sm"
-                    }, "[X]"),
-
-                    React.createElement("div", { className: "border-b border-cyan-500/20 pb-2" },
-                        React.createElement("h3", { className: "font-orbitron font-black text-sm text-white tracking-wider" }, "SIGN-IN WITH ETHEREUM (SIWE)"),
-                        React.createElement("p", { className: "text-[9px] font-mono text-cyan-400/80" }, "EIP-4361 SECURE HANDSHAKE ENGINE")
+        // MAIN HERO & SEARCH BAR ZONE
+        React.createElement("div", { className: "bg-slate-950 py-10 border-b border-slate-900 relative" },
+            React.createElement("div", { className: "max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-12 gap-8 items-center" },
+                React.createElement("div", { className: "md:col-span-8 space-y-4" },
+                    React.createElement("h2", { className: "text-3xl md:text-5xl font-grotesk font-black tracking-tight leading-none text-white" },
+                        "Connect With Verified ",
+                        React.createElement("span", { className: "text-amber-500 block md:inline" }, "Fundis, Materials & Transport")
                     ),
-
-                    React.createElement("div", { className: "bg-black/40 p-3 rounded border border-slate-800 text-[10px] font-mono text-slate-400 space-y-2" },
-                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Domain: "), "epic-referee.base"),
-                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Statement: "), "Authorize security telemetry scanner module & lock native USDC smart contracts on Base."),
-                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Device Footprint: "), deviceFingerprint),
-                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Chain ID: "), "8453 (Base Network)")
+                    React.createElement("p", { className: "text-sm md:text-base text-slate-400 max-w-2xl leading-relaxed font-light" },
+                        "Instantly source building supplies, hire professional masonry contractors, find high-load transport canters, or bid on premium construction projects with safe M-Pesa escrow guarantees."
+                    )
+                ),
+                React.createElement("div", { className: "md:col-span-4 bg-[#121826] p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3" },
+                    React.createElement("h4", { className: "font-grotesk font-bold text-xs text-amber-500 tracking-wider uppercase" }, "⚡ Safe Escrow Assurance"),
+                    React.createElement("p", { className: "text-xs text-slate-300 leading-normal" },
+                        "Funds deposited to JengaEscrow till are safely secured until the foreman confirms delivery of materials or work milestones on-site."
                     ),
-
-                    React.createElement("p", { className: "text-[10px] text-slate-500 italic leading-relaxed" },
-                        "By signing this cryptographic message, you verify possession of private keys and issue an isolated backend JWT session tied to your device fingerprint signature."
-                    ),
-
-                    React.createElement("button", { 
-                        onClick: executeSIWE,
-                        disabled: siweSigning,
-                        className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-xs tracking-widest uppercase rounded transition-all"
-                    }, siweSigning ? "GENERATING SECURE SCHEME..." : "SIGN SECURITY PAYLOAD")
-                )
-            ),
-
-            // ANTI-CHEAT CRITICAL DISPUTE PANEL
-            gameState === "dispute" && React.createElement("div", { className: "bg-red-950/20 border border-red-500/50 rounded-lg p-5 relative overflow-hidden neon-red-glow" },
-                React.createElement("div", { className: "warning-sweep" }),
-                React.createElement("div", { className: "flex flex-col md:flex-row items-center gap-4 relative z-10" },
-                    React.createElement("div", { className: "w-12 h-12 rounded bg-red-500/20 border border-red-500 flex items-center justify-center text-red-500" },
-                        React.createElement("svg", { className: "w-7 h-7 animate-bounce", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-                            React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" })
-                        )
-                    ),
-                    React.createElement("div", { className: "space-y-1" },
-                        React.createElement("h3", { className: "font-orbitron font-extrabold text-sm text-red-500 uppercase tracking-widest" }, "AI Ref Protection Active: Cheat Violation Enforced"),
-                        React.createElement("p", { className: "text-xs text-red-300 font-mono" },
-                            "Continuous telemetry RAM registers monitoring flagged a dynamic packet injection vector. Match terminated immediately. 2.50% platform fee routed, remaining funds awarded directly to the honest player."
-                        )
+                    React.createElement("div", { className: "flex items-center gap-2 text-[11px] font-mono text-emerald-400 bg-emerald-950/20 px-3 py-2 rounded-lg border border-emerald-500/20" },
+                        React.createElement("span", { className: "text-lg" }, "🛡️"),
+                        "Zero upfront risk for fundis & developers"
                     )
                 )
-            ),
+            )
+        ),
 
-            // VICTORY SUMMARY
-            gameState === "victory" && React.createElement("div", { className: "bg-emerald-950/20 border border-emerald-500/50 rounded-lg p-5 relative overflow-hidden" },
-                React.createElement("div", { className: "flex flex-col md:flex-row items-center gap-4" },
-                    React.createElement("div", { className: "w-12 h-12 rounded bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400" },
-                        React.createElement("svg", { className: "w-7 h-7", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-                            React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" })
-                        )
-                    ),
-                    React.createElement("div", { className: "space-y-1" },
-                        React.createElement("h3", { className: "font-orbitron font-extrabold text-sm text-emerald-400 uppercase tracking-widest" }, "Verification Clean - Match Complete"),
-                        React.createElement("p", { className: "text-xs text-emerald-300 font-mono" },
-                            "No violations observed. Telemetry evaluation confirms honest player mechanics. Preparing automated payout release with cryptographic signature parameters."
-                        )
-                    )
-                )
-            ),
-
-            // TAB: DASHBOARD
-            activeTab === "dashboard" && React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch" },
+        // MAIN GRID WRAPPER
+        React.createElement("main", { className: "max-w-7xl mx-auto w-full px-4 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8" },
+            
+            // CONTENT CORE SCREEN AREA (LEFT / MAIN PANEL)
+            React.createElement("section", { className: "lg:col-span-8 space-y-6" },
                 
-                // CONTROL SYSTEM
-                React.createElement("div", { className: "lg:col-span-5 space-y-6" },
+                // FILTER / SEARCH CONSOLE
+                activeTab !== "calculator" && React.createElement("div", { className: "jenga-panel p-4 flex flex-col md:flex-row gap-3 items-center justify-between" },
+                    React.createElement("div", { className: "relative w-full md:w-1/2" },
+                        React.createElement("input", {
+                            type: "text",
+                            placeholder: "Tafuta by name, location, keyword (e.g. Ruaka, Sand, Plumber)...",
+                            value: searchQuery,
+                            onChange: (e) => setSearchQuery(e.target.value),
+                            className: "w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
+                        }),
+                        React.createElement("span", { className: "absolute left-3.5 top-3 text-slate-500 text-sm" }, "🔍")
+                    ),
 
-                    // LOBBY CONFIGURATION
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4" },
-                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2" },
-                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "1. Configure Game Lobby"),
-                            React.createElement("p", { className: "text-[9px] font-mono text-slate-500" }, "SETUP ACTIVE BASE MATCH INSTANCE")
+                    React.createElement("div", { className: "flex items-center gap-2 w-full md:w-auto" },
+                        React.createElement("span", { className: "text-xs font-grotesk font-semibold text-slate-400 shrink-0" }, "Filter Sector:"),
+                        React.createElement("select", {
+                            value: categoryFilter,
+                            onChange: (e) => setCategoryFilter(e.target.value),
+                            className: "w-full md:w-auto px-4 py-2.5 rounded-xl text-xs font-grotesk font-bold"
+                        },
+                            React.createElement("option", { value: "All" }, "All Construction Hubs"),
+                            activeTab === "kazi" && React.createElement(React.Fragment, null,
+                                React.createElement("option", { value: "Masonry" }, "Masonry & Steel"),
+                                React.createElement("option", { value: "Plumbing" }, "Plumbing & Bio"),
+                                React.createElement("option", { value: "Electrical" }, "Electrical & Solar"),
+                                React.createElement("option", { value: "Casual Work" }, "Casual Daily Gig (Mjengo)"),
+                                React.createElement("option", { value: "Finishing & Gypsum" }, "Finishing Interiors")
+                            ),
+                            activeTab === "soko" && React.createElement(React.Fragment, null,
+                                React.createElement("option", { value: "Cement & Aggregates" }, "Cement & Sand Aggregates"),
+                                React.createElement("option", { value: "Steel & Timber" }, "Steel & Structural Timber"),
+                                React.createElement("option", { value: "Equipment & Tools" }, "Concrete Mixer Rentals & Power Tools")
+                            )
+                        )
+                    )
+                ),
+
+                // TAB 1: KAZI / JOB BOARD PORTAL
+                activeTab === "kazi" && React.createElement("div", { className: "space-y-4" },
+                    React.createElement("div", { className: "flex items-center justify-between pb-2" },
+                        React.createElement("div", null,
+                            React.createElement("h3", { className: "font-grotesk font-extrabold text-xl text-white" }, "Active Construction Gigs & Project Tenders"),
+                            React.createElement("p", { className: "text-xs text-slate-400" }, "Apply with your daily rates and schedule to lock escrow payouts.")
                         ),
+                        
+                        userProfileRole === "Foreman" && React.createElement("button", {
+                            onClick: () => { if (!mute) playSound('click'); setIsPostingJob(true); },
+                            className: "px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-bold text-xs rounded-xl flex items-center gap-2 shadow"
+                        }, "+ Post Mjengo Work")
+                    ),
 
-                        React.createElement("div", { className: "space-y-3" },
-                            React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SELECT ACTIVE GAME"),
-                                React.createElement("select", { 
-                                    value: gameParam, 
-                                    onChange: function(e) { setGameParam(e.target.value); },
-                                    className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none"
-                                },
-                                    React.createElement("option", { value: "Valorant Custom 1v1" }, "Valorant Custom 1v1 (Telemetry API)"),
-                                    React.createElement("option", { value: "CS2 Wingman" }, "CS2 Wingman (Dynamic RAM Hooks)"),
-                                    React.createElement("option", { value: "Apex Legends Arena" }, "Apex Legends Arena (WS Telemetry)"),
-                                    React.createElement("option", { value: "Street Fighter VI Duel" }, "Street Fighter VI Duel (OCR Capture)")
-                                )
+                    // JOB POSTING MODAL
+                    isPostingJob && React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" },
+                        React.createElement("div", { className: "jenga-panel p-6 max-w-xl w-full space-y-4 relative border-amber-500/20 jenga-shadow" },
+                            React.createElement("button", {
+                                onClick: () => setIsPostingJob(false),
+                                className: "absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-sm"
+                            }, "[ Close ]"),
+
+                            React.createElement("div", { className: "border-b border-slate-800 pb-2" },
+                                React.createElement("h3", { className: "font-grotesk font-black text-base text-white uppercase tracking-wider" }, "Post Site Gig to Network"),
+                                React.createElement("p", { className: "text-xs text-amber-500 font-mono" }, "VERIFY DAILY BUDGET & ESCROW TARGET")
                             ),
 
-                            React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "ANTI-CHEAT HEURISTICS"),
-                                React.createElement("select", { 
-                                    value: antiCheatThreshold, 
-                                    onChange: function(e) { setAntiCheatThreshold(e.target.value); },
-                                    className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none"
-                                },
-                                    React.createElement("option", { value: "Zero Tolerance Ramp Check" }, "Strict (Continuous Memory + Integrity Checks)"),
-                                    React.createElement("option", { value: "Standard AI Scan" }, "Medium (OCR Capture + Post Match Checks)"),
-                                    React.createElement("option", { value: "Permissive Debug Mode" }, "Manual (Developer Validation Only)")
-                                )
-                            ),
+                            React.createElement("form", { onSubmit: handlePostNewJob, className: "space-y-3" },
+                                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                                    React.createElement("div", null,
+                                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "PROJECT GIG TITLE"),
+                                        React.createElement("input", {
+                                            type: "text",
+                                            placeholder: "e.g. Masonry for Foundation",
+                                            value: newJobTitle,
+                                            onChange: (e) => setNewJobTitle(e.target.value),
+                                            className: "w-full p-2 text-xs rounded-lg"
+                                        })
+                                    ),
+                                    React.createElement("div", null,
+                                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "MJENGO SECTOR"),
+                                        React.createElement("select", {
+                                            value: newJobCategory,
+                                            onChange: (e) => setNewJobCategory(e.target.value),
+                                            className: "w-full p-2 text-xs rounded-lg font-bold text-white bg-slate-900"
+                                        },
+                                            React.createElement("option", { value: "Masonry" }, "Masonry & Steel"),
+                                            React.createElement("option", { value: "Plumbing" }, "Plumbing & Piping"),
+                                            React.createElement("option", { value: "Electrical" }, "Electrical & Solar"),
+                                            React.createElement("option", { value: "Casual Work" }, "Casual Daily (Mjengo)"),
+                                            React.createElement("option", { value: "Finishing & Gypsum" }, "Finishing & Gypsum")
+                                        )
+                                    )
+                                ),
 
-                            React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SHAREABLE MATCH INVITE LINK"),
-                                React.createElement("div", { className: "flex gap-2" },
-                                    React.createElement("input", { 
-                                        type: "text", 
-                                        readOnly: true, 
-                                        value: "https://app.projectepic.gg/lobby/" + matchId,
-                                        className: "flex-1 bg-black/40 border border-slate-800 rounded px-3 py-2 text-slate-400 font-mono text-xs focus:outline-none"
-                                    }),
-                                    React.createElement("button", { 
-                                        onClick: handleCopyInviteLink,
-                                        className: "px-3 bg-cyan-950/40 text-cyan-400 hover:bg-cyan-400 hover:text-black border border-cyan-400/20 font-orbitron font-bold text-[10px] tracking-wider rounded transition-all shrink-0"
-                                    }, inviteCopied ? "COPIED" : "COPY LINK")
-                                )
+                                React.createElement("div", { className: "grid grid-cols-3 gap-3" },
+                                    React.createElement("div", null,
+                                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "LOCATION (TOWN/ESTATE)"),
+                                        React.createElement("input", {
+                                            type: "text",
+                                            placeholder: "e.g. Syokimau, Machakos",
+                                            value: newJobLocation,
+                                            onChange: (e) => setNewJobLocation(e.target.value),
+                                            className: "w-full p-2 text-xs rounded-lg"
+                                        })
+                                    ),
+                                    React.createElement("div", null,
+                                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "DAILY BUDGET (KES)"),
+                                        React.createElement("input", {
+                                            type: "number",
+                                            placeholder: "e.g. 1500",
+                                            value: newJobBudget,
+                                            onChange: (e) => setNewJobBudget(e.target.value),
+                                            className: "w-full p-2 text-xs rounded-lg"
+                                        })
+                                    ),
+                                    React.createElement("div", null,
+                                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "ESTIMATED DAYS"),
+                                        React.createElement("input", {
+                                            type: "text",
+                                            placeholder: "e.g. 5 Days",
+                                            value: newJobDuration,
+                                            onChange: (e) => setNewJobDuration(e.target.value),
+                                            className: "w-full p-2 text-xs rounded-lg"
+                                        })
+                                    )
+                                ),
+
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "DETAILED DESCRIPTION OF WORK"),
+                                    React.createElement("textarea", {
+                                        rows: 3,
+                                        placeholder: "Describe the site layout, standard of mix, or tools provided on-site...",
+                                        value: newJobDescription,
+                                        onChange: (e) => setNewJobDescription(e.target.value),
+                                        className: "w-full p-2 text-xs rounded-lg"
+                                    })
+                                ),
+
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "REQUISITES (COMMA SEPARATED)"),
+                                    React.createElement("input", {
+                                        type: "text",
+                                        placeholder: "e.g. Own level, NITA certificate, Hard-hat",
+                                        value: newJobRequirements,
+                                        onChange: (e) => setNewJobRequirements(e.target.value),
+                                        className: "w-full p-2 text-xs rounded-lg"
+                                    })
+                                ),
+
+                                React.createElement("div", { className: "bg-emerald-950/20 border border-emerald-500/20 p-3 rounded-lg text-xs text-slate-300" },
+                                    "✨ Your post will receive standard verified badges. Bids will trigger instant real-time SMS notifications on your Safaricom line."
+                                ),
+
+                                React.createElement("button", {
+                                    type: "submit",
+                                    className: "w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-lg transition-all"
+                                }, "Publish Project & Solicit Bids")
                             )
                         )
                     ),
 
-                    // ESCROW FUNDING INTERFACE
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4" },
-                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2 flex items-center justify-between" },
-                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "2. Cryptographic Escrow Ingest"),
-                            React.createElement("span", { className: "text-[9px] font-mono bg-cyan-400/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-400/20" }, "NATIVE USDC ONLY")
-                        ),
+                    // LISTINGS GRID
+                    filteredJobs.length === 0 ? React.createElement("div", { className: "jenga-panel p-10 text-center text-slate-400" }, 
+                        "Bado hakuna kazi matching your search queries. Try other construction categories!"
+                    ) : 
+                    filteredJobs.map(job => (
+                        React.createElement("div", { key: job.id, className: "jenga-panel p-5 space-y-4 hover:border-amber-500/25 transition-all" },
+                            React.createElement("div", { className: "flex flex-col md:flex-row md:items-center justify-between gap-2" },
+                                React.createElement("div", { className: "space-y-1" },
+                                    React.createElement("div", { className: "flex items-center gap-2" },
+                                        React.createElement("span", { className: "bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase" }, job.category),
+                                        job.verified && React.createElement("span", { className: "bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded" }, "🛡️ Verified Employer"),
+                                        React.createElement("span", { className: "text-red-400 text-[10px] font-mono font-bold bg-red-950/20 px-2 py-0.5 rounded" }, job.urgency)
+                                    ),
+                                    React.createElement("h4", { className: "font-grotesk font-bold text-base text-white hover:text-amber-400 transition-colors cursor-pointer" }, job.title)
+                                ),
+                                React.createElement("div", { className: "text-right md:shrink-0" },
+                                    React.createElement("p", { className: "text-xs font-mono text-slate-400" }, "Daily Wage Budget"),
+                                    React.createElement("p", { className: "font-grotesk font-extrabold text-lg text-emerald-400" }, `KES ${job.budget} / Siku`)
+                                )
+                            ),
 
-                        React.createElement("div", { className: "space-y-3" },
-                            React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SELECT PLAYER IDENTITY TO DEPOSIT"),
-                                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                                    ["Player 1", "Player 2"].map(function(p) {
-                                        return React.createElement("button", {
-                                            key: p,
-                                            onClick: function() { if (!mute) playSound('click'); setSelectedPlayer(p); },
-                                            className: "py-2 rounded font-orbitron font-bold text-[11px] border transition-all " + (
-                                                selectedPlayer === p 
-                                                ? "bg-cyan-500/10 text-cyan-400 border-cyan-400" 
-                                                : "bg-slate-900/40 text-slate-400 border-slate-800 hover:border-slate-700"
-                                            )
-                                        }, p === "Player 1" ? "PLAYER 1" : "PLAYER 2");
+                            React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed font-light" }, job.description),
+
+                            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-900 text-xs font-mono" },
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "SITE LOCATION"),
+                                    React.createElement("span", { className: "text-slate-300 font-bold" }, job.location)
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "JOB DURATION"),
+                                    React.createElement("span", { className: "text-slate-300 font-bold" }, job.duration)
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "ACTIVE BIDS"),
+                                    React.createElement("span", { className: "text-amber-500 font-bold animate-pulse" }, `${job.bidsCount} mafundi applied`)
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "POSTED BY"),
+                                    React.createElement("span", { className: "text-slate-300 font-bold" }, job.postedBy)
+                                )
+                            ),
+
+                            React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                                job.requirements.map((req, idx) => (
+                                    React.createElement("span", { key: idx, className: "bg-slate-900 text-slate-400 text-[10px] px-2.5 py-1 rounded-md border border-slate-800" }, `✓ ${req}`)
+                                ))
+                            ),
+
+                            React.createElement("div", { className: "pt-3 border-t border-slate-900 flex flex-wrap gap-2 items-center justify-between" },
+                                React.createElement("div", { className: "flex items-center gap-2" },
+                                    React.createElement("button", {
+                                        onClick: () => {
+                                            if (!mute) playSound('click');
+                                            setChatTarget({ id: job.id, title: job.postedBy, rating: "Employer" });
+                                        },
+                                        className: "px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-grotesk font-bold rounded-lg border border-slate-800 transition-colors flex items-center gap-1.5"
+                                    }, "💬 Chat with Site Foreman"),
+                                    React.createElement("a", {
+                                        href: `tel:${job.phone}`,
+                                        onClick: () => { if (!mute) playSound('horn'); },
+                                        className: "px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono rounded-lg border border-slate-800 transition-colors"
+                                    }, `📞 ${job.phone}`)
+                                ),
+
+                                React.createElement("button", {
+                                    onClick: () => { if (!mute) playSound('click'); setSelectedJobForBid(job); },
+                                    className: "px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-extrabold text-xs rounded-lg transition-all"
+                                }, "Apply & Lock Daily Pay")
+                            )
+                        ))
+                    ),
+
+                    // JOB APPLICATION / BID MODAL
+                    selectedJobForBid && React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" },
+                        React.createElement("div", { className: "jenga-panel p-6 max-w-md w-full space-y-4 relative border-amber-500/20 jenga-shadow" },
+                            React.createElement("button", {
+                                onClick: () => setSelectedJobForBid(null),
+                                className: "absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-xs"
+                            }, "[X] Close"),
+
+                            React.createElement("div", { className: "border-b border-slate-800 pb-2" },
+                                React.createElement("h3", { className: "font-grotesk font-black text-sm text-white uppercase tracking-wider" }, "Submit Daily Bid Quote"),
+                                React.createElement("p", { className: "text-xs text-amber-500" }, selectedJobForBid.title)
+                            ),
+
+                            React.createElement("form", { onSubmit: handleApplyBid, className: "space-y-4" },
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "YOUR DEMAND DAILY PAY (KES)"),
+                                    React.createElement("div", { className: "relative" },
+                                        React.createElement("input", {
+                                            type: "number",
+                                            placeholder: "e.g. 1700",
+                                            value: bidAmount,
+                                            onChange: (e) => setBidAmount(e.target.value),
+                                            className: "w-full p-2.5 text-sm text-white rounded-lg focus:outline-none"
+                                        }),
+                                        React.createElement("span", { className: "absolute right-3 top-2.5 font-bold text-xs text-amber-400 font-mono" }, "KES / SIKU")
+                                    )
+                                ),
+
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-400 mb-1" }, "COVER NOTE / SPECIAL SITE SKILL"),
+                                    React.createElement("textarea", {
+                                        rows: 3,
+                                        placeholder: "Inform foreman about your experience level, size of your auxiliary crew (if any), and when you can deploy...",
+                                        value: bidCoverLetter,
+                                        onChange: (e) => setBidCoverLetter(e.target.value),
+                                        className: "w-full p-2 text-xs rounded-lg"
+                                    })
+                                ),
+
+                                React.createElement("div", { className: "bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-slate-400 space-y-1" },
+                                    React.createElement("p", null, "✓ Your EPRA or local fundi certifications attached."),
+                                    React.createElement("p", null, "✓ Direct SMS dispatch triggered for Mugo Builders.")
+                                ),
+
+                                React.createElement("button", {
+                                    type: "submit",
+                                    className: "w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-lg transition-all"
+                                }, "Lock Bid & Dispatch Verification")
+                            )
+                        )
+                    )
+                ),
+
+                // TAB 2: SOKO / MATERIALS MARKETPLACE
+                activeTab === "soko" && React.createElement("div", { className: "space-y-6" },
+                    React.createElement("div", { className: "flex items-center justify-between border-b border-slate-900 pb-4" },
+                        React.createElement("div", null,
+                            React.createElement("h3", { className: "font-grotesk font-extrabold text-xl text-white" }, "Soko Kuu la Vifaa na Ukodishaji Mashine"),
+                            React.createElement("p", { className: "text-xs text-slate-400" }, "High quality, verified KEBS raw building materials ready for logistics transit.")
+                        ),
+                        React.createElement("span", { className: "text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded" }, "Standard Athi River Yard Rates")
+                    ),
+
+                    // SOKO CARDS GRID
+                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+                        filteredMaterials.map(mat => (
+                            React.createElement("div", { key: mat.id, className: "jenga-panel p-5 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all" },
+                                React.createElement("div", { className: "space-y-2" },
+                                    React.createElement("div", { className: "flex items-center justify-between" },
+                                        React.createElement("span", { className: "text-3xl" }, mat.image),
+                                        React.createElement("div", { className: "flex items-center gap-1 bg-slate-900 px-2 py-0.5 rounded text-[10px] font-mono text-slate-400" },
+                                            React.createElement("span", null, "⭐"),
+                                            React.createElement("span", null, mat.rating)
+                                        )
+                                    ),
+                                    React.createElement("h4", { className: "font-grotesk font-bold text-base text-white" }, mat.name),
+                                    React.createElement("p", { className: "text-xs text-slate-400 leading-normal" }, mat.description),
+
+                                    React.createElement("div", { className: "flex items-center gap-2 text-[10px] font-mono text-slate-500" },
+                                        React.createElement("span", null, `📍 ${mat.location}`),
+                                        React.createElement("span", null, "•"),
+                                        React.createElement("span", null, `By: ${mat.seller}`),
+                                        React.createElement("span", null, "•"),
+                                        React.createElement("span", { className: "text-emerald-400 font-bold" }, `${mat.stock} units ready`)
+                                    )
+                                ),
+
+                                React.createElement("div", { className: "pt-3 border-t border-slate-900 flex items-center justify-between" },
+                                    React.createElement("div", null,
+                                        React.createElement("span", { className: "text-[10px] text-slate-500 block font-mono" }, `Unit rate (${mat.unit})`),
+                                        React.createElement("span", { className: "font-grotesk font-extrabold text-base text-amber-500" }, `KES ${mat.price.toLocaleString()}`)
+                                    ),
+
+                                    React.createElement("div", { className: "flex gap-2" },
+                                        React.createElement("button", {
+                                            onClick: () => {
+                                                if (!mute) playSound('click');
+                                                setChatTarget({ id: mat.id, title: mat.seller, rating: "Vendor Yard" });
+                                            },
+                                            className: "p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                                        }, "💬"),
+                                        React.createElement("button", {
+                                            onClick: () => addToCart(mat),
+                                            className: "px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-bold text-xs rounded-lg flex items-center gap-1.5 transition-all"
+                                        }, "Add to Site Cart")
+                                    )
+                                )
+                            ))
+                        ))
+                    )
+                ),
+
+                // TAB 3: ESTMATOR / CONSTRUCTION MATERIAL CALCULATOR
+                activeTab === "calculator" && React.createElement("div", { className: "jenga-panel p-6 space-y-6" },
+                    React.createElement("div", { className: "border-b border-slate-900 pb-4" },
+                        React.createElement("h3", { className: "font-grotesk font-extrabold text-xl text-white" }, "📐 Site Material Estimator & Cost Planner"),
+                        React.createElement("p", { className: "text-xs text-slate-400" }, "Compute the quantity of cement bags, sand, ballast, or quarry bricks needed based on classic Kenyan building parameters.")
+                    ),
+
+                    // CALC TYPE PICKER
+                    React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+                        [
+                            { id: "slab", name: "Floor Slab Concrete", icon: "🧱" },
+                            { id: "wall", name: "Quarry Stone Wall", icon: "🧱" },
+                            { id: "plaster", name: "Wall Plastering", icon: "⏳" }
+                        ].map(type => (
+                            React.createElement("button", {
+                                key: type.id,
+                                onClick: () => { if (!mute) playSound('click'); setCalcType(type.id); },
+                                className: "py-3 rounded-xl border font-grotesk font-bold text-xs flex flex-col items-center gap-1.5 transition-all " + (
+                                    calcType === type.id 
+                                    ? "bg-amber-500/10 text-amber-500 border-amber-500" 
+                                    : "bg-slate-950/40 text-slate-400 border-slate-800 hover:border-slate-700"
+                                )
+                            },
+                                React.createElement("span", { className: "text-lg" }, type.icon),
+                                React.createElement("span", null, type.name)
+                            )
+                        ))
+                    ),
+
+                    // CALC INPUTS AND RESULTS FLEX GRID
+                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch" },
+                        
+                        // Inputs Panel
+                        React.createElement("div", { className: "bg-slate-950/60 p-5 rounded-2xl border border-slate-900 space-y-4" },
+                            React.createElement("h4", { className: "font-grotesk font-bold text-xs text-slate-400 tracking-wider uppercase mb-2" }, "🔧 Setup Construction Dimensions"),
+                            
+                            calcType === "slab" && React.createElement(React.Fragment, null,
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "LENGTH OF SLAB (METERS)"),
+                                    React.createElement("input", {
+                                        type: "number",
+                                        value: slabLength,
+                                        onChange: (e) => setSlabLength(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm"
+                                    })
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "WIDTH OF SLAB (METERS)"),
+                                    React.createElement("input", {
+                                        type: "number",
+                                        value: slabWidth,
+                                        onChange: (e) => setSlabWidth(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm"
+                                    })
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "SLAB THICKNESS (METERS)"),
+                                    React.createElement("select", {
+                                        value: slabThickness,
+                                        onChange: (e) => setSlabThickness(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm text-white bg-slate-950"
+                                    },
+                                        React.createElement("option", { value: "0.10" }, "0.10m (100mm / 4 Inches)"),
+                                        React.createElement("option", { value: "0.15" }, "0.15m (150mm / 6 Inches Standard)"),
+                                        React.createElement("option", { value: "0.20" }, "0.20m (200mm / 8 Inches Heavy Commercial)")
+                                    )
+                                )
+                            ),
+
+                            calcType === "wall" && React.createElement(React.Fragment, null,
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "TOTAL LENGTH OF WALL (METERS)"),
+                                    React.createElement("input", {
+                                        type: "number",
+                                        value: wallLength,
+                                        onChange: (e) => setWallLength(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm"
+                                    })
+                                ),
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "TOTAL HEIGHT OF WALL (METERS)"),
+                                    React.createElement("input", {
+                                        type: "number",
+                                        value: wallHeight,
+                                        onChange: (e) => setWallHeight(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm"
                                     })
                                 )
                             ),
 
-                            React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "STAKE VALUE (USDC)"),
-                                React.createElement("div", { className: "relative" },
-                                    React.createElement("input", { 
+                            calcType === "plaster" && React.createElement(React.Fragment, null,
+                                React.createElement("div", null,
+                                    React.createElement("label", { className: "block text-[10px] font-mono text-slate-500 mb-1" }, "TOTAL SURFACE AREA (SQUARE METERS)"),
+                                    React.createElement("input", {
                                         type: "number",
-                                        value: baseStakeAmount,
-                                        onChange: function(e) { setBaseStakeAmount(e.target.value); },
-                                        className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none",
-                                        placeholder: "100"
-                                    }),
-                                    React.createElement("span", { className: "absolute right-3 top-2 text-[10px] text-cyan-400 font-mono font-bold" }, "USDC")
+                                        value: plasterArea,
+                                        onChange: (e) => setPlasterArea(e.target.value),
+                                        className: "w-full p-2.5 rounded-lg font-mono text-sm"
+                                    })
                                 )
+                            ),
+
+                            React.createElement("div", { className: "bg-slate-900/80 p-3 rounded-xl border border-slate-800/60 text-xs text-slate-400" },
+                                "⚠️ Estimates assume standard structural concrete Class 25 mixing ratio & 9x4-inch machine-cut quarry stones with standard 15mm joint gaps."
                             )
                         ),
 
-                        React.createElement("div", { className: "bg-black/50 border border-slate-800/80 p-3 rounded space-y-1.5" },
-                            React.createElement("div", { className: "flex justify-between text-[11px] font-mono" },
-                                React.createElement("span", { className: "text-slate-500" }, "Platform Fee Allocation (2.5%):"),
-                                React.createElement("span", { className: "text-slate-300 font-bold" },
-                                    "$" + (parseFloat(baseStakeAmount || 0) * 0.025).toFixed(2) + " USDC"
-                                )
-                            ),
-                            React.createElement("div", { className: "flex justify-between text-[11px] font-mono" },
-                                React.createElement("span", { className: "text-slate-500" }, "Session Handshake Code:"),
-                                React.createElement("span", { className: connected ? "text-emerald-400 font-bold" : "text-red-500 font-bold" },
-                                    connected ? "VERIFIED (SIWE JWT)" : "MISSING AUTHORIZATION"
-                                )
-                            )
-                        ),
-
-                        React.createElement("button", { 
-                            onClick: executeStake,
-                            className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black rounded font-orbitron font-black text-xs tracking-widest uppercase transition-all"
-                        }, "APPROVE & DEPOSIT TO ESCROW")
-                    ),
-
-                    // LIVE TELEMETRY LOG PANEL
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4 relative overflow-hidden" },
-                        React.createElement("div", { className: "scanning-sweep" }),
-                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2 flex items-center justify-between" },
-                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "Telemetry Scan Controls"),
-                            React.createElement("span", { className: "text-[9px] font-mono text-cyan-400" }, "STREAMING REALTIME")
-                        ),
-
-                        React.createElement("div", { className: "grid grid-cols-2 gap-3 text-[11px] font-mono" },
-                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
-                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "RTT LATENCY"),
-                                React.createElement("span", { className: "text-xs font-bold text-white" }, ping + " ms")
-                            ),
-                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
-                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "CLIENT FPS"),
-                                React.createElement("span", { className: "text-xs font-bold text-white" }, fps + " FPS")
-                            ),
-                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
-                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "HARDWARE ID"),
-                                React.createElement("span", { className: "text-[10px] text-cyan-400 font-bold block truncate" }, deviceFingerprint)
-                            ),
-                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
-                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "PACKET LOSS"),
-                                React.createElement("span", { className: "text-xs font-bold text-white" }, packetLoss + "%")
-                            )
-                        )
-                    )
-
-                ),
-
-                // RIGHT SCREEN: POOL STATE, LIVE OCR SCANNING AND ORACLE REF STREAM
-                React.createElement("div", { className: "lg:col-span-7 space-y-6 flex flex-col justify-between" },
-                    
-                    // POOL SUMMARY CARD
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg bg-gradient-to-r from-cyan-950/10 via-black/40 to-pink-950/10 border-cyan-500/20" },
-                        React.createElement("div", { className: "flex flex-col md:flex-row items-center justify-between gap-4" },
-                            
-                            // Player 1
-                            React.createElement("div", { className: "text-center md:text-left space-y-1" },
-                                React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-wider" }, "PLAYER 1"),
-                                React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-white tracking-wide" }, "ELITE_CONQUEROR"),
-                                React.createElement("span", { className: "text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded inline-block" },
-                                    "Staked: $" + p1Stake.toFixed(2) + " USDC"
-                                )
-                            ),
-
-                            // Central Pool
-                            React.createElement("div", { className: "text-center px-6 py-4 bg-black/60 border border-slate-800 rounded-lg min-w-[160px]" },
-                                React.createElement("div", { className: "text-[8px] font-orbitron font-bold text-cyan-400 tracking-wider uppercase mb-1" }, "ESCROWED POT"),
-                                React.createElement("div", { className: "font-orbitron font-black text-2xl text-white tracking-wider" },
-                                    "$" + escrowPool.toFixed(2)
-                                ),
-                                React.createElement("span", { className: "text-[9px] font-mono text-emerald-400 block mt-1 animate-pulse" }, "Base USDC Pool")
-                            ),
-
-                            // Player 2
-                            React.createElement("div", { className: "text-center md:text-right space-y-1" },
-                                React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-wider" }, "PLAYER 2"),
-                                React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-white tracking-wide" }, "DEGEN_KILLER"),
-                                React.createElement("span", { className: "text-[10px] font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2 py-0.5 rounded inline-block" },
-                                    "Staked: $" + p2Stake.toFixed(2) + " USDC"
-                                )
-                            )
-
-                        ),
-
-                        // Action Controls
-                        React.createElement("div", { className: "mt-5 pt-4 border-t border-slate-900 flex flex-wrap items-center justify-between gap-4" },
-                            React.createElement("div", null,
-                                React.createElement("span", { className: "text-[8px] font-mono text-slate-500 block" }, "ACTIVE LOBBY MATCH ID"),
-                                React.createElement("span", { className: "text-[11px] font-mono text-cyan-400 font-bold" }, matchId)
-                            ),
-
-                            React.createElement("div", { className: "flex gap-2" },
-                                gameState === "idle" && React.createElement("button", { 
-                                    onClick: startMatchTelemetryScan,
-                                    className: "px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
-                                }, "START TELEMETRY PIPELINE"),
+                        // Estimates Display Panel
+                        React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-[#121826] p-5 rounded-2xl border border-slate-800/60 flex flex-col justify-between" },
+                            React.createElement("div", { className: "space-y-4" },
+                                React.createElement("h4", { className: "font-grotesk font-bold text-xs text-amber-500 tracking-wider uppercase" }, "🧾 Computed Materials Estimate"),
                                 
-                                gameState === "scanning" && React.createElement("div", { className: "flex gap-2" },
-                                    React.createElement("button", { 
-                                        onClick: forceCheatAnomaly,
-                                        className: "px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
-                                    }, "FORCE CHEATING EVENT"),
-                                    React.createElement("button", { 
-                                        onClick: resolveNormalVictory,
-                                        className: "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
-                                    }, "RESOLVE VICTORY CLEAN")
+                                calcType === "slab" && React.createElement("div", { className: "space-y-3 font-mono text-xs text-slate-300" },
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Total Volume Required:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.volume} Cubic Meters`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Bamburi Cement Bags (50kg):"),
+                                        React.createElement("span", { className: "text-amber-500 font-bold" }, `${estimationResults.cement} Bags`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "River Sand Estimation:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.sand} Tonnes`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Ballast / Kokoto estimation:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.ballast} Tonnes`)
+                                    )
                                 ),
 
-                                (gameState === "dispute" || gameState === "victory") && React.createElement("button", { 
-                                    onClick: resetMatchSimulation,
-                                    className: "px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
-                                }, "RESET SYSTEM LOBBY")
-                            )
-                        )
-                    ),
-
-                    // MULTI-MODAL SCREEN CAPTURE & VISION INGEST
-                    React.createElement("div", { className: "cyber-panel p-4 rounded-lg space-y-3" },
-                        React.createElement("div", { className: "border-b border-cyan-500/10 pb-2" },
-                            React.createElement("h3", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "3. Multi-Modal Vision Screenshot Ingest"),
-                            React.createElement("p", { className: "text-[9px] text-slate-500 font-mono" }, "CONVOLUTIONAL SCREEN PARSING & IMAGE AUTHENTICATION")
-                        ),
-
-                        React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-4 text-xs font-mono" },
-                            React.createElement("div", { className: "w-full md:w-1/2 flex" },
-                                React.createElement("label", { className: "flex-1 flex flex-col items-center justify-center border border-dashed border-cyan-500/30 hover:border-cyan-400 bg-black/40 hover:bg-cyan-950/15 transition-all p-4 rounded cursor-pointer text-center" },
-                                    React.createElement("svg", { className: "w-6 h-6 text-cyan-400 mb-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-                                        React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" })
+                                calcType === "wall" && React.createElement("div", { className: "space-y-3 font-mono text-xs text-slate-300" },
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Total Wall Surface Area:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.area} Sq. Meters`)
                                     ),
-                                    React.createElement("span", { className: "text-[10px] text-slate-300 font-semibold" }, "Upload Post-Match Screenshot"),
-                                    React.createElement("span", { className: "text-[8px] text-slate-500 block mt-1" }, "PNG, JPG, MP4 accepted"),
-                                    React.createElement("input", { type: "file", accept: "image/*", className: "hidden", onChange: handleVisionScreenUpload })
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Quarry Stone Block Bricks:"),
+                                        React.createElement("span", { className: "text-amber-500 font-bold" }, `${estimationResults.bricks} Bricks`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Cement Bags (Joint Mortar):"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.cement} Bags`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Fine Sand Estimation:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.sand} Tonnes`)
+                                    )
+                                ),
+
+                                calcType === "plaster" && React.createElement("div", { className: "space-y-3 font-mono text-xs text-slate-300" },
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Surface Area to Cover:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.area} Sq. Meters`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Plaster Cement Bags:"),
+                                        React.createElement("span", { className: "text-amber-500 font-bold" }, `${estimationResults.cement} Bags`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between py-1.5 border-b border-slate-800" },
+                                        React.createElement("span", null, "Clean Plaster Sand:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `${estimationResults.sand} Tonnes`)
+                                    )
                                 )
                             ),
-                            React.createElement("div", { className: "w-full md:w-1/2 flex flex-col justify-between space-y-2 bg-black/20 p-3 border border-slate-900 rounded" },
-                                React.createElement("div", { className: "flex justify-between text-[11px]" },
-                                    React.createElement("span", { className: "text-slate-500 font-bold" }, "VISION CORE STATUS:"),
-                                    React.createElement("span", { className: analyzingOcr ? "text-yellow-400 animate-pulse" : "text-cyan-400 font-bold" },
-                                        analyzingOcr ? "COMPUTATIONAL CHECK..." : "ONLINE"
-                                    )
-                                ),
-                                React.createElement("div", { className: "bg-black/50 p-2.5 rounded border border-slate-950 text-[10px] text-slate-400 leading-normal flex-1" },
-                                    ocrStatus
+
+                            React.createElement("div", { className: "mt-6 pt-4 border-t border-slate-800" },
+                                React.createElement("div", { className: "flex justify-between items-center bg-slate-950 p-4 rounded-xl border border-slate-800" },
+                                    React.createElement("div", null,
+                                        React.createElement("span", { className: "text-[10px] text-slate-500 block uppercase font-mono" }, "ESTIMATED TOTAL YARD COST"),
+                                        React.createElement("span", { className: "text-lg font-grotesk font-black text-emerald-400" }, `KES ${estimationResults.cost.toLocaleString()}`)
+                                    ),
+                                    React.createElement("button", {
+                                        onClick: () => {
+                                            if (!mute) playSound('shovel');
+                                            // Pre-populate cart with estimated cement bags
+                                            setCart([{
+                                                id: "est-cement",
+                                                name: `Bamburi Cement (${estimationResults.cement} Bags)`,
+                                                price: 790,
+                                                unit: "Bag",
+                                                quantity: estimationResults.cement,
+                                                image: "🧱"
+                                            }]);
+                                            setIsCartOpen(true);
+                                        },
+                                        className: "px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-bold text-xs rounded-lg transition-all"
+                                    }, "Procure Supplies Now")
                                 )
                             )
                         )
+
+                    )
+                ),
+
+                // TAB 4: VERIFIED WORKERS / FUNDI REGISTER
+                activeTab === "fundis" && React.createElement("div", { className: "space-y-4" },
+                    React.createElement("div", { className: "border-b border-slate-900 pb-3" },
+                        React.createElement("h3", { className: "font-grotesk font-extrabold text-xl text-white" }, "Directory of Verified Builders, Plumbers & Plastering Artisans"),
+                        React.createElement("p", { className: "text-xs text-slate-400" }, "All contractors are Epra/NITA certified with peer recommendations and secure escrow options.")
                     ),
 
-                    // CHAT INTERFACE
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg flex flex-col h-[300px] bg-[#07080d]/90 relative overflow-hidden flex-1" },
-                        
-                        // Live simulated sound equalizer
-                        React.createElement("div", { className: "absolute top-5 right-5 flex items-end gap-1 h-5 w-16" },
-                            eqHeights.map(function(val, idx) {
-                                return React.createElement("div", { 
-                                    key: idx, 
-                                    className: "eq-bar", 
-                                    style: { height: val + "%" } 
-                                });
-                            })
-                        ),
+                    React.createElement("div", { className: "grid grid-cols-1 gap-4" },
+                        fundis.map(fundi => (
+                            React.createElement("div", { key: fundi.id, className: "jenga-panel p-5 space-y-4 hover:border-slate-700 transition-all" },
+                                React.createElement("div", { className: "flex flex-col md:flex-row justify-between items-start md:items-center gap-4" },
+                                    
+                                    React.createElement("div", { className: "flex items-center gap-3.5" },
+                                        React.createElement("div", { className: "w-12 h-12 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 flex items-center justify-center text-2xl border border-slate-700 shadow" }, "👷"),
+                                        React.createElement("div", null,
+                                            React.createElement("div", { className: "flex items-center gap-2" },
+                                                React.createElement("h4", { className: "font-grotesk font-bold text-base text-white" }, fundi.name),
+                                                React.createElement("span", { className: "bg-amber-500/10 text-amber-500 text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/20" }, fundi.badge)
+                                            ),
+                                            React.createElement("p", { className: "text-xs text-slate-400 font-mono" }, fundi.specialization)
+                                        )
+                                    ),
 
-                        React.createElement("div", { className: "border-b border-cyan-500/15 pb-2 mb-3" },
-                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "AI REFEREE DECISION ENGINE CHAT"),
-                            React.createElement("p", { className: "text-[9px] text-cyan-400 font-mono" }, "REALTIME ENFORCEMENT PROTOCOLS")
-                        ),
-
-                        React.createElement("div", { className: "flex-1 overflow-y-auto space-y-2.5 pr-1" },
-                            chatLog.map(function(msg, idx) {
-                                return React.createElement("div", { 
-                                    key: idx,
-                                    className: "p-2.5 rounded text-xs border max-w-[85%] " + (
-                                        msg.sender === "AI REFEREE" ? "bg-cyan-950/10 border-cyan-500/20 text-cyan-100" :
-                                        msg.sender === "SYSTEM" ? "bg-yellow-950/10 border-yellow-500/20 text-yellow-100" :
-                                        "bg-slate-900/60 border-slate-800 text-white ml-auto"
+                                    React.createElement("div", { className: "text-right" },
+                                        React.createElement("span", { className: "text-[10px] text-slate-500 block font-mono" }, "STANDARD DAILY PAY"),
+                                        React.createElement("span", { className: "font-grotesk font-extrabold text-base text-emerald-400" }, `KES ${fundi.dailyRate} / Day`)
                                     )
+
+                                ),
+
+                                React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                                    fundi.skills.map((skill, idx) => (
+                                        React.createElement("span", { key: idx, className: "bg-slate-950 text-slate-300 text-[11px] px-2.5 py-1 rounded border border-slate-900" }, `🛠️ ${skill}`)
+                                    ))
+                                ),
+
+                                React.createElement("div", { className: "grid grid-cols-3 gap-3 bg-slate-950/40 p-3 rounded-xl text-center text-xs font-mono" },
+                                    React.createElement("div", null,
+                                        React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "OPERATING COUNTY"),
+                                        React.createElement("span", { className: "text-slate-300 font-bold" }, fundi.county)
+                                    ),
+                                    React.createElement("div", null,
+                                        React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "PROJECTS VERIFIED"),
+                                        React.createElement("span", { className: "text-slate-300 font-bold text-amber-500" }, `${fundi.jobsDone} Jobs Completed`)
+                                    ),
+                                    React.createElement("div", null,
+                                        React.createElement("span", { className: "text-slate-500 block text-[9px]" }, "AVAILABILITY STATUS"),
+                                        React.createElement("span", { className: "text-emerald-400 font-bold" }, fundi.status)
+                                    )
+                                ),
+
+                                React.createElement("div", { className: "flex gap-2 justify-end" },
+                                    React.createElement("button", {
+                                        onClick: () => {
+                                            if (!mute) playSound('click');
+                                            setChatTarget({ id: fundi.id, title: fundi.name, rating: "Verified Fundi" });
+                                        },
+                                        className: "px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-grotesk font-bold rounded-lg border border-slate-800 transition-colors flex items-center gap-1.5"
+                                    }, "💬 Initiate Escrow Chat"),
+                                    React.createElement("button", {
+                                        onClick: () => {
+                                            triggerMpesaCheckout({
+                                                title: `Hire Contract for ${fundi.name}`,
+                                                price: fundi.dailyRate,
+                                                type: "fundi"
+                                            });
+                                        },
+                                        className: "px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-bold text-xs rounded-lg transition-all"
+                                    }, "Book & Escrow Pay")
+                                )
+                            ))
+                        ))
+                    )
+                ),
+
+                // TAB 5: USAFIRI / LOGISTICS TRANSPORT
+                activeTab === "usafiri" && React.createElement("div", { className: "space-y-4" },
+                    React.createElement("div", { className: "border-b border-slate-900 pb-3" },
+                        React.createElement("h3", { className: "font-grotesk font-extrabold text-xl text-white" }, "🚛 Connected Tipper Tippers & Boda-Boda Freight Cargo"),
+                        React.createElement("p", { className: "text-xs text-slate-400" }, "Hire local drivers with verified payload limits to ship aggregate building supplies.")
+                    ),
+
+                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
+                        transport.map(tr => (
+                            React.createElement("div", { key: tr.id, className: "jenga-panel p-5 space-y-4 flex flex-col justify-between hover:border-slate-700 transition-all" },
+                                React.createElement("div", { className: "space-y-3" },
+                                    React.createElement("div", { className: "flex items-center justify-between" },
+                                        React.createElement("span", { className: "text-3xl" }, "🚛"),
+                                        React.createElement("span", { className: "text-[10px] font-mono font-bold bg-slate-900 px-2 py-0.5 rounded text-emerald-400" }, tr.status)
+                                    ),
+                                    React.createElement("h4", { className: "font-grotesk font-bold text-sm text-white" }, tr.vehicle),
+                                    React.createElement("p", { className: "text-xs text-slate-400 font-mono" }, `Driver: ${tr.driver}`),
+
+                                    React.createElement("div", { className: "bg-slate-950/40 p-2.5 rounded-lg text-[11px] font-mono text-slate-400 space-y-1" },
+                                        React.createElement("p", null, `📍 Location: ${tr.location}`),
+                                        React.createElement("p", null, `⭐ Peer Rating: ${tr.rating}`)
+                                    )
+                                ),
+
+                                React.createElement("div", { className: "space-y-3 pt-3 border-t border-slate-900" },
+                                    React.createElement("div", { className: "flex justify-between font-mono text-xs" },
+                                        React.createElement("span", { className: "text-slate-500" }, "Base Dispatch:"),
+                                        React.createElement("span", { className: "text-white font-bold" }, `KES ${tr.basePrice}`)
+                                    ),
+                                    React.createElement("div", { className: "flex justify-between font-mono text-xs" },
+                                        React.createElement("span", { className: "text-slate-500" }, "Per-Km Rate:"),
+                                        React.createElement("span", { className: "text-amber-500 font-bold" }, `KES ${tr.perKmRate}/Km`)
+                                    ),
+
+                                    React.createElement("button", {
+                                        onClick: () => {
+                                            if (!mute) playSound('horn');
+                                            triggerMpesaCheckout({
+                                                title: `Transport Hire - ${tr.driver}`,
+                                                price: tr.basePrice,
+                                                type: "transport"
+                                            });
+                                        },
+                                        className: "w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-grotesk font-bold rounded-lg border border-slate-800 transition-colors"
+                                    }, "Book Dispatch")
+                                )
+                            ))
+                        ))
+                    )
+                )
+
+            ),
+
+            // SIDEBAR CONTROLS (CART, M-PESA ESCROW & LIVE DIALOGS)
+            React.createElement("aside", { className: "lg:col-span-4 space-y-6" },
+                
+                // SHOPPING CART SUMMARY
+                isCartOpen && React.createElement("div", { className: "jenga-panel p-5 border-amber-500/20 jenga-shadow space-y-4" },
+                    React.createElement("div", { className: "flex items-center justify-between border-b border-slate-900 pb-3" },
+                        React.createElement("h3", { className: "font-grotesk font-extrabold text-sm text-white tracking-wider flex items-center gap-1.5" }, 
+                            React.createElement("span", null, "🛒"),
+                            "Active Site Supply Cart"
+                        ),
+                        React.createElement("button", {
+                            onClick: () => setIsCartOpen(false),
+                            className: "text-slate-500 hover:text-white font-mono text-xs"
+                        }, "[ Hide ]")
+                    ),
+
+                    cart.length === 0 ? React.createElement("p", { className: "text-xs font-mono text-slate-500 text-center py-6" }, "Hujapata bidhaa yoyote kwenye soko.") :
+                    React.createElement("div", { className: "space-y-3" },
+                        cart.map(item => (
+                            React.createElement("div", { key: item.id, className: "flex justify-between items-start text-xs font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-900" },
+                                React.createElement("div", { className: "space-y-1" },
+                                    React.createElement("span", { className: "font-bold text-white block" }, item.name),
+                                    React.createElement("span", { className: "text-slate-500 text-[10px]" }, `${item.quantity} x KES ${item.price.toLocaleString()}`)
+                                ),
+                                React.createElement("div", { className: "text-right shrink-0 ml-4 space-y-1" },
+                                    React.createElement("span", { className: "text-emerald-400 font-bold block" }, `KES ${(item.price * item.quantity).toLocaleString()}`),
+                                    React.createElement("button", {
+                                        onClick: () => removeFromCart(item.id),
+                                        className: "text-[10px] text-red-400 hover:underline"
+                                    }, "Ondoa")
+                                )
+                            ))
+                        ),
+
+                        React.createElement("div", { className: "pt-3 border-t border-slate-900 space-y-2" },
+                            React.createElement("div", { className: "flex justify-between text-xs font-mono font-bold" },
+                                React.createElement("span", { className: "text-slate-400" }, "Aggregate Total:"),
+                                React.createElement("span", { className: "text-white text-sm" }, `KES ${cartTotal.toLocaleString()}`)
+                            ),
+                            React.createElement("button", {
+                                onClick: () => {
+                                    triggerMpesaCheckout({
+                                        title: "Procurement of Construction Materials",
+                                        price: cartTotal,
+                                        type: "cart"
+                                    });
                                 },
-                                    React.createElement("div", { className: "flex items-center justify-between gap-4 mb-1 border-b border-slate-800/40 pb-0.5 text-[8px]" },
-                                        React.createElement("span", { className: "font-orbitron font-extrabold tracking-wider " + (
-                                            msg.sender === "AI REFEREE" ? "text-cyan-400" : msg.sender === "SYSTEM" ? "text-yellow-400" : "text-pink-400"
-                                        ) }, msg.sender),
-                                        React.createElement("span", { className: "text-slate-500 font-mono" }, msg.time)
-                                    ),
-                                    React.createElement("p", { className: "font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-all" }, msg.text)
-                                );
-                            }),
-                            isTyping && React.createElement("div", { className: "bg-cyan-950/10 border border-cyan-500/10 text-cyan-400 p-2.5 rounded animate-pulse font-mono text-[10px] w-48" },
-                                "Decoding telemetry bits..."
-                            )
-                        ),
-
-                        React.createElement("form", { onSubmit: handleSendChat, className: "mt-3 pt-2.5 border-t border-slate-900 flex gap-2" },
-                            React.createElement("input", { 
-                                type: "text", 
-                                placeholder: "Request system checking: e.g. 'Explain EIP-712 security', 'Show platform fee destination'...",
-                                value: userInput,
-                                onChange: function(e) { setUserInput(e.target.value); },
-                                className: "flex-1 bg-black/60 border border-slate-800 rounded px-3 py-2 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none"
-                            }),
-                            React.createElement("button", { 
-                                type: "submit",
-                                className: "px-4 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-[10px] tracking-widest rounded transition-all uppercase"
-                            }, "SEND")
-                        )
-                    ),
-
-                    // PREVIEW SIGNATURE SECTION
-                    showEipSignature && mockEipPayload && React.createElement("div", { className: "cyber-panel p-4 rounded-lg space-y-2 bg-gradient-to-r from-emerald-950/10 to-cyan-950/5 border-emerald-500/30 text-xs font-mono" },
-                        React.createElement("div", { className: "flex items-center justify-between border-b border-emerald-500/20 pb-2" },
-                            React.createElement("span", { className: "text-emerald-400 font-orbitron font-bold text-[10px] uppercase tracking-widest" }, "EIP-712 AI Ref Oracle Signature"),
-                            React.createElement("span", { className: "text-[9px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded" }, "HSM LOCKED")
-                        ),
-                        React.createElement("div", { className: "space-y-1 text-[11px]" },
-                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Verifying Escrow Contract: "), mockEipPayload.domain.verifyingContract),
-                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Resolved Winner: "), mockEipPayload.message.winner),
-                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Total Locked Pool: "), mockEipPayload.message.amount),
-                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Security Nonce ID: "), mockEipPayload.message.nonce),
-                            React.createElement("div", { className: "mt-2 pt-1 border-t border-slate-800" },
-                                React.createElement("span", { className: "text-slate-500 block mb-0.5" }, "ECDSA CRYPTOGRAPHIC PARAMETER PROOF (R + S + V):"),
-                                React.createElement("p", { className: "text-[10px] text-cyan-400 break-all bg-black/40 p-2 rounded" }, mockEipPayload.signature)
-                            )
+                                className: "w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mpesa-glow"
+                            }, "💳 Pay via Safaricom M-Pesa")
                         )
                     )
+                ),
 
-                )
-
-            ),
-
-            // TAB: SOLIDITY SOURCE
-            activeTab === "solidity" && React.createElement("div", { className: "cyber-panel p-6 rounded-lg space-y-6" },
-                React.createElement("div", { className: "border-b border-cyan-500/20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4" },
-                    React.createElement("div", null,
-                        React.createElement("h2", { className: "font-orbitron font-black text-sm text-white tracking-widest" }, "NATIVE BASE L2 USDC ESCROW SOLIDITY CODE"),
-                        React.createElement("p", { className: "text-xs text-slate-400 font-mono mt-1" }, "Secure automated smart contract locking ERC-20 USDC stakes with dual AI Referee parameters verification.")
+                // M-PESA DYNAMIC ESCROW SIMULATOR MODAL
+                mpesaModal && React.createElement("div", { className: "jenga-panel p-5 border-emerald-500/30 mpesa-glow space-y-4 bg-slate-950" },
+                    React.createElement("div", { className: "border-b border-slate-900 pb-3 flex items-center justify-between" },
+                        React.createElement("div", { className: "flex items-center gap-1.5" },
+                            React.createElement("span", { className: "w-3 h-3 rounded-full bg-emerald-500" }),
+                            React.createElement("h3", { className: "font-grotesk font-extrabold text-xs text-white tracking-widest uppercase" }, "JengaEscrow Mobile Payment")
+                        ),
+                        React.createElement("button", {
+                            onClick: () => setMpesaModal(null),
+                            className: "text-slate-500 hover:text-white font-mono text-xs"
+                        }, "[X] cancel")
                     ),
-                    React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("span", { className: "bg-yellow-500/10 text-yellow-400 text-xs font-mono px-3 py-1.5 rounded border border-yellow-500/20" }, "SOLIDITY v0.8.20"),
-                        React.createElement("button", { 
-                            onClick: function() {
-                                navigator.clipboard.writeText(SOLIDITY_CONTRACT_CODE);
-                                if (!mute) playSound('success');
-                                alert("Solidity contract source copied successfully!");
+
+                    React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg text-xs space-y-1.5 font-mono" },
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Payment For: "), React.createElement("span", { className: "text-white font-bold" }, mpesaModal.title)),
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Lock Amount: "), React.createElement("span", { className: "text-emerald-400 font-bold" }, `KES ${mpesaModal.price.toLocaleString()}`)),
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Escrow Recipient: "), React.createElement("span", { className: "text-white" }, "JengaKazi Escrow Account"))
+                    ),
+
+                    mpesaStatus === "idle" && React.createElement("div", { className: "space-y-3" },
+                        React.createElement("label", { className: "block text-[10px] font-mono text-slate-400" }, "SAFARICOM M-PESA PHONE NUMBER"),
+                        React.createElement("input", {
+                            type: "text",
+                            placeholder: "e.g. 0712345678",
+                            value: mpesaPhoneNumber,
+                            onChange: (e) => setMpesaPhoneNumber(e.target.value),
+                            className: "w-full p-2.5 rounded-lg font-mono text-sm"
+                        }),
+                        React.createElement("button", {
+                            onClick: processMpesaEscrowSimulation,
+                            className: "w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-bold text-xs rounded-xl"
+                        }, "Initialize STK Express Push")
+                    ),
+
+                    mpesaStatus === "sending" && React.createElement("div", { className: "text-center py-4 space-y-2" },
+                        React.createElement("div", { className: "w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" }),
+                        React.createElement("p", { className: "text-xs font-mono text-slate-400" }, "Initiating secure Handshake gateway on Base API via Safaricom...")
+                    ),
+
+                    mpesaStatus === "prompt-shown" && React.createElement("div", { className: "bg-slate-900 p-3.5 rounded-xl text-center space-y-3 border border-emerald-500/20 animate-pulse" },
+                        React.createElement("span", { className: "text-2xl" }, "📱"),
+                        React.createElement("p", { className: "text-xs text-white" }, `An STK push request of KES ${mpesaModal.price.toLocaleString()} has been dispatched to ${mpesaPhoneNumber}. Enter your PIN to lock funds in Escrow.`),
+                        React.createElement("button", {
+                            onClick: confirmMpesaPinInput,
+                            className: "w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-extrabold text-xs rounded-lg uppercase tracking-wider"
+                        }, "Confirm PIN Processed")
+                    ),
+
+                    mpesaStatus === "verifying" && React.createElement("div", { className: "text-center py-4 space-y-2" },
+                        React.createElement("div", { className: "w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" }),
+                        React.createElement("p", { className: "text-xs font-mono text-slate-400" }, "Awaiting network node transaction confirmation...")
+                    ),
+
+                    mpesaStatus === "verified" && React.createElement("div", { className: "bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl text-center space-y-2" },
+                        React.createElement("span", { className: "text-2xl" }, "🛡️"),
+                        React.createElement("h4", { className: "font-grotesk font-bold text-xs text-emerald-400" }, "PAYMENT SECURED IN JENGA ESCROW"),
+                        React.createElement("p", { className: "text-[10px] font-mono text-slate-400 break-all" }, `M-Pesa Tx Ref: ${mpesaTxCode}`),
+                        React.createElement("button", {
+                            onClick: () => setMpesaModal(null),
+                            className: "px-4 py-1.5 bg-slate-900 text-slate-300 text-xs font-grotesk font-semibold rounded border border-slate-800"
+                        }, "Dismiss Portal")
+                    )
+                ),
+
+                // INTERACTIVE CHAT & FOREMAN COMMUNICATION BOX
+                chatTarget ? React.createElement("div", { className: "jenga-panel p-5 space-y-3 bg-[#121826] relative" },
+                    React.createElement("div", { className: "flex items-center justify-between border-b border-slate-900 pb-2.5" },
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                            React.createElement("span", { className: "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" }),
+                            React.createElement("div", null,
+                                React.createElement("h4", { className: "font-grotesk font-bold text-xs text-white" }, chatTarget.title || chatTarget.name),
+                                React.createElement("span", { className: "text-[9px] text-amber-500 font-mono block" }, chatTarget.rating)
+                            )
+                        ),
+                        React.createElement("button", {
+                            onClick: () => setChatTarget(null),
+                            className: "text-slate-500 hover:text-white font-mono text-xs"
+                        }, "[ Close ]")
+                    ),
+
+                    // Chat messages viewport
+                    React.createElement("div", { className: "h-48 overflow-y-auto space-y-2 pr-1" },
+                        (chatLogs[chatTarget.id] || [
+                            { sender: "System", text: "Escrow tunnel mapped. Standard daily milestones secure the payment schedule.", time: "10:30 AM" }
+                        ]).map((msg, idx) => (
+                            React.createElement("div", {
+                                key: idx,
+                                className: "p-2 rounded text-xs border max-w-[85%] " + (
+                                    msg.sender === "You" 
+                                    ? "bg-amber-500/10 border-amber-500/20 text-white ml-auto" 
+                                    : msg.sender === "System" 
+                                    ? "bg-slate-950 border-slate-900 text-slate-500 mx-auto text-center" 
+                                    : "bg-slate-900 border-slate-800 text-slate-300"
+                                )
                             },
-                            className: "px-4 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-bold text-[10px] tracking-widest rounded transition-all"
-                        }, "COPY SOURCE")
-                    )
-                ),
-
-                React.createElement("div", { className: "bg-black/40 border border-cyan-500/10 p-4 rounded flex flex-col md:flex-row items-center justify-between gap-4" },
-                    React.createElement("div", { className: "space-y-1" },
-                        React.createElement("span", { className: "text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-bold" }, "AUTOMATED FEE ROUTER DESTINATION ADDRESS"),
-                        React.createElement("span", { className: "text-xs font-mono text-white select-all block" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"),
-                        React.createElement("p", { className: "text-xs text-slate-400 leading-normal max-w-xl" },
-                            "The deployed smart contract strictly mandates that a exact flat 2.50% fee is directly and atomically routed to this secure fee recipient account upon match resolution."
-                        )
-                    ),
-                    React.createElement("div", { className: "px-5 py-3 bg-black/60 border border-slate-800 rounded text-center shrink-0 min-w-[130px]" },
-                        React.createElement("span", { className: "text-[9px] font-mono text-slate-500 block uppercase" }, "COMMISSION RATE"),
-                        React.createElement("span", { className: "text-base font-orbitron font-black text-white" }, "2.50 % (Flat)")
-                    )
-                ),
-
-                React.createElement("div", { className: "relative" },
-                    React.createElement("pre", { className: "bg-black/60 border border-slate-800 rounded-lg p-5 overflow-x-auto text-[11px] text-slate-300 font-mono leading-relaxed max-h-[500px]" },
-                        React.createElement("code", null, SOLIDITY_CONTRACT_CODE)
-                    )
-                )
-            ),
-
-            // TAB: SYSTEM PIPELINE DIAGRAM
-            activeTab === "architecture" && React.createElement("div", { className: "cyber-panel p-6 rounded-lg space-y-6" },
-                React.createElement("div", { className: "border-b border-cyan-500/20 pb-4" },
-                    React.createElement("h2", { className: "font-orbitron font-black text-sm text-white tracking-widest" }, "CORE PIPELINE FLOW & DATA METRIC ROUTERS"),
-                    React.createElement("p", { className: "text-xs text-slate-400 font-mono mt-1" }, "Interactions routing client-side SIWE credentials, anti-cheat validation parameters, and automated L2 smart contract payouts.")
-                ),
-
-                React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch" },
-                    
-                    React.createElement("div", { className: "lg:col-span-8 bg-black/40 border border-slate-800 rounded-lg p-5 flex flex-col justify-center min-h-[350px]" },
-                        React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-4 gap-4 text-center text-xs font-mono relative" },
-                            
-                            React.createElement("div", { className: "bg-slate-950 border border-cyan-500/30 p-4 rounded hover:border-cyan-400 transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-cyan-400 uppercase font-bold mb-1" }, "STAGE 1"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "Wallet SIWE Auth"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Establishes secure node links, client fingerprint credentials, and issues session JWT.")
-                            ),
-
-                            React.createElement("div", { className: "bg-slate-950 border border-cyan-500/30 p-4 rounded hover:border-cyan-400 transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-cyan-400 uppercase font-bold mb-1" }, "STAGE 2"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "USDC Escrow deposit"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Stakes native USDC. Match state locks and validation nonce advances.")
-                            ),
-
-                            React.createElement("div", { className: "bg-slate-950 border border-pink-500/30 p-4 rounded hover:border-pink-500 transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-pink-400 uppercase font-bold mb-1" }, "STAGE 3"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "AI Referee Scanning"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Processes dual convolutional visual OCR logs & RAM hook injection channels.")
-                            ),
-
-                            React.createElement("div", { className: "bg-slate-950 border border-yellow-500/30 p-4 rounded hover:border-yellow-500 transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-yellow-400 uppercase font-bold mb-1" }, "STAGE 4"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "EIP-712 Settlement"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Oracle triggers ECDSA signatures. 2.50% platform fee routed to destination address.")
-                            )
-
-                        ),
-
-                        React.createElement("div", { className: "mt-6 pt-5 border-t border-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center" },
-                            React.createElement("div", { className: "p-3.5 bg-emerald-950/10 border border-emerald-500/20 rounded animate-pulse" },
-                                React.createElement("h5", { className: "font-bold text-emerald-400" }, "CLEAN PLAYOUT VERDICT: ROUTE 97.5% TO WINNER"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Dispatched instantly to the confirmed winning wallet address.")
-                            ),
-                            React.createElement("div", { className: "p-3.5 bg-yellow-950/10 border border-yellow-500/20 rounded" },
-                                React.createElement("h5", { className: "font-bold text-yellow-400" }, "FLAT COMMISSIONS ROUTED: 2.5%"),
-                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Automated payout straight to platform recipient 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
-                            )
-                        )
+                                React.createElement("div", { className: "flex justify-between items-center text-[9px] text-slate-500 mb-0.5" },
+                                    React.createElement("span", { className: "font-bold" }, msg.sender),
+                                    React.createElement("span", null, msg.time)
+                                ),
+                                React.createElement("p", { className: "font-mono" }, msg.text)
+                            ))
+                        ))
                     ),
 
-                    React.createElement("div", { className: "lg:col-span-4 flex flex-col justify-between space-y-4" },
-                        React.createElement("div", { className: "bg-black/60 border border-slate-800 rounded-lg p-4 flex-1 flex flex-col" },
-                            React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2" }, "MERMAID.JS SYSTEM ARCHITECTURE SPEC"),
-                            React.createElement("pre", { className: "flex-1 bg-black/40 p-3 rounded text-[10px] font-mono text-slate-400 overflow-y-auto max-h-[220px]" },
-                                "graph TD\n" +
-                                "    P1[Player 1 SIWE] -->|USDC Deposit| CONTRACT[Base Escrow]\n" +
-                                "    P2[Player 2 SIWE] -->|USDC Deposit| CONTRACT\n" +
-                                "    P1 -.->|Telemetry Stream| ORACLE[AI Referee Oracle]\n" +
-                                "    P2 -.->|Telemetry Stream| ORACLE\n" +
-                                "    ORACLE -->|Vision/OCR & memory checks| CONTRACT\n" +
-                                "    CONTRACT -->|2.5% platform fee| STORAGE[0xe69aE274c4D814fDB312120d3db1C5c2BD63a071]\n" +
-                                "    CONTRACT -->|97.5% win rewards| VICTOR[Settled Winner]"
-                            )
-                        ),
-                        React.createElement("button", { 
-                            onClick: function() {
-                                const code = "graph TD\n    P1[Player 1 SIWE] -->|USDC Deposit| CONTRACT[Base Escrow]\n    P2[Player 2 SIWE] -->|USDC Deposit| CONTRACT\n    P1 -.->|Telemetry Stream| ORACLE[AI Referee Oracle]\n    P2 -.->|Telemetry Stream| ORACLE\n    ORACLE -->|Vision/OCR & memory checks| CONTRACT\n    CONTRACT -->|2.5% platform fee| STORAGE[0xe69aE274c4D814fDB312120d3db1C5c2BD63a071]\n    CONTRACT -->|97.5% win rewards| VICTOR[Settled Winner]";
-                                navigator.clipboard.writeText(code);
-                                if (!mute) playSound('success');
-                                alert("Mermaid blueprint copied!");
-                            },
-                            className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-xs tracking-widest rounded transition-all uppercase"
-                        }, "COPY SPECIFICATION CODE")
+                    // Input Form
+                    React.createElement("form", { onSubmit: sendChatMessage, className: "flex gap-2 pt-2 border-t border-slate-900" },
+                        React.createElement("input", {
+                            type: "text",
+                            placeholder: "Type message to builder...",
+                            value: chatMessage,
+                            onChange: (e) => setChatMessage(e.target.value),
+                            className: "flex-1 p-2 text-xs rounded-lg focus:outline-none"
+                        }),
+                        React.createElement("button", {
+                            type: "submit",
+                            className: "px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-lg uppercase"
+                        }, "Send")
                     )
-
+                ) : React.createElement("div", { className: "jenga-panel p-5 text-center text-slate-500 space-y-2" },
+                    React.createElement("span", { className: "text-3xl block" }, "💬"),
+                    React.createElement("p", { className: "text-xs font-grotesk" }, "Direct Messaging Hub"),
+                    React.createElement("p", { className: "text-[10px] text-slate-600 font-mono leading-normal" }, "Click chat under any job listing or verified worker profile to map secure coordinates & confirm milestones.")
                 )
+
             )
 
         ),
 
-        // FOOTER
-        React.createElement("footer", { className: "border-t border-slate-900 bg-[#07080d]/90 py-6 relative z-30" },
-            React.createElement("div", { className: "max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono" },
-                React.createElement("div", { className: "flex items-center gap-2 text-slate-500" },
-                    React.createElement("span", null, "© " + new Date().getFullYear() + " PROJECT EPIC REFEREE."),
-                    React.createElement("span", null, "|"),
-                    React.createElement("span", { className: "text-cyan-400" }, "SECURE BASE NODE SECURED")
+        // FOOTER DETAILS
+        React.createElement("footer", { className: "border-t border-slate-900 bg-[#070b13] py-8 mt-12 relative z-30 text-xs font-mono text-slate-500" },
+            React.createElement("div", { className: "max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6" },
+                React.createElement("div", { className: "space-y-1.5 text-center md:text-left" },
+                    React.createElement("p", { className: "text-slate-400 font-grotesk font-bold text-sm" }, "© 2025 JengaKazi Kenya Ltd."),
+                    React.createElement("p", null, "Safaricom Payment Gateway Integration Terminal: Till No. 902235")
                 ),
-                React.createElement("div", { className: "text-slate-400" },
-                    "Platform Fees Ledger: ",
-                    React.createElement("span", { className: "text-white select-all bg-black/40 px-2 py-0.5 rounded border border-slate-800" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
+                React.createElement("div", { className: "flex gap-4 flex-wrap justify-center text-[11px]" },
+                    React.createElement("a", { href: "#", className: "hover:text-amber-500" }, "Vifaa vya Mjengo Yard Limits"),
+                    React.createElement("span", null, "|"),
+                    React.createElement("a", { href: "#", className: "hover:text-amber-500" }, "NITA Safety Standards"),
+                    React.createElement("span", null, "|"),
+                    React.createElement("a", { href: "#", className: "hover:text-amber-500" }, "Privacy Policy & Escrow Terms")
                 )
             )
         )
