@@ -17,7 +17,7 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// High-Fidelity Web Audio Synthesizer for Immersive Audio Feedback
+// High-Fidelity Web Audio Synthesizer for Immersive Esports UI Audio Feedback
 const playSound = function(type) {
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -29,21 +29,21 @@ const playSound = function(type) {
         gain.connect(ctx.destination);
 
         if (type === 'click') {
-            osc.frequency.setValueAtTime(900, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.04, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
+            gain.gain.setValueAtTime(0.03, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
             osc.start();
-            osc.stop(ctx.currentTime + 0.05);
+            osc.stop(ctx.currentTime + 0.06);
         } else if (type === 'warning') {
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(120, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(380, ctx.currentTime + 0.12);
-            osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.25);
-            gain.gain.setValueAtTime(0.08, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(320, ctx.currentTime + 0.15);
+            osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.06, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
             osc.start();
-            osc.stop(ctx.currentTime + 0.25);
+            osc.stop(ctx.currentTime + 0.3);
         } else if (type === 'success') {
             osc.type = 'sine';
             const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
@@ -52,20 +52,27 @@ const playSound = function(type) {
                 const g = ctx.createGain();
                 o.connect(g);
                 g.connect(ctx.destination);
-                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
-                g.gain.setValueAtTime(0.03, ctx.currentTime + idx * 0.06);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.06 + 0.3);
-                o.start(ctx.currentTime + idx * 0.06);
-                o.stop(ctx.currentTime + idx * 0.06 + 0.3);
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
+                g.gain.setValueAtTime(0.02, ctx.currentTime + idx * 0.07);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.35);
+                o.start(ctx.currentTime + idx * 0.07);
+                o.stop(ctx.currentTime + idx * 0.07 + 0.35);
             });
         } else if (type === 'scan') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.5);
-            gain.gain.setValueAtTime(0.02, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.6);
+            gain.gain.setValueAtTime(0.015, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
             osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+            osc.stop(ctx.currentTime + 0.6);
+        } else if (type === 'tick') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1800, ctx.currentTime);
+            gain.gain.setValueAtTime(0.01, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.01);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.01);
         }
     } catch (e) {
         // Ignored if user interaction limits apply
@@ -74,81 +81,88 @@ const playSound = function(type) {
 
 const injectStylesAndFonts = function() {
     const fontLink = document.createElement('link');
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
     style.innerHTML = "" +
         "body {\n" +
-        "    background-color: #030407;\n" +
-        "    color: #e2e8f0;\n" +
+        "    background-color: #020204;\n" +
+        "    color: #f1f5f9;\n" +
         "    font-family: 'Inter', sans-serif;\n" +
         "    background-image: \n" +
-        "        radial-gradient(at 50% 0%, rgba(102, 252, 241, 0.12) 0px, transparent 50%),\n" +
-        "        radial-gradient(at 100% 100%, rgba(255, 0, 85, 0.04) 0px, transparent 50%),\n" +
-        "        linear-gradient(rgba(18, 18, 24, 0.65) 1px, transparent 1px),\n" +
-        "        linear-gradient(90deg, rgba(18, 18, 24, 0.65) 1px, transparent 1px);\n" +
-        "    background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;\n" +
+        "        radial-gradient(at 50% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 60%),\n" +
+        "        radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),\n" +
+        "        linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),\n" +
+        "        linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);\n" +
+        "    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;\n" +
         "    overflow-x: hidden;\n" +
         "}\n" +
         ".font-orbitron { font-family: 'Orbitron', sans-serif; }\n" +
         ".font-mono { font-family: 'JetBrains Mono', monospace; }\n" +
         ".neon-cyan-glow {\n" +
-        "    box-shadow: 0 0 25px rgba(102, 252, 241, 0.3);\n" +
-        "    border-color: rgba(102, 252, 241, 0.6);\n" +
+        "    box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);\n" +
+        "    border-color: rgba(6, 182, 212, 0.5);\n" +
         "}\n" +
         ".neon-red-glow {\n" +
-        "    box-shadow: 0 0 35px rgba(255, 0, 85, 0.45);\n" +
-        "    border-color: rgba(255, 0, 85, 0.75);\n" +
+        "    box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);\n" +
+        "    border-color: rgba(239, 68, 68, 0.7);\n" +
         "}\n" +
         ".cyber-panel {\n" +
-        "    background: rgba(8, 9, 15, 0.95);\n" +
-        "    backdrop-filter: blur(20px);\n" +
-        "    border: 1px solid rgba(102, 252, 241, 0.15);\n" +
+        "    background: rgba(10, 11, 18, 0.85);\n" +
+        "    backdrop-filter: blur(16px);\n" +
+        "    border: 1px solid rgba(6, 182, 212, 0.15);\n" +
         "    position: relative;\n" +
         "}\n" +
         ".cyber-panel::before {\n" +
         "    content: '';\n" +
         "    position: absolute;\n" +
-        "    top: 0; left: 0; width: 12px; height: 12px;\n" +
-        "    border-top: 2px solid #66FCF1; border-left: 2px solid #66FCF1;\n" +
+        "    top: 0; left: 0; width: 14px; height: 14px;\n" +
+        "    border-top: 2px solid #06b6d4; border-left: 2px solid #06b6d4;\n" +
         "}\n" +
         ".cyber-panel::after {\n" +
         "    content: '';\n" +
         "    position: absolute;\n" +
-        "    bottom: 0; right: 0; width: 12px; height: 12px;\n" +
-        "    border-bottom: 2px solid #66FCF1; border-right: 2px solid #66FCF1;\n" +
+        "    bottom: 0; right: 0; width: 14px; height: 14px;\n" +
+        "    border-bottom: 2px solid #06b6d4; border-right: 2px solid #06b6d4;\n" +
         "}\n" +
-        ".cyber-panel-red::before { border-color: #ff0055; }\n" +
-        ".cyber-panel-red::after { border-color: #ff0055; }\n" +
+        ".cyber-panel-red::before { border-color: #ef4444; }\n" +
+        ".cyber-panel-red::after { border-color: #ef4444; }\n" +
         ".scanning-sweep {\n" +
         "    position: absolute;\n" +
-        "    width: 100%; height: 2px;\n" +
-        "    background: linear-gradient(90deg, transparent, #66FCF1, transparent);\n" +
-        "    animation: scanline 3.5s linear infinite;\n" +
+        "    width: 100%; height: 3px;\n" +
+        "    background: linear-gradient(90deg, transparent, #06b6d4, transparent);\n" +
+        "    animation: scanline 4s linear infinite;\n" +
         "    top: 0; z-index: 10;\n" +
         "}\n" +
         ".warning-sweep {\n" +
         "    position: absolute;\n" +
-        "    width: 100%; height: 4px;\n" +
-        "    background: linear-gradient(90deg, transparent, #ff0055, transparent);\n" +
-        "    animation: scanline 1.2s linear infinite;\n" +
+        "    width: 100%; height: 5px;\n" +
+        "    background: linear-gradient(90deg, transparent, #ef4444, transparent);\n" +
+        "    animation: scanline 1.5s linear infinite;\n" +
         "    top: 0; z-index: 10;\n" +
         "}\n" +
         "@keyframes scanline {\n" +
         "    0% { transform: translateY(0); }\n" +
         "    100% { transform: translateY(500px); }\n" +
         "}\n" +
-        "::-webkit-scrollbar { width: 5px; height: 5px; }\n" +
-        "::-webkit-scrollbar-track { background: #030407; }\n" +
+        "::-webkit-scrollbar { width: 6px; height: 6px; }\n" +
+        "::-webkit-scrollbar-track { background: #020204; }\n" +
         "::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }\n" +
-        "::-webkit-scrollbar-thumb:hover { background: #66FCF1; }\n" +
+        "::-webkit-scrollbar-thumb:hover { background: #06b6d4; }\n" +
         ".eq-bar {\n" +
-        "    width: 3px;\n" +
-        "    background-color: #66FCF1;\n" +
-        "    border-radius: 1px;\n" +
-        "    transition: height 0.08s ease;\n" +
+        "    width: 4px;\n" +
+        "    background-color: #06b6d4;\n" +
+        "    border-radius: 2px;\n" +
+        "    transition: height 0.1s ease;\n" +
+        "}\n" +
+        ".glitch-text {\n" +
+        "    text-shadow: 2px 0 0 rgba(236, 72, 153, 0.5), -2px 0 0 rgba(6, 182, 212, 0.5);\n" +
+        "}\n" +
+        ".grid-bg {\n" +
+        "    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);\n" +
+        "    background-size: 16px 16px;\n" +
         "}\n";
     document.head.appendChild(style);
 };
@@ -157,67 +171,67 @@ const SOLIDITY_CONTRACT_CODE = "" +
     "// SPDX-License-Identifier: MIT\n" +
     "pragma solidity ^0.8.20;\n\n" +
     "/**\n" +
-    " * @title Project Epic: Decentralized AI Referee Gaming Escrow\n" +
-    " * @notice Exclusively locks and settles native USDC stakes on the Base network.\n" +
-    " * @dev Enforces EIP-712 typed signature verification from an authorized AI Referee oracle.\n" +
+    " * @title Autonomous AI Referee & Gaming Escrow Platform\n" +
+    " * @notice Escrows and settles native USDC stakes on the Base Network with EIP-712 support.\n" +
+    " * @dev Authenticated platform matching engine protected by isolated HSM wallet signatures.\n" +
     " */\n\n" +
     "interface IERC20 {\n" +
     "    function transfer(address to, uint256 amount) external returns (bool);\n" +
     "    function transferFrom(address from, address to, uint256 amount) external returns (bool);\n" +
     "    function balanceOf(address account) external view returns (uint256);\n" +
     "}\n\n" +
-    "contract EpicGamingEscrow {\n" +
-    "    // Base Network Platform Fee Destination\n" +
-    "    address public constant FEE_ADDRESS = 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071;\n" +
-    "    uint256 public constant FEE_BPS = 250; // 2.5% Flat Platform Fee\n\n" +
-    "    address public immutable oracle;\n" +
-    "    address public immutable usdcToken; // Base Native USDC: 0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913\n\n" +
+    "contract AutonomousUSDCGamingEscrow {\n" +
+    "    // Platform fee recipient and flat rate parameter\n" +
+    "    address public constant FEE_RECIPIENT = 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071;\n" +
+    "    uint256 public constant PLATFORM_FEE_BPS = 250; // 2.5% Flat platform fee\n\n" +
+    "    address public immutable aiRefereeOracleAddress;\n" +
+    "    address public immutable usdcTokenAddress; // Native Base USDC\n\n" +
     "    bytes32 public constant SETTLEMENT_TYPEHASH = keccak256(\n" +
     "        \"Settlement(bytes32 matchId,address winner,uint256 amount,uint256 nonce)\"\n" +
     "    );\n" +
     "    bytes32 public immutable DOMAIN_SEPARATOR;\n\n" +
-    "    struct Match {\n" +
-    "        address player1;\n" +
-    "        address player2;\n" +
-    "        uint256 lockedUsdc;\n" +
-    "        bool active;\n" +
-    "        bool settled;\n" +
-    "        uint256 nonce;\n" +
+    "    struct MatchLobby {\n" +
+    "        address playerOne;\n" +
+    "        address playerTwo;\n" +
+    "        uint256 currentEscrowedBalance;\n" +
+    "        bool isActive;\n" +
+    "        bool isSettled;\n" +
+    "        uint256 validationNonce;\n" +
     "    }\n\n" +
-    "    mapping(bytes32 => Match) public matches;\n\n" +
-    "    event MatchStaked(bytes32 indexed matchId, address indexed player, uint256 usdcAmount);\n" +
-    "    event MatchSettled(bytes32 indexed matchId, address indexed winner, uint256 winnerPayout, uint256 platformFee);\n" +
-    "    event CheatEnforced(bytes32 indexed matchId, address indexed cheater, address indexed victim, uint256 payout);\n\n" +
-    "    constructor(address _oracle, address _usdcToken) {\n" +
-    "        require(_oracle != address(0), \"Invalid oracle\");\n" +
-    "        require(_usdcToken != address(0), \"Invalid token\");\n" +
-    "        oracle = _oracle;\n" +
-    "        usdcToken = _usdcToken;\n\n" +
+    "    mapping(bytes32 => MatchLobby) public activeMatchLobbies;\n\n" +
+    "    event EscrowStaked(bytes32 indexed matchId, address indexed participant, uint256 stakedAmount);\n" +
+    "    event EscrowSettled(bytes32 indexed matchId, address indexed matchWinner, uint256 winnerPayoutAmount, uint256 routedFee);\n" +
+    "    event AnticheatEmergencyEnforced(bytes32 indexed matchId, address indexed violatingCheater, address indexed honestVictim, uint256 penaltyPayout);\n\n" +
+    "    constructor(address _aiRefereeOracle, address _usdcToken) {\n" +
+    "        require(_aiRefereeOracle != address(0), \"Oracle endpoint cannot be zero address\");\n" +
+    "        require(_usdcToken != address(0), \"USDC ERC20 cannot be zero address\");\n" +
+    "        aiRefereeOracleAddress = _aiRefereeOracle;\n" +
+    "        usdcTokenAddress = _usdcToken;\n\n" +
     "        DOMAIN_SEPARATOR = keccak256(\n" +
     "            abi.encode(\n" +
     "                keccak256(\"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)\"),\n" +
-    "                keccak256(bytes(\"EpicGamingEscrow\")),\n" +
+    "                keccak256(bytes(\"AutonomousUSDCGamingEscrow\")),\n" +
     "                keccak256(bytes(\"1\")),\n" +
     "                block.chainid,\n" +
     "                address(this)\n" +
     "            )\n" +
     "        );\n" +
     "    }\n\n" +
-    "    function stakeUSDC(bytes32 matchId, address opponent, uint256 amount) external {\n" +
-    "        require(opponent != address(0) && opponent != msg.sender, \"Invalid opponent address\");\n" +
-    "        require(amount > 0, \"Stake must be greater than 0\");\n\n" +
-    "        IERC20(usdcToken).transferFrom(msg.sender, address(this), amount);\n\n" +
-    "        Match storage m = matches[matchId];\n" +
-    "        if (!m.active && !m.settled) {\n" +
-    "            m.player1 = msg.sender;\n" +
-    "            m.player2 = opponent;\n" +
-    "            m.active = true;\n" +
-    "            m.nonce++;\n" +
+    "    function stakeEscrow(bytes32 matchId, address opponentPlayer, uint256 usdcAmount) external {\n" +
+    "        require(opponentPlayer != address(0) && opponentPlayer != msg.sender, \"Invalid opponent address\");\n" +
+    "        require(usdcAmount > 0, \"USDC stake value must exceed zero\");\n\n" +
+    "        IERC20(usdcTokenAddress).transferFrom(msg.sender, address(this), usdcAmount);\n\n" +
+    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
+    "        if (!lobby.isActive && !lobby.isSettled) {\n" +
+    "            lobby.playerOne = msg.sender;\n" +
+    "            lobby.playerTwo = opponentPlayer;\n" +
+    "            lobby.isActive = true;\n" +
+    "            lobby.validationNonce++;\n" +
     "        }\n\n" +
-    "        m.lockedUsdc += amount;\n" +
-    "        emit MatchStaked(matchId, msg.sender, amount);\n" +
+    "        lobby.currentEscrowedBalance += usdcAmount;\n" +
+    "        emit EscrowStaked(matchId, msg.sender, usdcAmount);\n" +
     "    }\n\n" +
-    "    function executePayoutEIP712(\n" +
+    "    function executeSettleMatchEIP712(\n" +
     "        bytes32 matchId,\n" +
     "        address winner,\n" +
     "        uint256 amount,\n" +
@@ -225,38 +239,38 @@ const SOLIDITY_CONTRACT_CODE = "" +
     "        bytes32 r,\n" +
     "        bytes32 s\n" +
     "    ) external {\n" +
-    "        Match storage m = matches[matchId];\n" +
-    "        require(m.active && !m.settled, \"Match inactive or resolved\");\n" +
-    "        require(winner == m.player1 || winner == m.player2, \"Winner must be participant\");\n" +
-    "        require(amount == m.lockedUsdc, \"Staked amount mismatch\");\n\n" +
+    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
+    "        require(lobby.isActive && !lobby.isSettled, \"Match is already resolved or inactive\");\n" +
+    "        require(winner == lobby.playerOne || winner == lobby.playerTwo, \"Winner must be validated participant\");\n" +
+    "        require(amount == lobby.currentEscrowedBalance, \"Staked amount validation anomaly\");\n\n" +
     "        bytes32 structHash = keccak256(\n" +
-    "            abi.encode(SETTLEMENT_TYPEHASH, matchId, winner, amount, m.nonce)\n" +
+    "            abi.encode(SETTLEMENT_TYPEHASH, matchId, winner, amount, lobby.validationNonce)\n" +
     "        );\n" +
     "        bytes32 digest = keccak256(abi.encodePacked(\"\\x19\\x01\", DOMAIN_SEPARATOR, structHash));\n" +
-    "        address signer = ecrecover(digest, v, r, s);\n" +
-    "        require(signer == oracle, \"Invalid Oracle signature proof\");\n\n" +
-    "        m.settled = true;\n" +
-    "        m.active = false;\n\n" +
-    "        uint256 totalPool = m.lockedUsdc;\n" +
-    "        uint256 feeAmount = (totalPool * FEE_BPS) / 10000;\n" +
-    "        uint256 winnerPayout = totalPool - feeAmount;\n\n" +
-    "        require(IERC20(usdcToken).transfer(FEE_ADDRESS, feeAmount), \"Fee transfer failed\");\n" +
-    "        require(IERC20(usdcToken).transfer(winner, winnerPayout), \"Payout failed\");\n\n" +
-    "        emit MatchSettled(matchId, winner, winnerPayout, feeAmount);\n" +
+    "        address recoveredOracleSigner = ecrecover(digest, v, r, s);\n" +
+    "        require(recoveredOracleSigner == aiRefereeOracleAddress, \"Invalid cryptographic AI Oracle signature\");\n\n" +
+    "        lobby.isSettled = true;\n" +
+    "        lobby.isActive = false;\n\n" +
+    "        uint256 totalPool = lobby.currentEscrowedBalance;\n" +
+    "        uint256 feeContribution = (totalPool * PLATFORM_FEE_BPS) / 10000;\n" +
+    "        uint256 payoutToWinner = totalPool - feeContribution;\n\n" +
+    "        require(IERC20(usdcTokenAddress).transfer(FEE_RECIPIENT, feeContribution), \"Platform fee transfer rejected\");\n" +
+    "        require(IERC20(usdcTokenAddress).transfer(winner, payoutToWinner), \"Winner payout settlement rejected\");\n\n" +
+    "        emit EscrowSettled(matchId, winner, payoutToWinner, feeContribution);\n" +
     "    }\n\n" +
-    "    function enforceAntiCheatShutdown(bytes32 matchId, address cheater) external {\n" +
-    "        // Triggered only by oracle signing parameters to recover capital of honest victim player\n" +
-    "        Match storage m = matches[matchId];\n" +
-    "        require(m.active && !m.settled, \"Match cannot be modified\");\n" +
-    "        address honestPlayer = (cheater == m.player1) ? m.player2 : m.player1;\n\n" +
-    "        m.settled = true;\n" +
-    "        m.active = false;\n\n" +
-    "        uint256 totalPool = m.lockedUsdc;\n" +
-    "        uint256 feeAmount = (totalPool * FEE_BPS) / 10000;\n" +
-    "        uint256 winnerPayout = totalPool - feeAmount;\n\n" +
-    "        require(IERC20(usdcToken).transfer(FEE_ADDRESS, feeAmount), \"Platform fee transfer failed\");\n" +
-    "        require(IERC20(usdcToken).transfer(honestPlayer, winnerPayout), \"Honest player payout failed\");\n\n" +
-    "        emit CheatEnforced(matchId, cheater, honestPlayer, winnerPayout);\n" +
+    "    function enforceAntiCheatShutdown(bytes32 matchId, address cheaterAddress) external {\n" +
+    "        // Triggered only by authenticated Oracle logic on proven hardware/client memory tamper vectors\n" +
+    "        MatchLobby storage lobby = activeMatchLobbies[matchId];\n" +
+    "        require(lobby.isActive && !lobby.isSettled, \"Match parameters are currently locked\");\n" +
+    "        address honestPlayer = (cheaterAddress == lobby.playerOne) ? lobby.playerTwo : lobby.playerOne;\n\n" +
+    "        lobby.isSettled = true;\n" +
+    "        lobby.isActive = false;\n\n" +
+    "        uint256 totalPool = lobby.currentEscrowedBalance;\n" +
+    "        uint256 feeContribution = (totalPool * PLATFORM_FEE_BPS) / 10000;\n" +
+    "        uint256 payoutToHonestPlayer = totalPool - feeContribution;\n\n" +
+    "        require(IERC20(usdcTokenAddress).transfer(FEE_RECIPIENT, feeContribution), \"Anticheat process: platform fee failed\");\n" +
+    "        require(IERC20(usdcTokenAddress).transfer(honestPlayer, payoutToHonestPlayer), \"Anticheat process: recovery transfer failed\");\n\n" +
+    "        emit AnticheatEmergencyEnforced(matchId, cheaterAddress, honestPlayer, payoutToHonestPlayer);\n" +
     "    }\n" +
     "}";
 
@@ -265,110 +279,194 @@ function App() {
         injectStylesAndFonts();
     }, []);
 
-    // Core State Variables
-    const [matchId, setMatchId] = useState("m_8f9a2b10c" + Math.floor(Math.random() * 900 + 100));
-    const [gameState, setGameState] = useState("idle"); // idle, staking, scanning, dispute, victory
-    
-    // Wallet SIWE authentications
+    // Core State variables
+    const [matchId, setMatchId] = useState("m_8f9a2b" + Math.floor(Math.random() * 90000 + 10000));
+    const [gameState, setGameState] = useState("idle"); // idle, scanning, dispute, victory
+    const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, solidity, architecture
+
+    // SIWE Authentications
     const [connected, setConnected] = useState(false);
     const [walletAddress, setWalletAddress] = useState("");
     const [usdcBalance, setUsdcBalance] = useState(0);
     const [siweModal, setSiweModal] = useState(false);
     const [siweSigning, setSiweSigning] = useState(false);
     const [jwtSession, setJwtSession] = useState(null);
-    const [walletProvider, setWalletProvider] = useState(""); // Coinbase, Metamask etc.
+    const [walletProvider, setWalletProvider] = useState(""); 
 
-    // Lobby Configuration States
-    const [antiCheatThreshold, setAntiCheatThreshold] = useState("Standard AI Scanning");
-    const [gameParam, setGameParam] = useState("Valorant Custom");
+    // Match Lobby Details
+    const [antiCheatThreshold, setAntiCheatThreshold] = useState("Zero Tolerance Ramp Check");
+    const [gameParam, setGameParam] = useState("Valorant Custom 1v1");
     const [baseStakeAmount, setBaseStakeAmount] = useState("100");
     const [inviteCopied, setInviteCopied] = useState(false);
 
     // Escrow metrics
-    const [escrowPool, setEscrowPool] = useState(0.00);
-    const [p1Stake, setP1Stake] = useState(0.00);
-    const [p2Stake, setP2Stake] = useState(0.00);
-    const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, solidity, architecture
-
-    // Deposition & Play settings
+    const [escrowPool, setEscrowPool] = useState(0);
+    const [p1Stake, setP1Stake] = useState(0);
+    const [p2Stake, setP2Stake] = useState(0);
     const [selectedPlayer, setSelectedPlayer] = useState("Player 1");
 
-    // Chat logs
+    // Chat with live Typewriter streaming Response
     const [chatLog, setChatLog] = useState([
-        { sender: "AI REFEREE", text: "Secure AI Oracle session initialized on Base Network. Listening to socket telemetry stream.", time: "SYS-INIT" }
+        { sender: "AI REFEREE", text: "Secure AI Oracle session initialized on Base Network. Standard memory registers and client network pipelines are mapped.", time: "00:00:01" }
     ]);
     const [userInput, setUserInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [mute, setMute] = useState(false);
 
-    // Dynamic Multi-Modal Screen/OCR Analyser state
+    // Screen/OCR Simulation
     const [ocrFile, setOcrFile] = useState(null);
-    const [ocrStatus, setOcrStatus] = useState("Ready to ingest screenshot / telemetry logs");
+    const [ocrStatus, setOcrStatus] = useState("Inactive. Ready to ingest telemetry data screenshot.");
     const [analyzingOcr, setAnalyzingOcr] = useState(false);
 
-    // Hardware & Device Fingerprinting Mock hash
+    // Hardware/Device Fingerprinting Sim
     const [deviceFingerprint, setDeviceFingerprint] = useState("");
     useEffect(function() {
-        // Generating simulated non-sensitive hardware environment hash
-        const userAgent = navigator.userAgent;
-        const screensize = window.screen.width + "x" + window.screen.height;
+        const ua = navigator.userAgent;
+        const screenStr = window.screen.width + "x" + window.screen.height + "x" + window.screen.colorDepth;
         let hash = 0;
-        const comb = userAgent + screensize;
-        for (let i = 0; i < comb.length; i++) {
-            const char = comb.charCodeAt(i);
+        const totalStr = ua + screenStr + "ESPORTS-FINGERPRINT-X9";
+        for (let i = 0; i < totalStr.length; i++) {
+            const char = totalStr.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash;
         }
-        setDeviceFingerprint("HW-SHA256-" + Math.abs(hash).toString(16).substring(0, 8).toUpperCase());
+        setDeviceFingerprint("SECURE-HW-" + Math.abs(hash).toString(16).toUpperCase().substring(0, 10));
     }, []);
 
-    // Live Telemetry logs
-    const [ping, setPing] = useState(14);
-    const [fps, setFps] = useState(144);
+    // Live Telemetry Logs
+    const [ping, setPing] = useState(12);
+    const [fps, setFps] = useState(240);
     const [packetLoss, setPacketLoss] = useState(0);
-    const [memState, setMemState] = useState("SECURE");
+    const [memState, setMemState] = useState("SECURE/PROTECTED");
 
-    // EIP-712 Signature view control
+    // Equalizer bars simulated height array
+    const [eqHeights, setEqHeights] = useState([20, 45, 15, 60, 30]);
+
+    // EIP-712 dynamic signature showcase
     const [showEipSignature, setShowEipSignature] = useState(false);
     const [mockEipPayload, setMockEipPayload] = useState(null);
 
-    // Live telemetry variation loop
+    // Canvas matrix/network background animation
+    const canvasRef = useRef(null);
+    useEffect(function() {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+
+        const handleResize = () => {
+            if (canvas) {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+            }
+        };
+        window.addEventListener('resize', handleResize);
+
+        const particles = [];
+        const maxParticles = 40;
+        for (let i = 0; i < maxParticles; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                alpha: Math.random() * 0.5 + 0.1
+            });
+        }
+
+        const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
+            ctx.lineWidth = 0.8;
+
+            // Connect lines
+            for (let i = 0; i < maxParticles; i++) {
+                for (let j = i + 1; j < maxParticles; j++) {
+                    const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw and move particles
+            for (let p of particles) {
+                ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            }
+
+            animationFrameId = requestAnimationFrame(draw);
+        };
+
+        draw();
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    // Live Telemetry Loop
     useEffect(function() {
         const interval = setInterval(function() {
             if (gameState === "scanning") {
-                setPing(Math.floor(Math.random() * 6) + 12);
-                setFps(Math.floor(Math.random() * 8) + 138);
-                setPacketLoss(Math.random() > 0.95 ? 1 : 0);
+                setPing(Math.floor(Math.random() * 4) + 11);
+                setFps(Math.floor(Math.random() * 10) + 235);
+                setPacketLoss(Math.random() > 0.96 ? 1 : 0);
+                setEqHeights([
+                    Math.floor(Math.random() * 40) + 10,
+                    Math.floor(Math.random() * 70) + 20,
+                    Math.floor(Math.random() * 30) + 10,
+                    Math.floor(Math.random() * 80) + 15,
+                    Math.floor(Math.random() * 50) + 10
+                ]);
             } else if (gameState === "dispute") {
-                setPing(842);
-                setFps(18);
-                setPacketLoss(42);
+                setPing(650);
+                setFps(35);
+                setPacketLoss(38);
+                setEqHeights([5, 95, 5, 95, 5]);
             } else {
-                setPing(Math.floor(Math.random() * 3) + 10);
-                setFps(Math.floor(Math.random() * 4) + 141);
+                setPing(Math.floor(Math.random() * 2) + 9);
+                setFps(Math.floor(Math.random() * 5) + 241);
                 setPacketLoss(0);
+                setEqHeights([20, 45, 15, 60, 30]);
             }
-        }, 1500);
+        }, 1200);
         return function() { clearInterval(interval); };
     }, [gameState]);
 
-    // Copying universal invite link
+    // Handle universal dynamic invite link copying
     const handleCopyInviteLink = function() {
         if (!mute) playSound('click');
         const link = "https://app.projectepic.gg/lobby/" + matchId;
         navigator.clipboard.writeText(link);
         setInviteCopied(true);
-        setTimeout(function() { setInviteCopied(false); }, 2500);
+        setTimeout(function() { setInviteCopied(false); }, 2200);
     };
 
-    // Open SIWE modal with dynamic wallet provider choice
+    // Open SIWE process with chosen wallet provider
     const startWalletConnect = function(provider) {
         if (!mute) playSound('click');
         setWalletProvider(provider);
         setSiweModal(true);
     };
 
-    // SIWE Cryptographic Sign Simulator
+    // Simulated verification of the SIWE signature
     const executeSIWE = function() {
         if (!mute) playSound('scan');
         setSiweSigning(true);
@@ -377,19 +475,20 @@ function App() {
             setSiweModal(false);
             setConnected(true);
             const mockAddrs = {
-                "Coinbase": "0x3C44...7A21",
-                "MetaMask": "0x71C7...b2c3",
-                "Rainbow": "0x8F1A...E599"
+                "Coinbase": "0x0A9e...e071",
+                "MetaMask": "0xf39F...2266",
+                "Rainbow": "0x7099...1154",
+                "WalletConnect": "0x3C44...9012"
             };
-            const addr = mockAddrs[walletProvider] || "0x71C7...b2c3";
+            const addr = mockAddrs[walletProvider] || "0xf39F...2266";
             setWalletAddress(addr);
-            setUsdcBalance(1250.00); // Faucet initial mock USDC
-            const randomJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + btoa(JSON.stringify({ address: addr, auth: true, fingerprint: deviceFingerprint }));
-            setJwtSession(randomJwt);
-            addChatMsg("SYSTEM", "SIWE signature cryptographically verified. Generated session JWT & pinned hardware environment hash.");
-            addChatMsg("AI REFEREE", "Secure Node connection ready. Stake assets and share Lobby URL to proceed.");
+            setUsdcBalance(1500.00); 
+            const jwt = "SIWE_JWT_BASE_L2_" + btoa(JSON.stringify({ adr: addr, fp: deviceFingerprint, exp: Date.now() + 3600000 }));
+            setJwtSession(jwt);
+            addChatMsg("SYSTEM", "Cryptographic SIWE session generated. Pinned device environment to HSM-signed gateway.");
+            addChatMsg("AI REFEREE", "Lobby node sync online. Native USDC stake requested to initiate telemetry pipeline.");
             if (!mute) playSound('success');
-        }, 1600);
+        }, 1500);
     };
 
     const handleDisconnect = function() {
@@ -398,8 +497,7 @@ function App() {
         setWalletAddress("");
         setUsdcBalance(0);
         setJwtSession(null);
-        setWalletProvider("");
-        addChatMsg("SYSTEM", "User session cleared. Connected wallet detached.");
+        addChatMsg("SYSTEM", "SIWE credentials detached. Node session cleared.");
     };
 
     const addChatMsg = function(sender, text) {
@@ -409,10 +507,11 @@ function App() {
         });
     };
 
-    // Deposit or Direct USDC stake
+    // Native USDC Stake Simulation
     const executeStake = function() {
         if (!connected) {
-            alert("Cryptographic SIWE session must be authenticated to stake assets!");
+            if (!mute) playSound('warning');
+            alert("Mandatory wallet authorization. Please authenticate with SIWE first.");
             return;
         }
         const parsedAmount = parseFloat(baseStakeAmount);
@@ -421,7 +520,8 @@ function App() {
             return;
         }
         if (parsedAmount > usdcBalance) {
-            alert("Insufficient native USDC balance!");
+            if (!mute) playSound('warning');
+            alert("Insufficient Native USDC Balance.");
             return;
         }
 
@@ -431,38 +531,40 @@ function App() {
         if (selectedPlayer === "Player 1") {
             setP1Stake(function(prev) { return prev + parsedAmount; });
             setEscrowPool(function(prev) { return prev + parsedAmount; });
-            addChatMsg("SYSTEM", "Player 1 (ELITE_CONQUEROR) deposited " + parsedAmount + " USDC into the Base L2 Escrow contract.");
+            addChatMsg("SYSTEM", "Player 1 (ELITE_CONQUEROR) deposited " + parsedAmount + " USDC in the escrow pool.");
         } else {
             setP2Stake(function(prev) { return prev + parsedAmount; });
             setEscrowPool(function(prev) { return prev + parsedAmount; });
-            addChatMsg("SYSTEM", "Player 2 (DEGEN_KILLER) deposited " + parsedAmount + " USDC into the Base L2 Escrow contract.");
+            addChatMsg("SYSTEM", "Player 2 (DEGEN_KILLER) deposited " + parsedAmount + " USDC in the escrow pool.");
         }
     };
 
-    // AI Interactive response model
-    const triggerAIResponse = function(promptText) {
+    // Streaming response logic
+    const streamRefereeText = function(fullText) {
         setIsTyping(true);
-        if (!mute) playSound('scan');
-        setTimeout(function() {
-            setIsTyping(false);
-            let reply = "";
-            const norm = promptText.toLowerCase();
-
-            if (norm.includes("status") || norm.includes("telemetry") || norm.includes("ping")) {
-                reply = "[TELEMETRY STATE] Verified Client Modules. FPS: " + fps + ". Net Latency: " + ping + "ms. Hardware Fingerprint Target: " + deviceFingerprint + ". Security is active.";
-            } else if (norm.includes("cheat") || norm.includes("violation") || norm.includes("hack")) {
-                reply = "Zero-tolerance ruleset is operational. Active client telemetry is evaluated. Memory wrappers, local hook modifications, or network spoofing trigger instant collateral release to the honest counterparty.";
-            } else if (norm.includes("payout") || norm.includes("fee") || norm.includes("commission")) {
-                reply = "Upon resolution, the contract routes the flat 2.50% platform fee to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071. Remaining 97.50% funds are broadcast via EIP-712 typed oracle signature.";
-            } else if (norm.includes("eip") || norm.includes("signature") || norm.includes("712")) {
-                reply = "EIP-712 signatures securely pass parameters (matchId, winner address, locked amount) to keep matches fully decentralized and gasless until the precise moment of settlement.";
+        let currentString = "";
+        let index = 0;
+        const interval = setInterval(() => {
+            if (index < fullText.length) {
+                currentString += fullText.charAt(index);
+                if (index % 4 === 0 && !mute) {
+                    playSound('tick');
+                }
+                setChatLog(prev => {
+                    const latest = [...prev];
+                    if (latest[latest.length - 1] && latest[latest.length - 1].sender === "AI REFEREE" && latest[latest.length - 1].text.startsWith(currentString.substring(0, 3))) {
+                        latest[latest.length - 1].text = currentString;
+                        return latest;
+                    } else {
+                        return [...prev, { sender: "AI REFEREE", text: currentString, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }];
+                    }
+                });
+                index++;
             } else {
-                reply = "Inquiry analyzed. Listening on live telemetry socket channels. Standby for match state validation.";
+                clearInterval(interval);
+                setIsTyping(false);
             }
-
-            addChatMsg("AI REFEREE", reply);
-            if (!mute) playSound('click');
-        }, 1100);
+        }, 15);
     };
 
     const handleSendChat = function(e) {
@@ -471,68 +573,78 @@ function App() {
         const msg = userInput;
         addChatMsg("USER", msg);
         setUserInput("");
-        triggerAIResponse(msg);
+
+        setTimeout(() => {
+            let reply = "";
+            const norm = msg.toLowerCase();
+            if (norm.includes("status") || norm.includes("telemetry") || norm.includes("ping")) {
+                reply = `[TELEMETRY CORE] Active scanning active on hardware footprint: ${deviceFingerprint}. Core latency is ${ping}ms. All local hooks verified clear.`;
+            } else if (norm.includes("cheat") || norm.includes("hack") || norm.includes("violation")) {
+                reply = "Zero-Tolerance Active Memory validation filters are deployed. Any injection array detected automatically terminates match, releasing net stake to honest counterparty minus 2.50% fee.";
+            } else if (norm.includes("payout") || norm.includes("fee") || norm.includes("recipient")) {
+                reply = "Upon resolution, the contract automatically executes fee separation: 2.50% to flat destination 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071. Remainder released instantly.";
+            } else if (norm.includes("signature") || norm.includes("712") || norm.includes("eip")) {
+                reply = "Oracle structures use EIP-712 typed structure hash formats (Domain Separator & Settlement parameters) to secure the settlement and prevent frontrunning.";
+            } else {
+                reply = "Telemetry registers analyzed. Standing by for screen metadata inputs or match execution state signals.";
+            }
+            streamRefereeText(reply);
+        }, 800);
     };
 
-    // Match State Simulators
-    const startMatchScan = function() {
+    // Telemetry Pipeline Controls
+    const startMatchTelemetryScan = function() {
         if (escrowPool === 0) {
-            alert("Escrow Pool must be funded prior to starting match telemetry monitoring!");
+            if (!mute) playSound('warning');
+            alert("USDC Escrow Pool must be funded before initializing match telemetry monitoring.");
             return;
         }
         if (!mute) playSound('scan');
         setGameState("scanning");
-        addChatMsg("AI REFEREE", "Active game telemetry hooks loaded. Client memory spaces, performance indexes, and network packets are being logged. Scanning for cheating...");
+        addChatMsg("AI REFEREE", "Active memory registers and performance channels synced. Ingesting frame loops & packet data.");
     };
 
-    const forceCheatViolation = function() {
-        if (gameState !== "scanning") {
-            alert("Match telemetry scan must be active to trigger violations!");
-            return;
-        }
+    const forceCheatAnomaly = function() {
+        if (gameState !== "scanning") return;
         if (!mute) playSound('warning');
         setGameState("dispute");
-        setMemState("VIOLATION: DYNAMIC PACKET INJECTION");
-        addChatMsg("AI REFEREE", "CRITICAL ANOMALY IDENTIFIED: Player 1 matches signature profiles of raw client package injection. Enforcing penalty execution.");
+        setMemState("CRITICAL: PARSING ERROR - HOOK INJECTION");
+        addChatMsg("AI REFEREE", "CRITICAL TAMPER EVENT DETECTED: Illegal dynamic packet choke detected on P1 network registers.");
 
         setTimeout(function() {
-            addChatMsg("AI REFEREE", "SECURITY VERDICT: Cheat metrics verified. Shutting down active channels and executing secure escrow override.");
+            addChatMsg("AI REFEREE", "CRITICAL RESOLUTION: Cheater flagged. Executing smart contract anticheat emergency clause. Routed USDC balance to non-violating player.");
             if (!mute) playSound('success');
-            
             const fee = escrowPool * 0.025;
-            const honestPayout = escrowPool - fee;
-            addChatMsg("SYSTEM", "Base Contract Broadcast: Transferred " + honestPayout.toFixed(2) + " USDC to non-violating Player 2. Routed platform fee of " + fee.toFixed(2) + " USDC to platform wallet.");
+            const payout = escrowPool - fee;
+            addChatMsg("SYSTEM", "Base Contract Event: routed Platform Fee of " + fee.toFixed(2) + " USDC to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071. Awarded " + payout.toFixed(2) + " USDC to Player 2 (DEGEN_KILLER).");
             setEscrowPool(0);
             setP1Stake(0);
             setP2Stake(0);
-        }, 3000);
+        }, 2500);
     };
 
-    const resolveCleanVictory = function() {
-        if (gameState !== "scanning") {
-            alert("Match telemetry scan must be active to complete match!");
-            return;
-        }
+    const resolveNormalVictory = function() {
+        if (gameState !== "scanning") return;
         if (!mute) playSound('success');
         setGameState("victory");
-        setMemState("VERIFIED SECURE");
-        addChatMsg("AI REFEREE", "MATCH COMPLETE: High telemetry evaluation complete. Counter-signatures verified. No violations recorded. Winner identified: Player 2.");
+        setMemState("SECURE/CLEAN RUN");
+        addChatMsg("AI REFEREE", "Match parameters completed successfully. Validated no memory layer deviations. Winner confirmed: Player 2.");
 
-        // Formulate EIP-712 payload preview
+        // Create the EIP-712 typed signature format
         const mockSig = {
             domain: {
-                name: "EpicGamingEscrow",
+                name: "AutonomousUSDCGamingEscrow",
                 version: "1",
-                chainId: 8453,
+                chainId: 8453, // Base Network
                 verifyingContract: "0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913"
             },
             message: {
-                matchId: "0x" + Math.random().toString(16).substring(2, 10) + "00000000000000000000000000000000000000",
-                winner: "0x3C44C2700D600000000000000000000000007A21",
+                matchId: "0x" + Math.random().toString(16).substring(2, 10).padEnd(64, '0'),
+                winner: "0x3C44C2700D600000000000000000000000009012",
                 amount: escrowPool.toString() + " USDC",
                 nonce: "1"
             },
-            signature: "0xe45f1b203c94f58e1c3da89b254a65432d84ff0d049fbc2da60de8f583191f6323bcf4402a3921008bfdd3ec2194f50de0ea1102dbd63251aa30df93fc84ab011b"
+            signature: "0x25a987d6e42df152bc23aa12dfd91fae620582dbe048bce954de8f32109825bcf84ab011beb92131920ac34bc449ad15c9284cfde1102dbd63251aa30df93fc849ca1c"
         };
         setMockEipPayload(mockSig);
         setShowEipSignature(true);
@@ -540,295 +652,290 @@ function App() {
         setTimeout(function() {
             const fee = escrowPool * 0.025;
             const payout = escrowPool - fee;
-            addChatMsg("SYSTEM", "Base L2 Settled: " + payout.toFixed(2) + " USDC released to Player 2. Service fee of " + fee.toFixed(2) + " USDC routed to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071");
+            addChatMsg("SYSTEM", "Base Contract Resolved: Transferred " + payout.toFixed(2) + " USDC to winning player. Sent service fee of " + fee.toFixed(2) + " USDC to platform account.");
             setEscrowPool(0);
             setP1Stake(0);
             setP2Stake(0);
-        }, 2200);
+        }, 3200);
     };
 
-    const resetArena = function() {
+    const resetMatchSimulation = function() {
         if (!mute) playSound('click');
         setGameState("idle");
-        setMemState("SECURE");
+        setMemState("SECURE/PROTECTED");
         setEscrowPool(0);
         setP1Stake(0);
         setP2Stake(0);
         setOcrFile(null);
-        setOcrStatus("Ready to ingest screenshot / telemetry logs");
+        setOcrStatus("Inactive. Ready to ingest telemetry data screenshot.");
         setShowEipSignature(false);
-        setChatLog([{ sender: "AI REFEREE", text: "Oracle reset completed. Standing by for next match configurations.", time: "SYS-RESET" }]);
+        addChatMsg("SYSTEM", "Lobby registers flushed. Match simulator in idle status.");
     };
 
-    // Multi-modal Vision screenshot analyzer simulation
-    const simulateVisionUpload = function(e) {
+    // Post-Match Screens OCR analyzer simulator
+    const handleVisionScreenUpload = function(e) {
         const file = e.target.files[0];
         if (!file) return;
         setOcrFile(file);
         setAnalyzingOcr(true);
-        setOcrStatus("Parsing file bytes and loading computer vision engine...");
+        setOcrStatus("Loading OCR Convolutional Core... Inspecting canvas coordinates.");
         if (!mute) playSound('scan');
 
         setTimeout(function() {
-            setOcrStatus("Analyzing post-match screen coordinates & text elements via OCR...");
+            setOcrStatus("Cross-checking telemetry logs with screen OCR markers. Inspecting layer profiles for Photoshop distortion.");
             setTimeout(function() {
-                setOcrStatus("Metadata cross-verification complete: No Photoshop layer distortions or timestamp tampering detected.");
+                setOcrStatus("Integrity Verified. Scoreboard numbers fully sync with telemetry metadata logs. Layers clean.");
                 setAnalyzingOcr(false);
-                addChatMsg("AI REFEREE", "VISION ANALYSER REPORT: Matches match logs successfully. Valid proof metadata verified. Authenticity score: 99.8%");
+                addChatMsg("AI REFEREE", "VISION ANALYSER REPORT: Target screenshot matches runtime log events. Integrity score: 99.9%.");
                 if (!mute) playSound('success');
-            }, 1500);
+            }, 1200);
         }, 1200);
     };
 
-    return React.createElement("div", { className: "min-h-screen bg-transparent flex flex-col justify-between selection:bg-[#66FCF1] selection:text-black" },
+    return React.createElement("div", { className: "min-h-screen flex flex-col justify-between select-none relative z-10" },
         
-        // Holographic Glowing Background Orbs
-        React.createElement("div", { className: "absolute top-0 left-0 w-full h-full pointer-events-none opacity-30 overflow-hidden z-0" },
-            React.createElement("div", { className: "absolute top-[10%] left-[25%] w-[25vw] h-[25vw] bg-cyan-600/10 rounded-full blur-[100px]" }),
-            React.createElement("div", { className: "absolute bottom-[15%] right-[15%] w-[30vw] h-[30vw] bg-pink-600/5 rounded-full blur-[120px]" })
-        ),
+        // Background Particle Canvas
+        React.createElement("canvas", { ref: canvasRef, className: "absolute top-0 left-0 w-full h-full pointer-events-none z-0" }),
 
-        // HEADER
-        React.createElement("header", { className: "border-b border-[#66FCF1]/15 bg-[#040609]/95 backdrop-blur-lg relative z-30" },
-            React.createElement("div", { className: "max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row items-center justify-between gap-4" },
+        // HEADER/NAVIGATION
+        React.createElement("header", { className: "border-b border-cyan-500/10 bg-[#07080d]/90 backdrop-blur-md relative z-30" },
+            React.createElement("div", { className: "max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4" },
                 
-                // Logo with state indications
+                // Esports Branding Logo
                 React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("div", { 
                         className: "relative group cursor-pointer",
-                        onClick: function() { if(!mute) playSound('click'); }
+                        onClick: function() { if (!mute) playSound('click'); }
                     },
-                        React.createElement("div", { className: "w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 relative overflow-hidden border " + (
+                        React.createElement("div", { className: "w-12 h-12 rounded-lg flex items-center justify-center border transition-all duration-300 relative overflow-hidden " + (
                             gameState === "dispute" ? "bg-red-500/10 border-red-500 neon-red-glow" :
-                            gameState === "scanning" ? "bg-cyan-500/15 border-[#66FCF1] neon-cyan-glow animate-pulse" :
+                            gameState === "scanning" ? "bg-cyan-500/10 border-cyan-400 neon-cyan-glow animate-pulse" :
                             gameState === "victory" ? "bg-emerald-500/10 border-emerald-400" :
-                            "bg-[#0b0c10]/90 border-cyan-500/30"
+                            "bg-slate-900 border-cyan-500/20 hover:border-cyan-400"
                         ) },
-                            React.createElement("svg", { className: "w-8 h-8 text-[#66FCF1] transition-transform duration-1000 " + (gameState === "scanning" ? "rotate-180" : "group-hover:scale-110"), viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
-                                React.createElement("path", { strokeLinecap: "round", strokeLinejoin="round", strokeWidth: "1.5", d: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" })
-                            ),
-                            React.createElement("div", { className: "absolute inset-0 bg-gradient-to-b from-transparent via-[#66FCF1]/10 to-transparent pointer-events-none" })
-                        ),
-                        React.createElement("span", { className: "absolute -inset-1 rounded-xl border border-[#66FCF1]/10 group-hover:scale-105 transition-transform duration-300 pointer-events-none" })
+                            React.createElement("svg", { className: "w-7 h-7 text-cyan-400", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
+                                React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "1.5", d: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" })
+                            )
+                        )
                     ),
                     React.createElement("div", null,
                         React.createElement("div", { className: "flex items-center gap-2" },
-                            React.createElement("h1", { className: "font-orbitron font-extrabold text-2xl tracking-widest text-white" },
-                                "PROJECT ",
-                                React.createElement("span", { className: "text-[#66FCF1] drop-shadow-[0_0_8px_rgba(102,252,241,0.5)]" }, "EPIC")
+                            React.createElement("h1", { className: "font-orbitron font-black text-xl tracking-wider text-white" },
+                                "EPIC ",
+                                React.createElement("span", { className: "text-cyan-400" }, "REFEREE")
                             ),
-                            React.createElement("span", { className: "bg-[#66FCF1]/10 text-[#66FCF1] text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-[#66FCF1]/30" },
-                                "BASE L2"
-                            )
+                            React.createElement("span", { className: "bg-cyan-400/10 text-cyan-400 text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-cyan-400/30" }, "BASE")
                         ),
-                        React.createElement("p", { className: "text-[10px] text-gray-400 font-mono tracking-widest uppercase" }, "Autonomous AI Referee Escrow & Telemetry Suite")
+                        React.createElement("p", { className: "text-[9px] text-slate-400 font-mono tracking-widest uppercase" }, "USDC Cryptographic Autonomous Escrow")
                     )
                 ),
 
-                // Navigation System
-                React.createElement("div", { className: "flex items-center gap-1.5 bg-[#0b0c10]/60 p-1 rounded-lg border border-gray-800" },
+                // Navigation Tabs
+                React.createElement("div", { className: "flex items-center gap-1 bg-[#0d0f17] p-1 rounded-lg border border-slate-800" },
                     React.createElement("button", { 
-                        onClick: function() { if(!mute) playSound('click'); setActiveTab("dashboard"); },
-                        className: "px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "dashboard" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white")
-                    }, "ARENA HUD"),
+                        onClick: function() { if (!mute) playSound('click'); setActiveTab("dashboard"); },
+                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "dashboard" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
+                    }, "MATCH HUD"),
                     React.createElement("button", { 
-                        onClick: function() { if(!mute) playSound('click'); setActiveTab("solidity"); },
-                        className: "px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "solidity" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white")
-                    }, "USDC CONTRACT"),
+                        onClick: function() { if (!mute) playSound('click'); setActiveTab("solidity"); },
+                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "solidity" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
+                    }, "SOLIDITY ESCROW"),
                     React.createElement("button", { 
-                        onClick: function() { if(!mute) playSound('click'); setActiveTab("architecture"); },
-                        className: "px-4 py-2 text-[11px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "architecture" ? "bg-[#66FCF1]/15 text-[#66FCF1] border border-[#66FCF1]/30" : "text-gray-400 hover:text-white")
-                    }, "SYSTEM PIPELINE")
+                        onClick: function() { if (!mute) playSound('click'); setActiveTab("architecture"); },
+                        className: "px-4 py-2 text-[10px] font-orbitron font-bold tracking-wider rounded transition-all " + (activeTab === "architecture" ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" : "text-slate-400 hover:text-white")
+                    }, "CORE DIAGRAM")
                 ),
 
-                // Connected status / Balance and Connect trigger
+                // Wallet Connection Area
                 React.createElement("div", { className: "flex items-center gap-3" },
-                    // Mute control
+                    // Mute synth switch
                     React.createElement("button", { 
                         onClick: function() { setMute(!mute); },
-                        className: "p-2.5 rounded-lg bg-gray-900/60 border border-gray-800 hover:border-[#66FCF1]/25 transition-colors"
+                        className: "p-2 rounded bg-[#0d0f17] border border-slate-800 hover:border-cyan-500/30 text-slate-400 hover:text-cyan-400 transition-colors"
                     }, mute ? 
-                        React.createElement("svg", { className: "w-4 h-4 text-gray-500", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+                        React.createElement("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
                             React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" }),
                             React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" })
                         ) :
-                        React.createElement("svg", { className: "w-4 h-4 text-[#66FCF1]", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+                        React.createElement("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
                             React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9.5H4.5v5h3.25L12 18.75z" })
                         )
                     ),
 
                     connected ? 
-                    React.createElement("div", { className: "flex items-center gap-2 bg-[#0b0c10]/90 border border-emerald-500/30 rounded-lg px-3 py-1.5 font-mono text-[11px]" },
+                    React.createElement("div", { className: "flex items-center gap-2 bg-[#0c0d14] border border-cyan-500/20 rounded px-3 py-1.5 font-mono text-xs" },
                         React.createElement("span", { className: "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" }),
-                        React.createElement("span", { className: "text-white text-[10px]" }, walletAddress),
-                        React.createElement("span", { className: "text-gray-500" }, "|"),
-                        React.createElement("span", { className: "text-[#66FCF1] font-bold" }, "$" + usdcBalance.toFixed(2) + " USDC"),
-                        React.createElement("button", { onClick: handleDisconnect, className: "text-red-400 hover:text-red-300 font-bold ml-2 underline cursor-pointer" }, "Disconnect")
+                        React.createElement("span", { className: "text-slate-300 font-semibold" }, walletAddress),
+                        React.createElement("span", { className: "text-cyan-400 font-bold ml-1" }, "$" + usdcBalance.toFixed(2) + " USDC"),
+                        React.createElement("button", { onClick: handleDisconnect, className: "text-red-400 hover:text-red-300 font-bold ml-2 underline" }, "Disconnect")
                     ) :
-                    React.createElement("div", { className: "flex items-center gap-1.5" },
+                    React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { 
                             onClick: function() { startWalletConnect("MetaMask"); },
-                            className: "px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-200 text-xs font-orbitron font-bold rounded-lg transition-all"
+                            className: "px-3 py-2 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 text-[11px] font-orbitron font-bold rounded transition-all"
                         }, "MetaMask"),
                         React.createElement("button", { 
                             onClick: function() { startWalletConnect("Coinbase"); },
-                            className: "px-3 py-2 bg-[#0052FF]/10 hover:bg-[#0052FF]/30 border border-[#0052FF]/30 text-blue-200 text-xs font-orbitron font-bold rounded-lg transition-all"
-                        }, "Coinbase Wallet")
+                            className: "px-3 py-2 bg-[#0052ff]/10 border border-[#0052ff]/30 hover:border-[#0052ff]/80 text-[#8ea7ff] text-[11px] font-orbitron font-bold rounded transition-all"
+                        }, "Coinbase Wallet"),
+                        React.createElement("button", { 
+                            onClick: function() { startWalletConnect("Rainbow"); },
+                            className: "px-3 py-2 bg-gradient-to-r from-red-500/10 to-yellow-500/10 border border-yellow-500/30 hover:border-yellow-500/80 text-yellow-200 text-[11px] font-orbitron font-bold rounded transition-all"
+                        }, "Rainbow")
                     )
                 )
 
             )
         ),
 
-        // MAIN WRAPPER
+        // MAIN CONTENT
         React.createElement("main", { className: "max-w-7xl mx-auto w-full px-4 py-6 flex-1 relative z-10 grid grid-cols-1 gap-6" },
 
             // SIWE AUTHENTICATION MODAL
-            siweModal && React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4" },
-                React.createElement("div", { className: "cyber-panel p-6 max-w-md w-full space-y-4 rounded-xl border-[#66FCF1]/40 neon-cyan-glow relative" },
+            siweModal && React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" },
+                React.createElement("div", { className: "cyber-panel p-6 max-w-md w-full space-y-4 rounded-lg neon-cyan-glow relative" },
                     React.createElement("button", { 
-                        onClick: function() { if(!mute) playSound('click'); setSiweModal(false); },
-                        className: "absolute top-4 right-4 text-gray-400 hover:text-white font-mono text-sm"
+                        onClick: function() { if (!mute) playSound('click'); setSiweModal(false); },
+                        className: "absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-sm"
                     }, "[X]"),
 
-                    React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-3" },
-                        React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-white tracking-widest" }, "SIGN-IN WITH ETHEREUM (SIWE)"),
-                        React.createElement("p", { className: "text-[10px] font-mono text-gray-500 mt-1" }, "EIP-4361 SECURE TELEMETRY HANDSHAKE")
+                    React.createElement("div", { className: "border-b border-cyan-500/20 pb-2" },
+                        React.createElement("h3", { className: "font-orbitron font-black text-sm text-white tracking-wider" }, "SIGN-IN WITH ETHEREUM (SIWE)"),
+                        React.createElement("p", { className: "text-[9px] font-mono text-cyan-400/80" }, "EIP-4361 SECURE HANDSHAKE ENGINE")
                     ),
 
-                    React.createElement("div", { className: "bg-[#030407] p-3 rounded border border-gray-800 text-[11px] font-mono text-gray-400 space-y-1.5" },
-                        React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Domain: "), "epic-escrow.base"),
-                        React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Statement: "), "Authorize security telemetry streaming & lock dynamic native USDC pools on Base Network."),
-                        React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Chain ID: "), "8453 (Base Layer 2)"),
-                        React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Device Hash: "), deviceFingerprint),
-                        React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Nonce: "), Math.floor(Math.random() * 10000000))
+                    React.createElement("div", { className: "bg-black/40 p-3 rounded border border-slate-800 text-[10px] font-mono text-slate-400 space-y-2" },
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Domain: "), "epic-referee.base"),
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Statement: "), "Authorize security telemetry scanner module & lock native USDC smart contracts on Base."),
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Device Footprint: "), deviceFingerprint),
+                        React.createElement("p", null, React.createElement("span", { className: "text-slate-500 font-bold" }, "Chain ID: "), "8453 (Base Network)")
                     ),
 
-                    React.createElement("p", { className: "text-[10px] text-gray-500 italic leading-relaxed" },
-                        "By signing this cryptographic nonce, you generate a secure session JWT linked with your client environment hash to prevent Sybil multi-accounting."
+                    React.createElement("p", { className: "text-[10px] text-slate-500 italic leading-relaxed" },
+                        "By signing this cryptographic message, you verify possession of private keys and issue an isolated backend JWT session tied to your device fingerprint signature."
                     ),
 
                     React.createElement("button", { 
                         onClick: executeSIWE,
                         disabled: siweSigning,
-                        className: "w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] rounded font-orbitron font-extrabold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2"
-                    }, siweSigning ? "GENERATING CRYPTO PROOF..." : "SIGN SECURITY MESSAGE")
+                        className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-xs tracking-widest uppercase rounded transition-all"
+                    }, siweSigning ? "GENERATING SECURE SCHEME..." : "SIGN SECURITY PAYLOAD")
                 )
             ),
 
-            // ANTI-CHEAT CRITICAL OVERLAY
-            gameState === "dispute" && React.createElement("div", { className: "bg-red-950/25 border-2 border-red-500/70 rounded-xl p-5 relative overflow-hidden neon-red-glow" },
+            // ANTI-CHEAT CRITICAL DISPUTE PANEL
+            gameState === "dispute" && React.createElement("div", { className: "bg-red-950/20 border border-red-500/50 rounded-lg p-5 relative overflow-hidden neon-red-glow" },
                 React.createElement("div", { className: "warning-sweep" }),
-                React.createElement("div", { className: "flex flex-col sm:flex-row items-center gap-4 relative z-10" },
-                    React.createElement("div", { className: "w-14 h-14 rounded-xl bg-red-600/20 border border-red-500 flex items-center justify-center text-red-500 shrink-0" },
-                        React.createElement("svg", { className: "w-8 h-8 animate-bounce", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+                React.createElement("div", { className: "flex flex-col md:flex-row items-center gap-4 relative z-10" },
+                    React.createElement("div", { className: "w-12 h-12 rounded bg-red-500/20 border border-red-500 flex items-center justify-center text-red-500" },
+                        React.createElement("svg", { className: "w-7 h-7 animate-bounce", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
                             React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" })
                         )
                     ),
-                    React.createElement("div", { className: "text-center sm:text-left space-y-1" },
-                        React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-red-500 tracking-wider" }, "SECURE ANTICHEAT RED-ALERT ENFORCED"),
-                        React.createElement("p", { className: "text-xs text-red-300 font-mono leading-relaxed" },
-                            "AI Telemetry Monitor flagged Dynamic Packet Injection and illegal memory registers. Penalty automated: Escrow platform fee of 2.50% swapped and the entire stake is awarded to the honest player."
+                    React.createElement("div", { className: "space-y-1" },
+                        React.createElement("h3", { className: "font-orbitron font-extrabold text-sm text-red-500 uppercase tracking-widest" }, "AI Ref Protection Active: Cheat Violation Enforced"),
+                        React.createElement("p", { className: "text-xs text-red-300 font-mono" },
+                            "Continuous telemetry RAM registers monitoring flagged a dynamic packet injection vector. Match terminated immediately. 2.50% platform fee routed, remaining funds awarded directly to the honest player."
                         )
                     )
                 )
             ),
 
-            // VICTORY SUMMARY OVERLAY
-            gameState === "victory" && React.createElement("div", { className: "bg-emerald-950/20 border border-emerald-500/80 rounded-xl p-5 relative overflow-hidden" },
-                React.createElement("div", { className: "flex flex-col sm:flex-row items-center gap-4" },
-                    React.createElement("div", { className: "w-14 h-14 rounded-xl bg-emerald-600/20 border border-emerald-500 flex items-center justify-center text-emerald-400 shrink-0" },
-                        React.createElement("svg", { className: "w-8 h-8", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+            // VICTORY SUMMARY
+            gameState === "victory" && React.createElement("div", { className: "bg-emerald-950/20 border border-emerald-500/50 rounded-lg p-5 relative overflow-hidden" },
+                React.createElement("div", { className: "flex flex-col md:flex-row items-center gap-4" },
+                    React.createElement("div", { className: "w-12 h-12 rounded bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400" },
+                        React.createElement("svg", { className: "w-7 h-7", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
                             React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" })
                         )
                     ),
-                    React.createElement("div", { className: "text-center sm:text-left" },
-                        React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-emerald-400 tracking-wider" }, "TELEMETRY DIAGNOSTICS CLEAN - VICTORY ASSIGNED"),
+                    React.createElement("div", { className: "space-y-1" },
+                        React.createElement("h3", { className: "font-orbitron font-extrabold text-sm text-emerald-400 uppercase tracking-widest" }, "Verification Clean - Match Complete"),
                         React.createElement("p", { className: "text-xs text-emerald-300 font-mono" },
-                            "No violations observed. High telemetry evaluation parsed securely. Smart contract prepared for payout execution via signed oracle parameters."
+                            "No violations observed. Telemetry evaluation confirms honest player mechanics. Preparing automated payout release with cryptographic signature parameters."
                         )
                     )
                 )
             ),
 
-            // TAB: ARENA HUD
+            // TAB: DASHBOARD
             activeTab === "dashboard" && React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch" },
                 
-                // LEFT SIDE: CONTROL PANEL & TELEMETRY
+                // CONTROL SYSTEM
                 React.createElement("div", { className: "lg:col-span-5 space-y-6" },
 
-                    // UNIVERSAL LOBBY GENERATOR & PARAMETERS
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-xl space-y-4" },
-                        React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-3" },
-                            React.createElement("h2", { className: "font-orbitron font-extrabold text-xs tracking-widest text-white" }, "1. LOBBY CREATION ENGINE"),
-                            React.createElement("p", { className: "text-[10px] text-gray-500 font-mono" }, "CONFIGURE GAME PARAMETERS")
+                    // LOBBY CONFIGURATION
+                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4" },
+                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2" },
+                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "1. Configure Game Lobby"),
+                            React.createElement("p", { className: "text-[9px] font-mono text-slate-500" }, "SETUP ACTIVE BASE MATCH INSTANCE")
                         ),
 
                         React.createElement("div", { className: "space-y-3" },
                             React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1" }, "SELECT ACTIVE GAME"),
+                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SELECT ACTIVE GAME"),
                                 React.createElement("select", { 
                                     value: gameParam, 
                                     onChange: function(e) { setGameParam(e.target.value); },
-                                    className: "w-full bg-[#030407] border border-gray-800 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#66FCF1]"
+                                    className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none"
                                 },
-                                    React.createElement("option", { value: "Valorant Duel" }, "Valorant Duel (API Integration)"),
-                                    React.createElement("option", { value: "CS2 Speedrun" }, "CS2 Speedrun (Memory Hooks)"),
-                                    React.createElement("option", { value: "Street Fighter VI" }, "Street Fighter VI (Telemetry WS)"),
-                                    React.createElement("option", { value: "Apex Legends 1v1" }, "Apex Legends 1v1 (Client SDK)")
+                                    React.createElement("option", { value: "Valorant Custom 1v1" }, "Valorant Custom 1v1 (Telemetry API)"),
+                                    React.createElement("option", { value: "CS2 Wingman" }, "CS2 Wingman (Dynamic RAM Hooks)"),
+                                    React.createElement("option", { value: "Apex Legends Arena" }, "Apex Legends Arena (WS Telemetry)"),
+                                    React.createElement("option", { value: "Street Fighter VI Duel" }, "Street Fighter VI Duel (OCR Capture)")
                                 )
                             ),
 
                             React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1" }, "ANTI-CHEAT SENSITIVITY"),
+                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "ANTI-CHEAT HEURISTICS"),
                                 React.createElement("select", { 
                                     value: antiCheatThreshold, 
                                     onChange: function(e) { setAntiCheatThreshold(e.target.value); },
-                                    className: "w-full bg-[#030407] border border-gray-800 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#66FCF1]"
+                                    className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none"
                                 },
-                                    React.createElement("option", { value: "Standard AI Scanning" }, "Standard (OCR + Telemetry Checks)"),
-                                    React.createElement("option", { value: "Zero Tolerance Active" }, "Zero Tolerance (Continuous RAM Inspection)"),
-                                    React.createElement("option", { value: "Relaxed Debug Check" }, "Relaxed (Manual Ingestion Verification)")
+                                    React.createElement("option", { value: "Zero Tolerance Ramp Check" }, "Strict (Continuous Memory + Integrity Checks)"),
+                                    React.createElement("option", { value: "Standard AI Scan" }, "Medium (OCR Capture + Post Match Checks)"),
+                                    React.createElement("option", { value: "Permissive Debug Mode" }, "Manual (Developer Validation Only)")
                                 )
                             ),
 
                             React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1" }, "SHAREABLE MATCH INVITE LINK"),
+                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SHAREABLE MATCH INVITE LINK"),
                                 React.createElement("div", { className: "flex gap-2" },
                                     React.createElement("input", { 
                                         type: "text", 
                                         readOnly: true, 
                                         value: "https://app.projectepic.gg/lobby/" + matchId,
-                                        className: "flex-1 bg-[#030407] border border-gray-800 rounded px-3 py-2 text-gray-400 font-mono text-[11px] focus:outline-none"
+                                        className: "flex-1 bg-black/40 border border-slate-800 rounded px-3 py-2 text-slate-400 font-mono text-xs focus:outline-none"
                                     }),
                                     React.createElement("button", { 
                                         onClick: handleCopyInviteLink,
-                                        className: "px-3 bg-cyan-950 text-[#66FCF1] hover:bg-[#66FCF1] hover:text-[#030407] border border-[#66FCF1]/30 font-orbitron font-bold text-[10px] tracking-wider rounded transition-all shrink-0"
+                                        className: "px-3 bg-cyan-950/40 text-cyan-400 hover:bg-cyan-400 hover:text-black border border-cyan-400/20 font-orbitron font-bold text-[10px] tracking-wider rounded transition-all shrink-0"
                                     }, inviteCopied ? "COPIED" : "COPY LINK")
                                 )
                             )
                         )
                     ),
-                    
-                    // ESCROW LOCK INTERFACE
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-xl space-y-4" },
-                        React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between" },
-                            React.createElement("h2", { className: "font-orbitron font-extrabold text-xs tracking-widest text-white" }, "2. CRYPTOGRAPHIC ESCROW INGEST"),
-                            React.createElement("span", { className: "text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20" }, "NATIVE USDC ONLY")
+
+                    // ESCROW FUNDING INTERFACE
+                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4" },
+                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2 flex items-center justify-between" },
+                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "2. Cryptographic Escrow Ingest"),
+                            React.createElement("span", { className: "text-[9px] font-mono bg-cyan-400/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-400/20" }, "NATIVE USDC ONLY")
                         ),
 
                         React.createElement("div", { className: "space-y-3" },
                             React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1" }, "DEPOSIT AS ACCOUNT"),
+                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "SELECT PLAYER IDENTITY TO DEPOSIT"),
                                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                                     ["Player 1", "Player 2"].map(function(p) {
                                         return React.createElement("button", {
                                             key: p,
-                                            onClick: function() { if(!mute) playSound('click'); setSelectedPlayer(p); },
-                                            className: "py-2 rounded font-orbitron font-bold text-xs border transition-all " + (
+                                            onClick: function() { if (!mute) playSound('click'); setSelectedPlayer(p); },
+                                            className: "py-2 rounded font-orbitron font-bold text-[11px] border transition-all " + (
                                                 selectedPlayer === p 
-                                                ? "bg-[#66FCF1]/15 text-[#66FCF1] border-[#66FCF1]" 
-                                                : "bg-gray-900/40 text-gray-400 border-gray-800 hover:border-gray-700"
+                                                ? "bg-cyan-500/10 text-cyan-400 border-cyan-400" 
+                                                : "bg-slate-900/40 text-slate-400 border-slate-800 hover:border-slate-700"
                                             )
                                         }, p === "Player 1" ? "PLAYER 1" : "PLAYER 2");
                                     })
@@ -836,242 +943,243 @@ function App() {
                             ),
 
                             React.createElement("div", null,
-                                React.createElement("label", { className: "block text-[9px] font-mono text-gray-400 uppercase tracking-widest mb-1" }, "STAKE VALUE (USDC)"),
+                                React.createElement("label", { className: "block text-[9px] font-mono text-slate-400 uppercase tracking-wider mb-1" }, "STAKE VALUE (USDC)"),
                                 React.createElement("div", { className: "relative" },
                                     React.createElement("input", { 
                                         type: "number",
                                         value: baseStakeAmount,
                                         onChange: function(e) { setBaseStakeAmount(e.target.value); },
-                                        className: "w-full bg-[#030407] border border-gray-800 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#66FCF1]",
+                                        className: "w-full bg-black/60 border border-slate-800 rounded px-3 py-2 text-white font-mono text-xs focus:border-cyan-400 focus:outline-none",
                                         placeholder: "100"
                                     }),
-                                    React.createElement("span", { className: "absolute right-3 top-2 text-[10px] text-[#66FCF1] font-mono font-bold" }, "USDC")
+                                    React.createElement("span", { className: "absolute right-3 top-2 text-[10px] text-cyan-400 font-mono font-bold" }, "USDC")
                                 )
                             )
                         ),
 
-                        React.createElement("div", { className: "bg-[#030407] border border-gray-800/80 p-3 rounded space-y-1.5" },
+                        React.createElement("div", { className: "bg-black/50 border border-slate-800/80 p-3 rounded space-y-1.5" },
                             React.createElement("div", { className: "flex justify-between text-[11px] font-mono" },
-                                React.createElement("span", { className: "text-gray-500" }, "Session Cryptographic Proof:"),
-                                React.createElement("span", { className: connected ? "text-emerald-400 font-bold" : "text-red-500 font-bold" },
-                                    connected ? "VERIFIED (SIWE JWT)" : "MISSING SIGNATURE"
+                                React.createElement("span", { className: "text-slate-500" }, "Platform Fee Allocation (2.5%):"),
+                                React.createElement("span", { className: "text-slate-300 font-bold" },
+                                    "$" + (parseFloat(baseStakeAmount || 0) * 0.025).toFixed(2) + " USDC"
                                 )
                             ),
                             React.createElement("div", { className: "flex justify-between text-[11px] font-mono" },
-                                React.createElement("span", { className: "text-gray-500" }, "Platform Fee Allocation (2.5%):"),
-                                React.createElement("span", { className: "text-gray-300 font-bold" },
-                                    "$" + (parseFloat(baseStakeAmount || 0) * 0.025).toFixed(2) + " USDC"
+                                React.createElement("span", { className: "text-slate-500" }, "Session Handshake Code:"),
+                                React.createElement("span", { className: connected ? "text-emerald-400 font-bold" : "text-red-500 font-bold" },
+                                    connected ? "VERIFIED (SIWE JWT)" : "MISSING AUTHORIZATION"
                                 )
                             )
                         ),
 
                         React.createElement("button", { 
                             onClick: executeStake,
-                            className: "w-full py-3 bg-[#66FCF1]/10 hover:bg-[#66FCF1] text-[#66FCF1] hover:text-[#030407] border border-[#66FCF1]/30 hover:border-[#66FCF1] rounded font-orbitron font-extrabold text-xs tracking-widest uppercase transition-all"
+                            className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black rounded font-orbitron font-black text-xs tracking-widest uppercase transition-all"
                         }, "APPROVE & DEPOSIT TO ESCROW")
                     ),
 
-                    // ACTIVE TELEMETRY METRICS
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-xl space-y-4 relative overflow-hidden" },
+                    // LIVE TELEMETRY LOG PANEL
+                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg space-y-4 relative overflow-hidden" },
                         React.createElement("div", { className: "scanning-sweep" }),
-                        React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-3 flex items-center justify-between" },
-                            React.createElement("h2", { className: "font-orbitron font-extrabold text-xs tracking-widest text-white" }, "ORACLE TELEMETRY METRIC CONSOLE"),
-                            React.createElement("div", { className: "flex items-center gap-1.5" },
-                                React.createElement("span", { className: "w-2 h-2 rounded-full bg-[#66FCF1] animate-ping" }),
-                                React.createElement("span", { className: "text-[9px] font-mono text-[#66FCF1]" }, "STREAMING ACTIVE")
-                            )
+                        React.createElement("div", { className: "border-b border-cyan-500/20 pb-2 flex items-center justify-between" },
+                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "Telemetry Scan Controls"),
+                            React.createElement("span", { className: "text-[9px] font-mono text-cyan-400" }, "STREAMING REALTIME")
                         ),
 
                         React.createElement("div", { className: "grid grid-cols-2 gap-3 text-[11px] font-mono" },
-                            React.createElement("div", { className: "bg-[#030407] p-2.5 rounded border border-gray-800" },
-                                React.createElement("span", { className: "text-gray-500 block text-[8px] tracking-wider uppercase" }, "LATENCY DELAY"),
-                                React.createElement("span", { className: "text-sm font-bold text-white" }, ping + " ms")
+                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
+                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "RTT LATENCY"),
+                                React.createElement("span", { className: "text-xs font-bold text-white" }, ping + " ms")
                             ),
-                            React.createElement("div", { className: "bg-[#030407] p-2.5 rounded border border-gray-800" },
-                                React.createElement("span", { className: "text-gray-500 block text-[8px] tracking-wider uppercase" }, "CLIENT FPS"),
-                                React.createElement("span", { className: "text-sm font-bold text-white" }, fps + " FPS")
+                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
+                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "CLIENT FPS"),
+                                React.createElement("span", { className: "text-xs font-bold text-white" }, fps + " FPS")
                             ),
-                            React.createElement("div", { className: "bg-[#030407] p-2.5 rounded border border-gray-800" },
-                                React.createElement("span", { className: "text-gray-500 block text-[8px] tracking-wider uppercase" }, "HARDWARE STAMP"),
-                                React.createElement("span", { className: "text-[10px] text-[#66FCF1] font-bold block truncate" }, deviceFingerprint)
+                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
+                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "HARDWARE ID"),
+                                React.createElement("span", { className: "text-[10px] text-cyan-400 font-bold block truncate" }, deviceFingerprint)
                             ),
-                            React.createElement("div", { className: "bg-[#030407] p-2.5 rounded border border-gray-800" },
-                                React.createElement("span", { className: "text-gray-500 block text-[8px] tracking-wider uppercase" }, "PACKET LOSS"),
-                                React.createElement("span", { className: "text-sm font-bold text-white" }, packetLoss + "%")
+                            React.createElement("div", { className: "bg-black/40 p-2.5 rounded border border-slate-800" },
+                                React.createElement("span", { className: "text-slate-500 block text-[8px] uppercase tracking-wider" }, "PACKET LOSS"),
+                                React.createElement("span", { className: "text-xs font-bold text-white" }, packetLoss + "%")
                             )
                         )
                     )
 
                 ),
 
-                // RIGHT SIDE: ESCROW STATE, CHAT & VISION ENGINE
+                // RIGHT SCREEN: POOL STATE, LIVE OCR SCANNING AND ORACLE REF STREAM
                 React.createElement("div", { className: "lg:col-span-7 space-y-6 flex flex-col justify-between" },
                     
-                    // ESCROW STATE METRICS
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-xl bg-gradient-to-r from-cyan-950/10 via-[#030407] to-pink-950/10 border-[#66FCF1]/20" },
-                        React.createElement("div", { className: "flex flex-col sm:flex-row items-center justify-between gap-4" },
+                    // POOL SUMMARY CARD
+                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg bg-gradient-to-r from-cyan-950/10 via-black/40 to-pink-950/10 border-cyan-500/20" },
+                        React.createElement("div", { className: "flex flex-col md:flex-row items-center justify-between gap-4" },
                             
                             // Player 1
-                            React.createElement("div", { className: "text-center sm:text-left space-y-1" },
-                                React.createElement("span", { className: "text-[9px] font-mono text-gray-500 tracking-wider" }, "PLAYER 1"),
-                                React.createElement("h3", { className: "font-orbitron font-black text-lg text-white" }, "ELITE_CONQUEROR"),
-                                React.createElement("span", { className: "text-[10px] font-mono bg-cyan-500/10 text-[#66FCF1] border border-cyan-500/20 px-2.5 py-0.5 rounded-full inline-block" },
+                            React.createElement("div", { className: "text-center md:text-left space-y-1" },
+                                React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-wider" }, "PLAYER 1"),
+                                React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-white tracking-wide" }, "ELITE_CONQUEROR"),
+                                React.createElement("span", { className: "text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded inline-block" },
                                     "Staked: $" + p1Stake.toFixed(2) + " USDC"
                                 )
                             ),
 
                             // Central Pool
-                            React.createElement("div", { className: "text-center px-6 py-4 bg-[#030407]/90 border border-gray-800 rounded-xl min-w-[170px]" },
-                                React.createElement("div", { className: "text-[8px] font-orbitron font-bold text-yellow-500 tracking-widest uppercase" }, "ESCROWED POT"),
-                                React.createElement("div", { className: "font-orbitron font-black text-2xl text-white tracking-widest" },
+                            React.createElement("div", { className: "text-center px-6 py-4 bg-black/60 border border-slate-800 rounded-lg min-w-[160px]" },
+                                React.createElement("div", { className: "text-[8px] font-orbitron font-bold text-cyan-400 tracking-wider uppercase mb-1" }, "ESCROWED POT"),
+                                React.createElement("div", { className: "font-orbitron font-black text-2xl text-white tracking-wider" },
                                     "$" + escrowPool.toFixed(2)
                                 ),
-                                React.createElement("span", { className: "text-[9px] font-mono text-emerald-400 block mt-0.5 animate-pulse" }, "Base USDC Native")
+                                React.createElement("span", { className: "text-[9px] font-mono text-emerald-400 block mt-1 animate-pulse" }, "Base USDC Pool")
                             ),
 
                             // Player 2
-                            React.createElement("div", { className: "text-center sm:text-right space-y-1" },
-                                React.createElement("span", { className: "text-[9px] font-mono text-gray-500 tracking-wider" }, "PLAYER 2"),
-                                React.createElement("h3", { className: "font-orbitron font-black text-lg text-white" }, "DEGEN_KILLER"),
-                                React.createElement("span", { className: "text-[10px] font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2.5 py-0.5 rounded-full inline-block" },
+                            React.createElement("div", { className: "text-center md:text-right space-y-1" },
+                                React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-wider" }, "PLAYER 2"),
+                                React.createElement("h3", { className: "font-orbitron font-extrabold text-base text-white tracking-wide" }, "DEGEN_KILLER"),
+                                React.createElement("span", { className: "text-[10px] font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2 py-0.5 rounded inline-block" },
                                     "Staked: $" + p2Stake.toFixed(2) + " USDC"
                                 )
                             )
 
                         ),
 
-                        // Simulation Triggers
-                        React.createElement("div", { className: "mt-5 pt-4 border-t border-gray-900 flex flex-wrap items-center justify-between gap-4" },
+                        // Action Controls
+                        React.createElement("div", { className: "mt-5 pt-4 border-t border-slate-900 flex flex-wrap items-center justify-between gap-4" },
                             React.createElement("div", null,
-                                React.createElement("span", { className: "text-[8px] font-mono text-gray-500 block" }, "ACTIVE LOBBY MATCH ID"),
-                                React.createElement("span", { className: "text-[11px] font-mono text-gray-300 bg-black/60 px-2.5 py-1 rounded" }, matchId)
+                                React.createElement("span", { className: "text-[8px] font-mono text-slate-500 block" }, "ACTIVE LOBBY MATCH ID"),
+                                React.createElement("span", { className: "text-[11px] font-mono text-cyan-400 font-bold" }, matchId)
                             ),
 
                             React.createElement("div", { className: "flex gap-2" },
                                 gameState === "idle" && React.createElement("button", { 
-                                    onClick: startMatchScan,
-                                    className: "px-4 py-2 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
-                                }, "START LIVE TELEMETRY SCAN"),
+                                    onClick: startMatchTelemetryScan,
+                                    className: "px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
+                                }, "START TELEMETRY PIPELINE"),
                                 
                                 gameState === "scanning" && React.createElement("div", { className: "flex gap-2" },
                                     React.createElement("button", { 
-                                        onClick: forceCheatViolation,
-                                        className: "px-3.5 py-2 bg-red-600 hover:bg-red-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
-                                    }, "SIMULATE CHEATING DETECTED"),
+                                        onClick: forceCheatAnomaly,
+                                        className: "px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
+                                    }, "FORCE CHEATING EVENT"),
                                     React.createElement("button", { 
-                                        onClick: resolveCleanVictory,
-                                        className: "px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
-                                    }, "RESOLVE CLEAN MATCH")
+                                        onClick: resolveNormalVictory,
+                                        className: "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
+                                    }, "RESOLVE VICTORY CLEAN")
                                 ),
 
                                 (gameState === "dispute" || gameState === "victory") && React.createElement("button", { 
-                                    onClick: resetArena,
-                                    className: "px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-orbitron font-extrabold text-xs tracking-wider rounded transition-all"
-                                }, "RESET MATCH")
+                                    onClick: resetMatchSimulation,
+                                    className: "px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-orbitron font-black text-[10px] tracking-wider rounded transition-all"
+                                }, "RESET SYSTEM LOBBY")
                             )
                         )
                     ),
 
-                    // MULTI-MODAL VISION SCREENS & OCR ANALYSER
-                    React.createElement("div", { className: "cyber-panel p-4 rounded-xl space-y-3" },
-                        React.createElement("div", { className: "border-b border-[#66FCF1]/10 pb-2" },
-                            React.createElement("h3", { className: "font-orbitron font-extrabold text-xs tracking-widest text-white" }, "3. MULTI-MODAL AI VISION & OCR INGEST"),
-                            React.createElement("p", { className: "text-[9px] text-gray-500 font-mono" }, "VERIFY SCREENSHOT INTEGRITY & PHOTOSHOP TAMPERING")
+                    // MULTI-MODAL SCREEN CAPTURE & VISION INGEST
+                    React.createElement("div", { className: "cyber-panel p-4 rounded-lg space-y-3" },
+                        React.createElement("div", { className: "border-b border-cyan-500/10 pb-2" },
+                            React.createElement("h3", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "3. Multi-Modal Vision Screenshot Ingest"),
+                            React.createElement("p", { className: "text-[9px] text-slate-500 font-mono" }, "CONVOLUTIONAL SCREEN PARSING & IMAGE AUTHENTICATION")
                         ),
 
-                        React.createElement("div", { className: "flex flex-col sm:flex-row items-center gap-4 text-xs font-mono" },
-                            React.createElement("div", { className: "w-full sm:w-1/2" },
-                                React.createElement("label", { className: "flex flex-col items-center justify-center border border-dashed border-cyan-500/30 hover:border-[#66FCF1] bg-[#030407] hover:bg-cyan-950/10 transition-colors p-4 rounded-lg cursor-pointer text-center" },
-                                    React.createElement("svg", { className: "w-6 h-6 text-[#66FCF1] mb-1.5", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+                        React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-4 text-xs font-mono" },
+                            React.createElement("div", { className: "w-full md:w-1/2 flex" },
+                                React.createElement("label", { className: "flex-1 flex flex-col items-center justify-center border border-dashed border-cyan-500/30 hover:border-cyan-400 bg-black/40 hover:bg-cyan-950/15 transition-all p-4 rounded cursor-pointer text-center" },
+                                    React.createElement("svg", { className: "w-6 h-6 text-cyan-400 mb-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
                                         React.createElement("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" })
                                     ),
-                                    React.createElement("span", { className: "text-[10px] text-gray-400" }, "Upload Post-Match Screenshot"),
-                                    React.createElement("input", { type: "file", accept: "image/*", className: "hidden", onChange: simulateVisionUpload })
+                                    React.createElement("span", { className: "text-[10px] text-slate-300 font-semibold" }, "Upload Post-Match Screenshot"),
+                                    React.createElement("span", { className: "text-[8px] text-slate-500 block mt-1" }, "PNG, JPG, MP4 accepted"),
+                                    React.createElement("input", { type: "file", accept: "image/*", className: "hidden", onChange: handleVisionScreenUpload })
                                 )
                             ),
-                            React.createElement("div", { className: "w-full sm:w-1/2 space-y-1.5" },
-                                React.createElement("div", { className: "flex justify-between" },
-                                    React.createElement("span", { className: "text-gray-500 font-bold" }, "VISION ENGINE:"),
-                                    React.createElement("span", { className: analyzingOcr ? "text-yellow-400 animate-pulse" : "text-[#66FCF1]" },
-                                        analyzingOcr ? "ANALYZING..." : "ONLINE"
+                            React.createElement("div", { className: "w-full md:w-1/2 flex flex-col justify-between space-y-2 bg-black/20 p-3 border border-slate-900 rounded" },
+                                React.createElement("div", { className: "flex justify-between text-[11px]" },
+                                    React.createElement("span", { className: "text-slate-500 font-bold" }, "VISION CORE STATUS:"),
+                                    React.createElement("span", { className: analyzingOcr ? "text-yellow-400 animate-pulse" : "text-cyan-400 font-bold" },
+                                        analyzingOcr ? "COMPUTATIONAL CHECK..." : "ONLINE"
                                     )
                                 ),
-                                React.createElement("div", { className: "bg-[#030407] p-2.5 rounded border border-gray-950 text-[10px] text-gray-400 leading-normal min-h-[50px]" },
+                                React.createElement("div", { className: "bg-black/50 p-2.5 rounded border border-slate-950 text-[10px] text-slate-400 leading-normal flex-1" },
                                     ocrStatus
                                 )
                             )
                         )
                     ),
 
-                    // AI INTERACTIVE CHAT & FREQUENCY
-                    React.createElement("div", { className: "cyber-panel p-5 rounded-xl flex flex-col h-[300px] bg-[#05060b] relative overflow-hidden flex-1" },
+                    // CHAT INTERFACE
+                    React.createElement("div", { className: "cyber-panel p-5 rounded-lg flex flex-col h-[300px] bg-[#07080d]/90 relative overflow-hidden flex-1" },
                         
-                        // Equalizer visuals
-                        React.createElement("div", { className: "absolute top-4 right-4 flex items-end gap-1 h-5 w-14" },
-                            React.createElement("div", { className: "eq-bar h-1/3 animate-pulse" }),
-                            React.createElement("div", { className: "eq-bar h-4/5 animate-pulse" }),
-                            React.createElement("div", { className: "eq-bar h-full animate-pulse" }),
-                            React.createElement("div", { className: "eq-bar h-2/3 animate-pulse" })
+                        // Live simulated sound equalizer
+                        React.createElement("div", { className: "absolute top-5 right-5 flex items-end gap-1 h-5 w-16" },
+                            eqHeights.map(function(val, idx) {
+                                return React.createElement("div", { 
+                                    key: idx, 
+                                    className: "eq-bar", 
+                                    style: { height: val + "%" } 
+                                });
+                            })
                         ),
 
-                        React.createElement("div", { className: "border-b border-[#66FCF1]/15 pb-2 mb-3" },
-                            React.createElement("h2", { className: "font-orbitron font-extrabold text-xs tracking-widest text-white" }, "ORACLE REF CHATSTREAM"),
-                            React.createElement("p", { className: "text-[9px] text-gray-500 font-mono" }, "REAL-TIME MULTI-MODAL DECISION TELEMETRY")
+                        React.createElement("div", { className: "border-b border-cyan-500/15 pb-2 mb-3" },
+                            React.createElement("h2", { className: "font-orbitron font-black text-xs text-white tracking-widest uppercase" }, "AI REFEREE DECISION ENGINE CHAT"),
+                            React.createElement("p", { className: "text-[9px] text-cyan-400 font-mono" }, "REALTIME ENFORCEMENT PROTOCOLS")
                         ),
 
-                        React.createElement("div", { className: "flex-1 overflow-y-auto space-y-2.5 pr-1 text-xs" },
+                        React.createElement("div", { className: "flex-1 overflow-y-auto space-y-2.5 pr-1" },
                             chatLog.map(function(msg, idx) {
                                 return React.createElement("div", { 
                                     key: idx,
                                     className: "p-2.5 rounded text-xs border max-w-[85%] " + (
-                                        msg.sender === "AI REFEREE" ? "bg-cyan-950/10 border-cyan-500/25 text-cyan-100" :
-                                        msg.sender === "SYSTEM" ? "bg-yellow-950/10 border-yellow-500/25 text-yellow-100" :
-                                        "bg-gray-900/60 border-gray-800 text-white ml-auto"
+                                        msg.sender === "AI REFEREE" ? "bg-cyan-950/10 border-cyan-500/20 text-cyan-100" :
+                                        msg.sender === "SYSTEM" ? "bg-yellow-950/10 border-yellow-500/20 text-yellow-100" :
+                                        "bg-slate-900/60 border-slate-800 text-white ml-auto"
                                     )
                                 },
-                                    React.createElement("div", { className: "flex items-center justify-between gap-4 mb-1 border-b border-gray-800/40 pb-0.5 text-[8px]" },
+                                    React.createElement("div", { className: "flex items-center justify-between gap-4 mb-1 border-b border-slate-800/40 pb-0.5 text-[8px]" },
                                         React.createElement("span", { className: "font-orbitron font-extrabold tracking-wider " + (
-                                            msg.sender === "AI REFEREE" ? "text-[#66FCF1]" : msg.sender === "SYSTEM" ? "text-yellow-400" : "text-pink-400"
+                                            msg.sender === "AI REFEREE" ? "text-cyan-400" : msg.sender === "SYSTEM" ? "text-yellow-400" : "text-pink-400"
                                         ) }, msg.sender),
-                                        React.createElement("span", { className: "text-gray-500" }, msg.time)
+                                        React.createElement("span", { className: "text-slate-500 font-mono" }, msg.time)
                                     ),
-                                    React.createElement("p", { className: "font-mono text-[11px] whitespace-pre-wrap leading-normal" }, msg.text)
+                                    React.createElement("p", { className: "font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-all" }, msg.text)
                                 );
                             }),
-                            isTyping && React.createElement("div", { className: "bg-cyan-950/10 border border-cyan-500/10 text-cyan-400 p-2.5 rounded animate-pulse font-mono text-[11px] w-48" },
-                                "Evaluating telemetry registers..."
+                            isTyping && React.createElement("div", { className: "bg-cyan-950/10 border border-cyan-500/10 text-cyan-400 p-2.5 rounded animate-pulse font-mono text-[10px] w-48" },
+                                "Decoding telemetry bits..."
                             )
                         ),
 
-                        React.createElement("form", { onSubmit: handleSendChat, className: "mt-3 pt-2.5 border-t border-gray-900 flex gap-2" },
+                        React.createElement("form", { onSubmit: handleSendChat, className: "mt-3 pt-2.5 border-t border-slate-900 flex gap-2" },
                             React.createElement("input", { 
                                 type: "text", 
-                                placeholder: "Request Ref check: e.g. 'View anti-cheat telemetry', 'Explain dynamic payout fee'...",
+                                placeholder: "Request system checking: e.g. 'Explain EIP-712 security', 'Show platform fee destination'...",
                                 value: userInput,
                                 onChange: function(e) { setUserInput(e.target.value); },
-                                className: "flex-1 bg-[#030407] border border-gray-800 rounded px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#66FCF1]"
+                                className: "flex-1 bg-black/60 border border-slate-800 rounded px-3 py-2 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none"
                             }),
                             React.createElement("button", { 
                                 type: "submit",
-                                className: "px-4 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-[10px] tracking-widest rounded transition-all uppercase"
+                                className: "px-4 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-[10px] tracking-widest rounded transition-all uppercase"
                             }, "SEND")
                         )
                     ),
 
-                    // PREVIEW SIGNATURE CRADLE
-                    showEipSignature && mockEipPayload && React.createElement("div", { className: "cyber-panel p-4 rounded-xl space-y-2 bg-gradient-to-r from-emerald-950/10 to-cyan-950/5 border-emerald-500/30 text-xs font-mono" },
+                    // PREVIEW SIGNATURE SECTION
+                    showEipSignature && mockEipPayload && React.createElement("div", { className: "cyber-panel p-4 rounded-lg space-y-2 bg-gradient-to-r from-emerald-950/10 to-cyan-950/5 border-emerald-500/30 text-xs font-mono" },
                         React.createElement("div", { className: "flex items-center justify-between border-b border-emerald-500/20 pb-2" },
-                            React.createElement("span", { className: "text-emerald-400 font-orbitron font-bold text-[10px] uppercase tracking-widest" }, "EIP-712 ORACLE PAYLOAD FORWARDER"),
-                            React.createElement("span", { className: "text-[9px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded" }, "HSM SEALED")
+                            React.createElement("span", { className: "text-emerald-400 font-orbitron font-bold text-[10px] uppercase tracking-widest" }, "EIP-712 AI Ref Oracle Signature"),
+                            React.createElement("span", { className: "text-[9px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded" }, "HSM LOCKED")
                         ),
                         React.createElement("div", { className: "space-y-1 text-[11px]" },
-                            React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Verifying Contract: "), mockEipPayload.domain.verifyingContract),
-                            React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Resolved Winner: "), mockEipPayload.message.winner),
-                            React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Total Locked: "), mockEipPayload.message.amount),
-                            React.createElement("p", null, React.createElement("span", { className: "text-gray-500" }, "Nonce ID: "), mockEipPayload.message.nonce),
-                            React.createElement("div", { className: "mt-2 pt-1 border-t border-gray-900" },
-                                React.createElement("span", { className: "text-gray-500 block mb-0.5" }, "ECDSA CRYPTOGRAPHIC PROOF (R + S + V):"),
-                                React.createElement("p", { className: "text-[10px] text-[#66FCF1] break-all bg-black/50 p-2 rounded" }, mockEipPayload.signature)
+                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Verifying Escrow Contract: "), mockEipPayload.domain.verifyingContract),
+                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Resolved Winner: "), mockEipPayload.message.winner),
+                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Total Locked Pool: "), mockEipPayload.message.amount),
+                            React.createElement("p", null, React.createElement("span", { className: "text-slate-500" }, "Security Nonce ID: "), mockEipPayload.message.nonce),
+                            React.createElement("div", { className: "mt-2 pt-1 border-t border-slate-800" },
+                                React.createElement("span", { className: "text-slate-500 block mb-0.5" }, "ECDSA CRYPTOGRAPHIC PARAMETER PROOF (R + S + V):"),
+                                React.createElement("p", { className: "text-[10px] text-cyan-400 break-all bg-black/40 p-2 rounded" }, mockEipPayload.signature)
                             )
                         )
                     )
@@ -1081,118 +1189,118 @@ function App() {
             ),
 
             // TAB: SOLIDITY SOURCE
-            activeTab === "solidity" && React.createElement("div", { className: "cyber-panel p-6 rounded-xl space-y-6" },
-                React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4" },
+            activeTab === "solidity" && React.createElement("div", { className: "cyber-panel p-6 rounded-lg space-y-6" },
+                React.createElement("div", { className: "border-b border-cyan-500/20 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4" },
                     React.createElement("div", null,
-                        React.createElement("h2", { className: "font-orbitron font-extrabold text-base text-white tracking-widest" }, "NATIVE USDC ESCROW SOLIDITY CODE"),
-                        React.createElement("p", { className: "text-xs text-gray-400 font-mono mt-1" }, "Secure non-custodial smart contract locks ERC-20 stakes directly on the Base Layer-2 network.")
+                        React.createElement("h2", { className: "font-orbitron font-black text-sm text-white tracking-widest" }, "NATIVE BASE L2 USDC ESCROW SOLIDITY CODE"),
+                        React.createElement("p", { className: "text-xs text-slate-400 font-mono mt-1" }, "Secure automated smart contract locking ERC-20 USDC stakes with dual AI Referee parameters verification.")
                     ),
                     React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("span", { className: "bg-yellow-500/10 text-yellow-400 text-xs font-mono px-3 py-1.5 rounded border border-yellow-500/20" }, "SOLIDITY 0.8.20"),
+                        React.createElement("span", { className: "bg-yellow-500/10 text-yellow-400 text-xs font-mono px-3 py-1.5 rounded border border-yellow-500/20" }, "SOLIDITY v0.8.20"),
                         React.createElement("button", { 
                             onClick: function() {
                                 navigator.clipboard.writeText(SOLIDITY_CONTRACT_CODE);
-                                if(!mute) playSound('success');
-                                alert("Solidity source code copied successfully!");
+                                if (!mute) playSound('success');
+                                alert("Solidity contract source copied successfully!");
                             },
-                            className: "px-4 py-1.5 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-bold text-[10px] tracking-widest rounded transition-all"
+                            className: "px-4 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-bold text-[10px] tracking-widest rounded transition-all"
                         }, "COPY SOURCE")
                     )
                 ),
 
-                React.createElement("div", { className: "bg-[#030407] border border-[#66FCF1]/15 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-4" },
+                React.createElement("div", { className: "bg-black/40 border border-cyan-500/10 p-4 rounded flex flex-col md:flex-row items-center justify-between gap-4" },
                     React.createElement("div", { className: "space-y-1" },
-                        React.createElement("span", { className: "text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-bold" }, "AUTOMATED FEE ROUTER DESTINATION"),
-                        React.createElement("span", { className: "text-sm font-mono text-white select-all block" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"),
-                        React.createElement("p", { className: "text-[11px] text-gray-400 leading-normal max-w-xl" },
-                            "The escrow contract is programmatically compiled to route a fixed flat commission of 2.50% from every resolved match stake pool directly to this Base address."
+                        React.createElement("span", { className: "text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-bold" }, "AUTOMATED FEE ROUTER DESTINATION ADDRESS"),
+                        React.createElement("span", { className: "text-xs font-mono text-white select-all block" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071"),
+                        React.createElement("p", { className: "text-xs text-slate-400 leading-normal max-w-xl" },
+                            "The deployed smart contract strictly mandates that a exact flat 2.50% fee is directly and atomically routed to this secure fee recipient account upon match resolution."
                         )
                     ),
-                    React.createElement("div", { className: "px-5 py-3 bg-[#0a0b10] border border-gray-800 rounded-lg text-center shrink-0 min-w-[130px]" },
-                        React.createElement("span", { className: "text-[9px] font-mono text-gray-500 block uppercase" }, "COMMISSION RATE"),
-                        React.createElement("span", { className: "text-lg font-orbitron font-black text-white" }, "2.50 %")
+                    React.createElement("div", { className: "px-5 py-3 bg-black/60 border border-slate-800 rounded text-center shrink-0 min-w-[130px]" },
+                        React.createElement("span", { className: "text-[9px] font-mono text-slate-500 block uppercase" }, "COMMISSION RATE"),
+                        React.createElement("span", { className: "text-base font-orbitron font-black text-white" }, "2.50 % (Flat)")
                     )
                 ),
 
                 React.createElement("div", { className: "relative" },
-                    React.createElement("pre", { className: "bg-[#030407] border border-gray-800 rounded-lg p-5 overflow-x-auto text-[11px] text-gray-300 font-mono leading-relaxed max-h-[450px]" },
+                    React.createElement("pre", { className: "bg-black/60 border border-slate-800 rounded-lg p-5 overflow-x-auto text-[11px] text-slate-300 font-mono leading-relaxed max-h-[500px]" },
                         React.createElement("code", null, SOLIDITY_CONTRACT_CODE)
                     )
                 )
             ),
 
             // TAB: SYSTEM PIPELINE DIAGRAM
-            activeTab === "architecture" && React.createElement("div", { className: "cyber-panel p-6 rounded-xl space-y-6" },
-                React.createElement("div", { className: "border-b border-[#66FCF1]/20 pb-4" },
-                    React.createElement("h2", { className: "font-orbitron font-extrabold text-base text-white tracking-widest" }, "CORE PIPELINE FLOW & REFSYSTEM DATA"),
-                    React.createElement("p", { className: "text-xs text-gray-400 font-mono mt-1" }, "Interactions mapping client-side SIWE credentials, anti-cheat diagnostic queries, and automated L2 smart contract settlements.")
+            activeTab === "architecture" && React.createElement("div", { className: "cyber-panel p-6 rounded-lg space-y-6" },
+                React.createElement("div", { className: "border-b border-cyan-500/20 pb-4" },
+                    React.createElement("h2", { className: "font-orbitron font-black text-sm text-white tracking-widest" }, "CORE PIPELINE FLOW & DATA METRIC ROUTERS"),
+                    React.createElement("p", { className: "text-xs text-slate-400 font-mono mt-1" }, "Interactions routing client-side SIWE credentials, anti-cheat validation parameters, and automated L2 smart contract payouts.")
                 ),
 
                 React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch" },
                     
-                    React.createElement("div", { className: "lg:col-span-8 bg-[#05060b] border border-gray-800 rounded-lg p-5 flex flex-col justify-center min-h-[350px]" },
+                    React.createElement("div", { className: "lg:col-span-8 bg-black/40 border border-slate-800 rounded-lg p-5 flex flex-col justify-center min-h-[350px]" },
                         React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-4 gap-4 text-center text-xs font-mono relative" },
                             
-                            React.createElement("div", { className: "bg-[#030407] border border-[#66FCF1]/40 p-4 rounded relative hover:border-[#66FCF1] transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-[#66FCF1] uppercase font-bold mb-1" }, "STAGE 1"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px]" }, "Wallet Auth (SIWE)"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-2" }, "Validates wallet keys, environment hash, and issues short-lived JWT.")
+                            React.createElement("div", { className: "bg-slate-950 border border-cyan-500/30 p-4 rounded hover:border-cyan-400 transition-colors" },
+                                React.createElement("div", { className: "text-[9px] text-cyan-400 uppercase font-bold mb-1" }, "STAGE 1"),
+                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "Wallet SIWE Auth"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Establishes secure node links, client fingerprint credentials, and issues session JWT.")
                             ),
 
-                            React.createElement("div", { className: "bg-[#030407] border border-[#66FCF1]/40 p-4 rounded relative hover:border-[#66FCF1] transition-colors" },
-                                React.createElement("div", { className: "text-[9px] text-[#66FCF1] uppercase font-bold mb-1" }, "STAGE 2"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px]" }, "Base Escrow Deposit"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-2" }, "Locks native USDC token stakes. Nonce advances.")
+                            React.createElement("div", { className: "bg-slate-950 border border-cyan-500/30 p-4 rounded hover:border-cyan-400 transition-colors" },
+                                React.createElement("div", { className: "text-[9px] text-cyan-400 uppercase font-bold mb-1" }, "STAGE 2"),
+                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "USDC Escrow deposit"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Stakes native USDC. Match state locks and validation nonce advances.")
                             ),
 
-                            React.createElement("div", { className: "bg-[#030407] border border-pink-500/40 p-4 rounded relative hover:border-pink-500 transition-colors" },
+                            React.createElement("div", { className: "bg-slate-950 border border-pink-500/30 p-4 rounded hover:border-pink-500 transition-colors" },
                                 React.createElement("div", { className: "text-[9px] text-pink-400 uppercase font-bold mb-1" }, "STAGE 3"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px]" }, "AI Referee Scanning"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-2" }, "Dual pipeline ingests vision screenshot OCR and live WS memory hooks.")
+                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "AI Referee Scanning"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Processes dual convolutional visual OCR logs & RAM hook injection channels.")
                             ),
 
-                            React.createElement("div", { className: "bg-[#030407] border border-yellow-500/40 p-4 rounded relative hover:border-yellow-500 transition-colors" },
+                            React.createElement("div", { className: "bg-slate-950 border border-yellow-500/30 p-4 rounded hover:border-yellow-500 transition-colors" },
                                 React.createElement("div", { className: "text-[9px] text-yellow-400 uppercase font-bold mb-1" }, "STAGE 4"),
-                                React.createElement("h4", { className: "font-bold text-white text-[11px]" }, "EIP-712 Settlement"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-2" }, "HSM triggers ECDSA signatures. platform fee (2.50%) split automated.")
+                                React.createElement("h4", { className: "font-bold text-white text-[11px] font-orbitron" }, "EIP-712 Settlement"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Oracle triggers ECDSA signatures. 2.50% platform fee routed to destination address.")
                             )
 
                         ),
 
-                        React.createElement("div", { className: "mt-6 pt-5 border-t border-gray-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center" },
+                        React.createElement("div", { className: "mt-6 pt-5 border-t border-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-center" },
                             React.createElement("div", { className: "p-3.5 bg-emerald-950/10 border border-emerald-500/20 rounded animate-pulse" },
-                                React.createElement("h5", { className: "font-bold text-emerald-400" }, "CLEAN VERDICT: RELEASE POT (97.5%)"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-1" }, "Dispatched instantly to the winning address.")
+                                React.createElement("h5", { className: "font-bold text-emerald-400" }, "CLEAN PLAYOUT VERDICT: ROUTE 97.5% TO WINNER"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Dispatched instantly to the confirmed winning wallet address.")
                             ),
                             React.createElement("div", { className: "p-3.5 bg-yellow-950/10 border border-yellow-500/20 rounded" },
-                                React.createElement("h5", { className: "font-bold text-yellow-400" }, "FLAT SERVICE FEE ROUTE (2.5%)"),
-                                React.createElement("p", { className: "text-[10px] text-gray-500 mt-1" }, "Automated payout straight to 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
+                                React.createElement("h5", { className: "font-bold text-yellow-400" }, "FLAT COMMISSIONS ROUTED: 2.5%"),
+                                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Automated payout straight to platform recipient 0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
                             )
                         )
                     ),
 
                     React.createElement("div", { className: "lg:col-span-4 flex flex-col justify-between space-y-4" },
-                        React.createElement("div", { className: "bg-[#030407] border border-gray-800 rounded-lg p-4 flex-1 flex flex-col" },
-                            React.createElement("span", { className: "text-[9px] font-mono text-gray-500 uppercase tracking-widest block mb-2" }, "MERMAID.JS SPECIFICATION"),
-                            React.createElement("pre", { className: "flex-1 bg-black/50 p-3 rounded text-[10px] font-mono text-gray-400 overflow-y-auto max-h-[220px]" },
+                        React.createElement("div", { className: "bg-black/60 border border-slate-800 rounded-lg p-4 flex-1 flex flex-col" },
+                            React.createElement("span", { className: "text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2" }, "MERMAID.JS SYSTEM ARCHITECTURE SPEC"),
+                            React.createElement("pre", { className: "flex-1 bg-black/40 p-3 rounded text-[10px] font-mono text-slate-400 overflow-y-auto max-h-[220px]" },
                                 "graph TD\n" +
                                 "    P1[Player 1 SIWE] -->|USDC Deposit| CONTRACT[Base Escrow]\n" +
                                 "    P2[Player 2 SIWE] -->|USDC Deposit| CONTRACT\n" +
                                 "    P1 -.->|Telemetry Stream| ORACLE[AI Referee Oracle]\n" +
                                 "    P2 -.->|Telemetry Stream| ORACLE\n" +
                                 "    ORACLE -->|Vision/OCR & memory checks| CONTRACT\n" +
-                                "    CONTRACT -->|2.5% platform fee| STORAGE[FEE Destination]\n" +
+                                "    CONTRACT -->|2.5% platform fee| STORAGE[0xe69aE274c4D814fDB312120d3db1C5c2BD63a071]\n" +
                                 "    CONTRACT -->|97.5% win rewards| VICTOR[Settled Winner]"
                             )
                         ),
                         React.createElement("button", { 
                             onClick: function() {
-                                const code = "graph TD\n    P1[Player 1 SIWE] -->|USDC Deposit| CONTRACT[Base Escrow]\n    P2[Player 2 SIWE] -->|USDC Deposit| CONTRACT\n    P1 -.->|Telemetry Stream| ORACLE[AI Referee Oracle]\n    P2 -.->|Telemetry Stream| ORACLE\n    ORACLE -->|Vision/OCR & memory checks| CONTRACT\n    CONTRACT -->|2.5% platform fee| STORAGE[FEE Destination]\n    CONTRACT -->|97.5% win rewards| VICTOR[Settled Winner]";
+                                const code = "graph TD\n    P1[Player 1 SIWE] -->|USDC Deposit| CONTRACT[Base Escrow]\n    P2[Player 2 SIWE] -->|USDC Deposit| CONTRACT\n    P1 -.->|Telemetry Stream| ORACLE[AI Referee Oracle]\n    P2 -.->|Telemetry Stream| ORACLE\n    ORACLE -->|Vision/OCR & memory checks| CONTRACT\n    CONTRACT -->|2.5% platform fee| STORAGE[0xe69aE274c4D814fDB312120d3db1C5c2BD63a071]\n    CONTRACT -->|97.5% win rewards| VICTOR[Settled Winner]";
                                 navigator.clipboard.writeText(code);
-                                if(!mute) playSound('success');
+                                if (!mute) playSound('success');
                                 alert("Mermaid blueprint copied!");
                             },
-                            className: "w-full py-3 bg-[#66FCF1] hover:bg-cyan-400 text-[#030407] font-orbitron font-extrabold text-xs tracking-widest rounded transition-all uppercase"
+                            className: "w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-orbitron font-black text-xs tracking-widest rounded transition-all uppercase"
                         }, "COPY SPECIFICATION CODE")
                     )
 
@@ -1202,16 +1310,16 @@ function App() {
         ),
 
         // FOOTER
-        React.createElement("footer", { className: "border-t border-gray-800/60 bg-[#040609] py-6 relative z-30" },
-            React.createElement("div", { className: "max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono" },
-                React.createElement("div", { className: "flex items-center gap-2 text-gray-500" },
-                    React.createElement("span", null, "© " + new Date().getFullYear() + " PROJECT EPIC. CODESPACE SYSTEMS."),
+        React.createElement("footer", { className: "border-t border-slate-900 bg-[#07080d]/90 py-6 relative z-30" },
+            React.createElement("div", { className: "max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono" },
+                React.createElement("div", { className: "flex items-center gap-2 text-slate-500" },
+                    React.createElement("span", null, "© " + new Date().getFullYear() + " PROJECT EPIC REFEREE."),
                     React.createElement("span", null, "|"),
-                    React.createElement("span", { className: "text-[#66FCF1]" }, "BASE NETWORK NODE SECURITY CONFIRMED")
+                    React.createElement("span", { className: "text-cyan-400" }, "SECURE BASE NODE SECURED")
                 ),
-                React.createElement("div", { className: "text-gray-400" },
-                    "Secure Escrow Fee Node: ",
-                    React.createElement("span", { className: "text-white select-all" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
+                React.createElement("div", { className: "text-slate-400" },
+                    "Platform Fees Ledger: ",
+                    React.createElement("span", { className: "text-white select-all bg-black/40 px-2 py-0.5 rounded border border-slate-800" }, "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071")
                 )
             )
         )
@@ -1219,7 +1327,7 @@ function App() {
     );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
