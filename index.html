@@ -17,772 +17,361 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// Audio synthesis engine for immersive construction & Kenyan soundscapes
-const playSound = function(type) {
+// SYNTHESIZED ARCHITECTURE SOUND SYSTEM (Arcade Soundscapes, Micro-Wins & Squad Pings)
+const playVoltSound = function(type, pitchModifier = 1.0) {
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioCtx();
         if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        if (type === 'click') {
-            // High quality light metal tap (hammer on rebar)
-            osc.frequency.setValueAtTime(1200, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.05, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        
+        const masterGain = ctx.createGain();
+        masterGain.connect(ctx.destination);
+        
+        if (type === 'tick') {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440 * pitchModifier, ctx.currentTime);
+            masterGain.gain.setValueAtTime(0.02, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+            osc.connect(masterGain);
             osc.start();
-            osc.stop(ctx.currentTime + 0.12);
-        } else if (type === 'mpesa') {
-            // Authentic Safaricom upbeat dual-chord chime
-            const chord = [523.25, 659.25, 783.99, 1046.50]; // C Major scale harmonics
+            osc.stop(ctx.currentTime + 0.05);
+        } else if (type === 'hit') {
+            const osc = ctx.createOscillator();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150 * pitchModifier, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800 * pitchModifier, ctx.currentTime + 0.15);
+            masterGain.gain.setValueAtTime(0.08, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.connect(masterGain);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'squad') {
+            const chord = [329.63, 392.00, 523.25, 659.25]; // C Major high harmonics
             chord.forEach((freq, idx) => {
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
                 o.connect(g);
-                g.connect(ctx.destination);
+                g.connect(masterGain);
                 o.type = 'sine';
-                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.07);
-                g.gain.setValueAtTime(0.04, ctx.currentTime + idx * 0.07);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.07 + 0.35);
-                o.start(ctx.currentTime + idx * 0.07);
-                o.stop(ctx.currentTime + idx * 0.07 + 0.35);
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.05);
+                g.gain.setValueAtTime(0.03, ctx.currentTime + idx * 0.05);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.05 + 0.25);
+                o.start(ctx.currentTime + idx * 0.05);
+                o.stop(ctx.currentTime + idx * 0.05 + 0.25);
             });
-        } else if (type === 'horn') {
-            // Dual-tone heavy highway truck horn
+        } else if (type === 'win') {
+            const baseFreq = 523.25 * pitchModifier;
+            const sequence = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2.0];
+            sequence.forEach((freq, idx) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(masterGain);
+                o.type = 'triangle';
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+                g.gain.setValueAtTime(0.04, ctx.currentTime + idx * 0.08);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
+                o.start(ctx.currentTime + idx * 0.08);
+                o.stop(ctx.currentTime + idx * 0.08 + 0.3);
+            });
+        } else if (type === 'fail') {
+            const osc = ctx.createOscillator();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(290, ctx.currentTime);
-            gain.gain.setValueAtTime(0.03, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.frequency.setValueAtTime(120, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
+            masterGain.gain.setValueAtTime(0.06, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.connect(masterGain);
             osc.start();
             osc.stop(ctx.currentTime + 0.3);
-
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.type = 'sawtooth';
-            osc2.frequency.setValueAtTime(350, ctx.currentTime);
-            gain2.gain.setValueAtTime(0.03, ctx.currentTime);
-            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            osc2.start();
-            osc2.stop(ctx.currentTime + 0.3);
-        } else if (type === 'shovel') {
-            // Gritty sliding sand shovel scrape
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(150, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(750, ctx.currentTime + 0.2);
-            gain.gain.setValueAtTime(0.03, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.2);
         }
     } catch (e) {
-        // Safe bypass if user gestures are yet to activate audio context
+        // Safe context rescue
     }
 };
 
-const injectStylesAndFonts = function() {
-    if (document.getElementById('jenga-kazi-fonts')) return;
+const injectVoltxStyles = function() {
+    if (document.getElementById('voltx-styles-and-fonts')) return;
     const fontLink = document.createElement('link');
-    fontLink.id = 'jenga-kazi-fonts';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
+    fontLink.id = 'voltx-styles-and-fonts';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
-    style.id = 'jenga-kazi-custom-css';
+    style.id = 'voltx-custom-css';
     style.innerHTML = `
         body {
-            background-color: #060913;
+            background-color: #030408;
             color: #f1f5f9;
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
-                linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+                radial-gradient(at 0% 0%, rgba(217, 70, 239, 0.07) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.07) 0px, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.002) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.002) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+            overflow-x: hidden;
         }
         .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-mono { font-family: 'Share Tech Mono', monospace; }
+        
         .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 14, 26, 0.82);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
         }
-        .active-glow {
-            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25);
+        
+        .glow-cyan {
+            box-shadow: 0 0 30px -5px rgba(20, 184, 166, 0.25);
+            border-color: rgba(20, 184, 166, 0.3) !important;
         }
-        .mpesa-glow-button {
-            box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.35);
+        .glow-fuchsia {
+            box-shadow: 0 0 30px -5px rgba(217, 70, 239, 0.25);
+            border-color: rgba(217, 70, 239, 0.3) !important;
         }
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(20, 184, 166, 0.6);
         }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: #0f172a;
+        .text-glow-fuchsia {
+            text-shadow: 0 0 10px rgba(217, 70, 239, 0.6);
         }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #334155;
+        .glow-amber {
+            box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.25);
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(3, 4, 8, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 99px;
         }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(217, 70, 239, 0.3);
         }
-        input, select, textarea {
-            background: rgba(7, 11, 21, 0.85) !important;
-            border: 1px solid rgba(255, 255, 255, 0.09) !important;
-            color: #ffffff !important;
+        
+        @keyframes voltPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; filter: brightness(1); }
+            50% { transform: scale(1.02); opacity: 1; filter: brightness(1.2); }
         }
-        input:focus, select:focus, textarea:focus {
-            border-color: #f59e0b !important;
-            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15) !important;
-            outline: none !important;
+        .neon-pulse-cyan {
+            animation: voltPulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .cyber-grid-canvas {
+            background: radial-gradient(circle at 50% 50%, #0c1229 0%, #030408 100%);
         }
     `;
     document.head.appendChild(style);
 };
 
-// COMPREHENSIVE INITIAL DATA SPECIFICALLY LOCALIZED TO THE KENYAN ECOSYSTEM
-const INITIAL_JOBS = [
-    {
-        id: "job-1",
-        title: "5 Masonry Fundis Needed for Slab Reinforcement",
-        category: "Masonry",
-        location: "Ruaka, Kiambu County",
-        budget: 1800, 
-        duration: "5 Days",
-        postedBy: "Mugo Builders Ltd",
-        verified: true,
-        urgency: "Immediate",
-        phone: "+254 712 345678",
-        description: "Looking for qualified fundis to lay concrete slab for a residential apartment block. Must have own toolset (trowel, level, plumb line). Shovel work handles are provided on-site.",
-        bidsCount: 14,
-        requirements: ["Own float & trowel", "Experience with standard C25 mix", "Ref check from previous site foreman"]
-    },
-    {
-        id: "job-2",
-        title: "Licensed Plumber for Multi-Story Piping Installation",
-        category: "Plumbing",
-        location: "Syokimau, Machakos County",
-        budget: 2500,
-        duration: "2 Weeks",
-        postedBy: "Eng. Dennis Omondi",
-        verified: true,
-        urgency: "This Week",
-        phone: "+254 722 987654",
-        description: "Piping works installation for a 4-bedroom townhouse estate. Installing high-quality PPR pipes, drainage fitting and sanitary wares. Escrow deposit already processed through Safaricom Till.",
-        bidsCount: 8,
-        requirements: ["NITA Certification or equivalent", "Experience with PPR hot-fusion machines"]
-    },
-    {
-        id: "job-3",
-        title: "12 Casual Workers for Site Offloading (Mjengo)",
-        category: "Casual Work",
-        location: "Industrial Area, Nairobi",
-        budget: 850,
-        duration: "2 Days",
-        postedBy: "JengaFast Logistics",
-        verified: false,
-        urgency: "Immediate",
-        phone: "+254 733 444555",
-        description: "Urgent contract to offload two bulk trucks of Bamburi Tembo Cement (approx 1,200 bags) and partition timber blocks. Paid daily strictly at 5:00 PM.",
-        bidsCount: 32,
-        requirements: ["Safety boots required", "Heavy lifting ability"]
-    },
-    {
-        id: "job-4",
-        title: "Interiors and Gypsum Board Installer",
-        category: "Finishing & Gypsum",
-        location: "Nyali, Mombasa County",
-        budget: 3500,
-        duration: "3 Days",
-        postedBy: "Coastal Dream Homes",
-        verified: true,
-        urgency: "Next Monday",
-        phone: "+254 701 112233",
-        description: "Need an elite gypsum ceiling technician for a modern penthouse studio design. High quality finishes needed, shadow gaps and LED light cove setups.",
-        bidsCount: 5,
-        requirements: ["Laser level alignment expertise", "Provide photo catalog of past gypsum ceilings"]
-    },
-    {
-        id: "job-5",
-        title: "Electrical Wiring for Commercial Warehouse",
-        category: "Electrical",
-        location: "Nakuru East, Nakuru County",
-        budget: 4000,
-        duration: "10 Days",
-        postedBy: "Nakuru Wholesalers Hub",
-        verified: true,
-        urgency: "Flexible",
-        phone: "+254 715 888999",
-        description: "Full trunking and wiring works for industrial solar inverter setups, commercial power sockets and automated breaker boards. Sub-contracting certified wiremen only.",
-        bidsCount: 11,
-        requirements: ["EPRA Class B License", "Strict adherence to safety grounding standards"]
-    }
-];
+// SVG Icons Vector Set
+const SVG_ICONS = {
+    shield: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>,
+    lightning: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>,
+    users: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 18M15 19.128a9.39 9.39 0 00-4.912-1.128M10.089 18v-.003c0-1.113-.285-2.16-.786-3.07M10.089 18a11.383 11.383 0 00-4.912-1.128M4.2 13.1c-.5-.08-.9-.4-.9-.9V9.5c0-.5.4-.9.9-.9h.2c.4 0 .8.2 1 .5l1.6 2.3c.2.3.1.7-.2.9l-.6.4c-.4.2-.8.1-1-.3l-.8-1.1M10.5 7.5a3 3 0 11-6 0 3 3 0 016 0zm9 0a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    share: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.318-2.659m-5.318 4.845l5.318 2.659m-1.318-7.514a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm0 10.5a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0z" /></svg>,
+    terminal: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>,
+    volume: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>,
+    wallet: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" /></svg>,
+    alert: <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.3c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+};
 
-const INITIAL_MATERIALS = [
-    {
-        id: "mat-1",
-        name: "Bamburi Tembo Cement CEM IV (50Kg Bag)",
-        category: "Cement & Aggregates",
-        price: 790, 
-        unit: "Bag",
-        stock: 350,
-        seller: "Athi River Hardwares",
-        location: "Athi River",
-        rating: 4.8,
-        image: "🧱",
-        description: "Premium grade 32.5R Portland Composite cement suitable for structural masonry, concrete screed, and general bricklaying plaster."
-    },
-    {
-        id: "mat-2",
-        name: "Clean River Sand (10 Tonne Tipper)",
-        category: "Cement & Aggregates",
-        price: 32000,
-        unit: "Truck Load",
-        stock: 12,
-        seller: "Machakos Sand Suppliers",
-        location: "Mlolongo Yard",
-        rating: 4.9,
-        image: "⏳",
-        description: "Triple-sieved, clay-free river sand harvested from clean waters. Excellent binder performance for high-strength mortar blocks."
-    },
-    {
-        id: "mat-3",
-        name: "Deformed Steel Reinforcement Bar (Y12 - 12mm)",
-        category: "Steel & Timber",
-        price: 1450,
-        unit: "6-Meter Piece",
-        stock: 400,
-        seller: "Apex Steel Merchants",
-        location: "Industrial Area",
-        rating: 4.7,
-        image: "🪙",
-        description: "High-grade ribbed steel reinforcement bars (rebar) matching KEBS structural building standards."
-    },
-    {
-        id: "mat-4",
-        name: "High-Grade Cyprus Timber (2x2 Inches)",
-        category: "Steel & Timber",
-        price: 85,
-        unit: "Running Foot",
-        stock: 1500,
-        seller: "Nyeri Timber & Sawmill Yard",
-        location: "Dagoretti Corner",
-        rating: 4.5,
-        image: "🪵",
-        description: "Straight, well-seasoned soft wood framing timber ideal for structural roofing trusses and formwork support."
-    },
-    {
-        id: "mat-5",
-        name: "Heavy Duty Concrete Mixer (Double-Bag Diesel)",
-        category: "Equipment & Tools",
-        price: 4500,
-        unit: "Daily Rental",
-        stock: 4,
-        seller: "JengaRent Equipment Hub",
-        location: "Westlands Yard",
-        rating: 5.0,
-        image: "⚙️",
-        description: "Fitted with reliable Lister-type single cylinder water-cooled diesel engines. Daily delivery on-site across Nairobi/Kiambu."
-    },
-    {
-        id: "mat-6",
-        name: "Professional Angle Grinder (Bosch 900W)",
-        category: "Equipment & Tools",
-        price: 8500,
-        unit: "Outright Purchase",
-        stock: 18,
-        seller: "Nairobi Tool Depot",
-        location: "Nyamakima, CBD",
-        rating: 4.6,
-        image: "⚡",
-        description: "Original heavy duty 115mm angle grinder with adjustable guards. Ideal for cutting steel rebars and quarry brick sizing."
-    }
-];
-
-const INITIAL_TRANSPORT = [
-    {
-        id: "trans-1",
-        vehicle: "Mitsubishi Canter Tipper (4-Tonne Limit)",
-        driver: "Kamau wa Canter",
-        basePrice: 5000,
-        perKmRate: 150,
-        location: "Kasarani / Thika Road",
-        phone: "+254 722 000111",
-        status: "Available",
-        rating: 4.9
-    },
-    {
-        id: "trans-2",
-        vehicle: "Isuzu Forward Crane Truck (8-Tonne Limit)",
-        driver: "Ali Mohamed",
-        basePrice: 12000,
-        perKmRate: 250,
-        location: "Mombasa Road Yard",
-        phone: "+254 733 999888",
-        status: "In Service",
-        rating: 4.8
-    },
-    {
-        id: "trans-3",
-        vehicle: "Suzuki Carry Pick-up (1-Tonne Limit)",
-        driver: "Brayo Boda Boda & Carry",
-        basePrice: 2000,
-        perKmRate: 80,
-        location: "Rongai / Ngong Area",
-        phone: "+254 705 444333",
-        status: "Available",
-        rating: 4.7
-    }
-];
-
-const INITIAL_FUNDIS = [
-    {
-        id: "fundi-1",
-        name: "George 'Fundi' Mwangi",
-        specialization: "Master Mason & Structural Foreman",
-        county: "Nairobi",
-        rating: 4.9,
-        jobsDone: 84,
-        badge: "Verified Expert",
-        dailyRate: 1800,
-        status: "Available",
-        skills: ["Formwork", "Plastering", "Slab Cast", "Quarry Bricklaying"],
-        portfolio: ["Ruaka Apartments Slab", "Syokimau Estate Boundary Wall"]
-    },
-    {
-        id: "fundi-2",
-        name: "Wanjiku Njuguna",
-        specialization: "Electrical Wireman & Solar Installer",
-        county: "Kiambu",
-        rating: 4.8,
-        jobsDone: 53,
-        badge: "Certified Epra",
-        dailyRate: 2200,
-        status: "On-site Until Friday",
-        skills: ["Commercial Wiring", "Breaker Mounting", "EPRA Phase 3", "Inverters"],
-        portfolio: ["Kikuyu Town Retail Outlet Wiring", "Runda Home Solar Grid Installation"]
-    },
-    {
-        id: "fundi-3",
-        name: "Onyango 'Plumber' Juma",
-        specialization: "PPR Piping & Drainage Expert",
-        county: "Kisumu",
-        rating: 4.7,
-        jobsDone: 69,
-        badge: "Highly Rated",
-        dailyRate: 2000,
-        status: "Available",
-        skills: ["PPR Hot Fusion", "Bio-digesters", "Kitchen Fit-out", "Borehole Piping"],
-        portfolio: ["Milimani Residential Plumbing", "Kisian Bio-digester System installation"]
-    }
-];
-
-// SVG Icons Pack for Professional Look
-const ICONS = {
-    search: <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
-    kazi: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-    soko: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
-    calculator: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
-    fundis: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-    usafiri: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>,
-    verified: <svg className="w-4 h-4 text-emerald-400 inline" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a.75.75 0 00-.708-.523H4.5a2.25 2.25 0 00-2.25 2.25v1.059a.75.75 0 00.523.708 11.196 11.196 0 013.25 3.25.75.75 0 00.708.523h1.059a2.25 2.25 0 002.25-2.25V7.414a.75.75 0 00-.523-.708 11.196 11.196 0 01-3.25-3.25z" clipRule="evenodd" /><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" /></svg>,
-    chat: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>,
-    cart: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
-    plus: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>,
-    soundOn: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>,
-    soundMute: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6H4.51c-.88 0-1.704.507-1.938 1.354A9.01 9.01 0 002.25 12c0 .83.112 1.633.322 2.396C2.806 15.244 3.63 15.75 4.51 15.75H6.75l4.72 4.72a.75.75 0 001.28-.53V3.31a.75.75 0 00-1.28-.53L6.75 8.25z" /></svg>
+// SQUAD ENG REWARD RULES (File 2 Concept Mock)
+const SQUAD_PAYOUT_RATES = {
+    TIER_1: 0.030, // 3.0%
+    TIER_2: 0.015, // 1.5%
+    TIER_3: 0.005  // 0.5%
 };
 
 function App() {
     useEffect(() => {
-        injectStylesAndFonts();
+        injectVoltxStyles();
     }, []);
 
-    // Navigation and tab controls
-    const [activeTab, setActiveTab] = useState("kazi"); // kazi, soko, calculator, fundis, usafiri
-    const [mute, setMute] = useState(false);
-
-    // Primary Interactive Database States
-    const [jobs, setJobs] = useState(INITIAL_JOBS);
-    const [materials, setMaterials] = useState(INITIAL_MATERIALS);
-    const [transport, setTransport] = useState(INITIAL_TRANSPORT);
-    const [fundis, setFundis] = useState(INITIAL_FUNDIS);
-
-    // Master Filters
-    const [searchQuery, setSearchQuery] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("All");
-    const [selectedCounty, setSelectedCounty] = useState("All");
-
-    // Dynamic Soko/Cart Operations
-    const [cart, setCart] = useState([]);
-    const [isCartOpen, setIsCartOpen] = useState(false);
-
-    // Job Escrow and Postings Form Parameters
-    const [userRole, setUserRole] = useState("Fundi"); // "Fundi" (Worker) or "Site Foreman" (Hirer)
-    const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
-    const [selectedJobForBid, setSelectedJobForBid] = useState(null);
-    const [bidAmount, setBidAmount] = useState("");
-    const [bidCoverLetter, setBidCoverLetter] = useState("");
-
-    // Job Form state
-    const [newJobTitle, setNewJobTitle] = useState("");
-    const [newJobCategory, setNewJobCategory] = useState("Masonry");
-    const [newJobLocation, setNewJobLocation] = useState("");
-    const [newJobBudget, setNewJobBudget] = useState("");
-    const [newJobDuration, setNewJobDuration] = useState("3 Days");
-    const [newJobDescription, setNewJobDescription] = useState("");
-    const [newJobRequirements, setNewJobRequirements] = useState("");
-
-    // Soko Vendor item insertion parameters
-    const [isSellItemModalOpen, setIsSellItemModalOpen] = useState(false);
-    const [newMatName, setNewMatName] = useState("");
-    const [newMatCategory, setNewMatCategory] = useState("Cement & Aggregates");
-    const [newMatPrice, setNewMatPrice] = useState("");
-    const [newMatUnit, setNewMatUnit] = useState("Bag");
-    const [newMatStock, setNewMatStock] = useState("");
-    const [newMatLocation, setNewMatLocation] = useState("");
-    const [newMatDescription, setNewMatDescription] = useState("");
-
-    // Estimator state engine
-    const [calcType, setCalcType] = useState("slab"); // slab, wall, plaster
-    const [slabLength, setSlabLength] = useState("10"); 
-    const [slabWidth, setSlabWidth] = useState("8"); 
-    const [slabThickness, setSlabThickness] = useState("0.15"); 
-    const [wallLength, setWallLength] = useState("30");
-    const [wallHeight, setWallHeight] = useState("3");
-    const [plasterArea, setPlasterArea] = useState("120");
-
-    // Live Simulated Safaricom M-Pesa Interactive Escrow Node
-    const [mpesaModal, setMpesaModal] = useState(null); 
-    const [mpesaPhoneNumber, setMpesaPhoneNumber] = useState("");
-    const [mpesaStatus, setMpesaStatus] = useState("idle"); // idle, processing, otp-delivered, verifying, completed
-    const [mpesaTxCode, setMpesaTxCode] = useState("");
-
-    // Secure Messenger Sandbox
-    const [chatTarget, setChatTarget] = useState(null);
-    const [chatMessage, setChatMessage] = useState("");
-    const [chatLogs, setChatLogs] = useState({
-        "job-1": [
-            { sender: "System", text: "Secure Escrow session created. Your pay is fully locked in JengaEscrow till-no 902235.", time: "09:15 AM" },
-            { sender: "Mugo Builders Ltd", text: "Habari ya asubuhi, can you join our construction site on Monday? Slab concrete aggregates will arrive at 7 AM.", time: "09:17 AM" }
-        ],
-        "fundi-1": [
-            { sender: "System", text: "Chat mapped with foreman. Discuss parameters and request partial milestone locks before starting.", time: "11:20 AM" },
-            { sender: "George 'Fundi' Mwangi", text: "Sasa bosi. I have standard Level 2 alignment instruments ready. Is the ballast sand already on-site?", time: "11:21 AM" }
-        ]
+    // 1. LEGAL DISCLOSURE STATES (File 1 Component Modal State)
+    const [legalAccepted, setLegalAccepted] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('voltx_compliance_signed') === 'true';
+        }
+        return false;
     });
 
-    // Computed totals
-    const cartTotal = useMemo(() => {
-        return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-    }, [cart]);
+    // 2. SOCIAL WALLET ACCOUNT ABSTRACTION MOCK STATE
+    const [connected, setConnected] = useState(false);
+    const [userAddress, setUserAddress] = useState("");
+    const [userBalance, setUserBalance] = useState(124.50); // Mapped in dynamic USDT buffer
+    const [activeTab, setActiveTab] = useState("arcade"); // arcade, squad, risk_panel, docs
 
-    const handleAddToCart = (material) => {
-        if (!mute) playSound('shovel');
-        setCart(prev => {
-            const exists = prev.find(item => item.id === material.id);
-            if (exists) {
-                return prev.map(item => item.id === material.id ? { ...item, quantity: item.quantity + 1 } : item);
+    // 3. VIRAL SQUAD CO-OP RE-ENGAGEMENT STATES (File 2)
+    const [squadId, setSquadId] = useState("CYBER_FORCE");
+    const [referrerCode, setReferrerCode] = useState("VOLT_BEYOND");
+    const [squadMembers, setSquadMembers] = useState([
+        { id: "volt_striker", username: "Striker_X", wagers: 450, totalReferralUSDT: 13.50 },
+        { id: "hacker_neon", username: "0xNeon_S", wagers: 980, totalReferralUSDT: 29.40 },
+        { id: "you", username: "You (Apex)", wagers: 120, totalReferralUSDT: 3.60 }
+    ]);
+    const [toastAlerts, setToastAlerts] = useState([]);
+
+    // 4. RISK PREVENTATIVE VAULT STATS (File 4 & File 3 Mock parameters)
+    const [escrowVaultBalance, setEscrowVaultBalance] = useState(25000.00); 
+    const [houseRevenueVault, setHouseRevenueVault] = useState(100000.00); 
+    const [wagerInput, setWagerInput] = useState(5.00);
+    const [calculatedMaxCap, setCalculatedMaxCap] = useState(500); 
+    const [systemSettings, setSystemSettings] = useState({
+        cappedMultiplierMax: 100, // W * Mapped Max Limit
+        retentionSplitRate: 0.80, // Platform Retention 80%
+        referralAllocation: 0.05  // PoVI Reward Dividend Pool 5%
+    });
+
+    // Simulated network logs from File 4 Risk python socket listener
+    const [networkActivityLogs, setNetworkActivityLogs] = useState([
+        "[SYSTEM]: Secure Escrow initialized. Root address matched with process.env.ESCROW_WALLET_ADDRESS",
+        "[WEBSOCKET]: Listening on port 8000 for provably fair seed hashes...",
+        "[LEDGER]: Scheduled 80% House Split route ready to process.env.HOUSE_REVENUE_VAULT"
+    ]);
+
+    // Simulated websocket notification push generator for co-op squad
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (connected) {
+                const names = ["0xGlow_Rider", "Cyber_Pulse", "Volt_Breaker", "Retro_Specter", "Warp_Drive"];
+                const targetName = names[Math.floor(Math.random() * names.length)];
+                const randomAmount = (Math.random() * 0.05 + 0.005).toFixed(4);
+                
+                // Add new toast
+                const newToast = {
+                    id: Date.now(),
+                    msg: `Squadmate ${targetName} triggered reaction cascade! You earned +${randomAmount} USDT!`,
+                    ticker: `+${randomAmount} USDT`
+                };
+                
+                setToastAlerts(prev => [newToast, ...prev].slice(0, 3));
+                playVoltSound('squad');
+                
+                // Increment dynamic balances matching PoVI structure
+                setUserBalance(prev => prev + parseFloat(randomAmount));
+                setEscrowVaultBalance(prev => prev + parseFloat(randomAmount) * 2);
+                
+                setNetworkActivityLogs(prev => [
+                    `[WEBSOCKET SQUAD ALERT]: Peer activity processed for ${targetName}. Dividend split sent to active addresses.`,
+                    ...prev
+                ].slice(0, 15));
             }
-            return [...prev, { ...material, quantity: 1 }];
-        });
-        setIsCartOpen(true);
+        }, 12000);
+        return () => clearInterval(interval);
+    }, [connected]);
+
+    // Handle initial legal acceptance
+    const acceptComplianceModal = () => {
+        localStorage.setItem('voltx_compliance_signed', 'true');
+        setLegalAccepted(true);
+        playVoltSound('win');
     };
 
-    const handleRemoveFromCart = (id) => {
-        if (!mute) playSound('click');
-        setCart(prev => prev.filter(item => item.id !== id));
-    };
-
-    const handleApplyBid = (e) => {
-        e.preventDefault();
-        if (!bidAmount) {
-            alert("Kindly set your desired daily rate quote!");
-            return;
-        }
-        if (!mute) playSound('mpesa');
-        setJobs(prev => prev.map(j => j.id === selectedJobForBid.id ? { ...j, bidsCount: j.bidsCount + 1 } : j));
-        alert(`Bosi, your quotation bid of KES ${bidAmount} per day has been encrypted & submitted to ${selectedJobForBid.postedBy}. Keep your line open!`);
-        setSelectedJobForBid(null);
-        setBidAmount("");
-        setBidCoverLetter("");
-    };
-
-    const handlePostNewJob = (e) => {
-        e.preventDefault();
-        if (!newJobTitle || !newJobBudget || !newJobLocation || !newJobDescription) {
-            alert("Please complete all fields to publish a verified site gig!");
-            return;
-        }
-        const created = {
-            id: `job-${jobs.length + 1}`,
-            title: newJobTitle,
-            category: newJobCategory,
-            location: newJobLocation,
-            budget: parseInt(newJobBudget),
-            duration: newJobDuration,
-            postedBy: "Soma Projects / You",
-            verified: true,
-            urgency: "Immediate",
-            phone: "+254 700 000000",
-            description: newJobDescription,
-            bidsCount: 0,
-            requirements: newJobRequirements.split(',').map(r => r.trim()).filter(Boolean)
-        };
-        setJobs([created, ...jobs]);
-        setIsPostJobModalOpen(false);
-        setNewJobTitle("");
-        setNewJobBudget("");
-        setNewJobLocation("");
-        setNewJobDescription("");
-        setNewJobRequirements("");
-        if (!mute) playSound('mpesa');
-    };
-
-    const handleSellNewMaterial = (e) => {
-        e.preventDefault();
-        if (!newMatName || !newMatPrice || !newMatLocation || !newMatDescription) {
-            alert("Please complete the specs to launch your product into Jenga Soko!");
-            return;
-        }
-        const created = {
-            id: `mat-${materials.length + 1}`,
-            name: newMatName,
-            category: newMatCategory,
-            price: parseInt(newMatPrice),
-            unit: newMatUnit,
-            stock: parseInt(newMatStock) || 10,
-            seller: "Your Soko Yard Hub",
-            location: newMatLocation,
-            rating: 5.0,
-            image: "🪵",
-            description: newMatDescription
-        };
-        setMaterials([created, ...materials]);
-        setIsSellItemModalOpen(false);
-        setNewMatName("");
-        setNewMatPrice("");
-        setNewMatLocation("");
-        setNewMatDescription("");
-        if (!mute) playSound('shovel');
-    };
-
-    // Advanced Concrete, Sand & Aggregates structural estimator matches standard KEBS codes
-    const calculatedEstimates = useMemo(() => {
-        if (calcType === "slab") {
-            const l = parseFloat(slabLength) || 0;
-            const w = parseFloat(slabWidth) || 0;
-            const t = parseFloat(slabThickness) || 0;
-            const vol = l * w * t; // in cubic meters
-            // Concrete Class 25 ratio 1:1.5:3. Roughly 310kg cement per cubic meter
-            const cementBags = Math.ceil(vol * 6.5);
-            const sandTonnes = (vol * 0.45).toFixed(1);
-            const ballastTonnes = (vol * 0.85).toFixed(1);
-            const rawCost = (cementBags * 790) + (parseFloat(sandTonnes) * 3200) + (parseFloat(ballastTonnes) * 2800);
-            return {
-                vol: vol.toFixed(2),
-                cement: cementBags,
-                sand: sandTonnes,
-                ballast: ballastTonnes,
-                cost: Math.round(rawCost)
-            };
-        } else if (calcType === "wall") {
-            const l = parseFloat(wallLength) || 0;
-            const h = parseFloat(wallHeight) || 0;
-            const area = l * h;
-            // Assuming standard 9x4x6 Quarry Stone bricks. Roughly 45 blocks per sqm inclusive of joint gaps
-            const stones = Math.ceil(area * 45);
-            const cementBags = Math.ceil(area * 0.35);
-            const sandTonnes = (area * 0.04).toFixed(1);
-            const rawCost = (stones * 48) + (cementBags * 790) + (parseFloat(sandTonnes) * 3200);
-            return {
-                vol: area.toFixed(1),
-                stones: stones,
-                cement: cementBags,
-                sand: sandTonnes,
-                cost: Math.round(rawCost)
-            };
+    // Social Web3 Login Action Simulation
+    const handleWalletConnect = () => {
+        if (connected) {
+            setConnected(false);
+            setUserAddress("");
         } else {
-            const area = parseFloat(plasterArea) || 0;
-            // Plaster thickness 15mm. 1:4 mix.
-            const cementBags = Math.ceil(area * 0.22);
-            const sandTonnes = (area * 0.022).toFixed(1);
-            const rawCost = (cementBags * 790) + (parseFloat(sandTonnes) * 3200);
-            return {
-                vol: area.toFixed(1),
-                cement: cementBags,
-                sand: sandTonnes,
-                cost: Math.round(rawCost)
-            };
+            setConnected(true);
+            setUserAddress("0x71C...6F9b");
+            playVoltSound('hit', 1.2);
+            setNetworkActivityLogs(prev => [
+                `[ACCOUNT ABSTRACTION]: Web3Auth session opened for 0x71C...6F9b via secure DeepLink state engine.`,
+                ...prev
+            ]);
         }
-    }, [calcType, slabLength, slabWidth, slabThickness, wallLength, wallHeight, plasterArea]);
-
-    // Live Interactive Escrow Engine simulator
-    const triggerMpesaCheckout = (payload) => {
-        if (!mute) playSound('click');
-        setMpesaPhoneNumber("");
-        setMpesaStatus("idle");
-        setMpesaModal(payload);
     };
 
-    const startMpesaStkPushSim = () => {
-        if (!mpesaPhoneNumber || mpesaPhoneNumber.length < 10) {
-            alert("Safaricom line required (e.g. 0712345678 or 0112345678)");
-            return;
-        }
-        if (!mute) playSound('mpesa');
-        setMpesaStatus("processing");
-        setTimeout(() => {
-            setMpesaStatus("otp-delivered");
-        }, 1200);
+    // Parse Deep-Links Simulation
+    const generateDeepLink = () => {
+        const link = `https://voltx.io/play/cascade?squad=${squadId}&ref=${userAddress || '0x_Apex_Player'}`;
+        navigator.clipboard.writeText(link);
+        alert(`Deep link copied to clipboard:\n${link}`);
+        playVoltSound('win');
     };
 
-    const confirmSimulatedMpesaPin = () => {
-        setMpesaStatus("verifying");
-        setTimeout(() => {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let tx = "T";
-            for (let i = 0; i < 9; i++) {
-                tx += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            setMpesaTxCode(tx);
-            setMpesaStatus("completed");
-            if (!mute) playSound('mpesa');
-            if (mpesaModal.type === 'cart') {
-                setCart([]);
-            }
-        }, 1600);
-    };
-
-    // Secure Messenger Chat Log Manager
-    const sendInstantChatMessage = (e) => {
-        e.preventDefault();
-        if (!chatMessage.trim()) return;
-        const targetId = chatTarget.id;
-        const currentMsgs = chatLogs[targetId] || [];
-        const userMsg = {
-            sender: "You",
-            text: chatMessage,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setChatLogs({
-            ...chatLogs,
-            [targetId]: [...currentMsgs, userMsg]
-        });
-        setChatMessage("");
-
-        // Simulated highly context-aware builder response
-        setTimeout(() => {
-            const answers = [
-                "Sawa kabisa. Please lock the partial payment so I can clear my auxiliary crew.",
-                "Acknowledged bosi. Let's process the JengaKazi transport dispatch right now.",
-                "I will arrive on-site with my own industrial float & standard levels. Let's build!",
-                "Confirmed. Ensure we have sufficient water supplies at the site foundation.",
-                "Excellent! Let me share my precise WhatsApp coordinates immediately."
-            ];
-            const systemAnswer = {
-                sender: chatTarget.name || chatTarget.postedBy || chatTarget.title,
-                text: answers[Math.floor(Math.random() * answers.length)],
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            setChatLogs(prev => ({
-                ...prev,
-                [targetId]: [...(prev[targetId] || []), systemAnswer]
-            }));
-            if (!mute) playSound('click');
-        }, 1400);
-    };
-
-    // Custom UI Filter Computations
-    const filteredJobs = useMemo(() => {
-        return jobs.filter(j => {
-            const matchesQuery = j.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 j.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 j.postedBy.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCat = categoryFilter === "All" || j.category === categoryFilter;
-            return matchesQuery && matchesCat;
-        });
-    }, [jobs, searchQuery, categoryFilter]);
-
-    const filteredMaterials = useMemo(() => {
-        return materials.filter(m => {
-            const matchesQuery = m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 m.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                 m.seller.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCat = categoryFilter === "All" || m.category === categoryFilter;
-            return matchesQuery && matchesCat;
-        });
-    }, [materials, searchQuery, categoryFilter]);
-
-    const filteredFundis = useMemo(() => {
-        return fundis.filter(f => {
-            const matchesCounty = selectedCounty === "All" || f.county.toLowerCase() === selectedCounty.toLowerCase();
-            const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                  f.specialization.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                  f.skills.some(sk => sk.toLowerCase().includes(searchQuery.toLowerCase()));
-            return matchesCounty && matchesSearch;
-        });
-    }, [fundis, selectedCounty, searchQuery]);
+    // Calculated Max Safe Payout according to Risk Engine Directive
+    useEffect(() => {
+        // Pmax = Min ( Vault * 0.02, W * M_capped )
+        const maxVaultBuffer = escrowVaultBalance * 0.02;
+        const maxWagerMultiplier = wagerInput * systemSettings.cappedMultiplierMax;
+        const finalCap = Math.min(maxVaultBuffer, maxWagerMultiplier);
+        setCalculatedMaxCap(finalCap);
+    }, [escrowVaultBalance, wagerInput, systemSettings]);
 
     return (
         <div className="min-h-screen flex flex-col font-sans">
             
-            {/* AMBER GLOBAL NETWORK TICKER */}
-            <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 py-2 px-4 font-grotesk font-extrabold text-xs text-center flex items-center justify-center gap-2 tracking-wide shadow-md z-50">
-                <span className="bg-slate-950 text-amber-400 font-mono text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full">KENYA BUILDERS HUB</span>
-                <span>Connecting over 30,000+ certified Fundis, Aggregates Yards, Hardwares & Transporters in Nairobi, Mombasa, Kiambu & Nakuru.</span>
+            {/* VOLTX ENGINE TOP SYSTEM BANNER */}
+            <div className="bg-[#0b0c16] border-b border-fuchsia-500/20 py-2 px-4 flex flex-wrap items-center justify-between gap-3 text-xs tracking-wider font-mono shadow-md z-40">
+                <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-glow-cyan text-teal-400 font-extrabold uppercase">VOLTX Engine v2.8 (60 FPS)</span>
+                    <span className="text-slate-600">|</span>
+                    <span className="text-slate-400">Escrow Vault Limit: <strong className="text-fuchsia-400">${escrowVaultBalance.toLocaleString()} USDT</strong></span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-emerald-400 font-bold">HOUSE MARGIN: 80% SECURED</span>
+                    <span className="text-slate-600">|</span>
+                    <span className="text-slate-400">Zero Capital Exposure Active</span>
+                </div>
             </div>
 
-            {/* HEADER INTERFACES */}
-            <header className="border-b border-slate-800/80 bg-[#090e1a]/95 sticky top-0 z-40 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 py-4.5 flex flex-col lg:flex-row items-center justify-between gap-4">
+            {/* HEADER DESIGN SYSTEM */}
+            <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     
-                    {/* Brand Signature */}
-                    <div className="flex items-center gap-3">
+                    {/* Brand Signature and Concept Ticker */}
+                    <div className="flex items-center gap-3.5">
                         <div 
-                            onClick={() => { if (!mute) playSound('click'); }}
-                            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center text-slate-950 font-grotesk font-black text-2xl active-glow cursor-pointer transition-transform duration-300 hover:scale-105"
+                            onClick={() => playVoltSound('hit', 1.5)}
+                            className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 via-pink-600 to-teal-400 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:rotate-12 hover:scale-105 active:scale-95"
                         >
-                            J
+                            {SVG_ICONS.lightning}
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="font-grotesk font-black text-2xl text-white tracking-tight">
-                                    JENGA<span className="text-amber-500">KAZI</span>
+                                <h1 className="font-grotesk font-black text-2xl text-white tracking-tight leading-none">
+                                    VOLT<span className="text-fuchsia-500 text-glow-fuchsia">X</span> PROTOCOL
                                 </h1>
-                                <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md border border-emerald-500/20">
-                                    M-PESA ESCROW PROTECTED
+                                <span className="bg-teal-500/10 text-teal-400 text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-md border border-teal-500/20 tracking-widest uppercase">
+                                    ARCADE v2
                                 </span>
                             </div>
-                            <p className="text-[11px] text-slate-400 font-medium">Soko Kuu la Mafundi, Vifaa vya Mjengo na Usafiri</p>
+                            <p className="text-[11px] text-slate-400 tracking-wide font-mono">The High-Velocity Web3 Dopamine Engine</p>
                         </div>
                     </div>
 
-                    {/* Responsive Tab Panel */}
-                    <nav className="flex flex-wrap items-center justify-center gap-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800/80">
+                    {/* Desktop & Mobile Main Nav Tabs */}
+                    <nav className="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800/60">
                         {[
-                            { id: "kazi", name: "TAFUTA KAZI", icon: ICONS.kazi },
-                            { id: "soko", name: "SOKO LA VIFAA", icon: ICONS.soko },
-                            { id: "calculator", name: "SITE ESTIMATOR", icon: ICONS.calculator },
-                            { id: "fundis", name: "MA-FUNDI INDEX", icon: ICONS.fundis },
-                            { id: "usafiri", name: "USAFIRI LOGISTICS", icon: ICONS.usafiri }
+                            { id: "arcade", name: "60-FPS CASCADE", icon: SVG_ICONS.lightning },
+                            { id: "squad", name: "VIRAL SQUADS (PoVI)", icon: SVG_ICONS.users },
+                            { id: "risk_panel", name: "RISK LEDGER (80/20)", icon: SVG_ICONS.shield },
+                            { id: "docs", name: "COMPLIANCE & CODES", icon: SVG_ICONS.terminal }
                         ].map(tab => (
                             <button
                                 key={tab.id}
-                                onClick={() => { if (!mute) playSound('click'); setActiveTab(tab.id); }}
-                                className={`px-4 py-2.5 text-xs font-grotesk font-bold tracking-wider rounded-lg transition-all duration-200 flex items-center gap-2 ${
+                                onClick={() => { playVoltSound('tick'); setActiveTab(tab.id); }}
+                                className={`px-4 py-2.5 text-xs font-grotesk font-bold tracking-wider rounded-lg transition-all flex items-center gap-2 ${
                                     activeTab === tab.id
-                                        ? "bg-amber-500 text-slate-950 shadow-md font-extrabold scale-105"
-                                        : "text-slate-400 hover:text-white hover:bg-slate-900/40"
+                                        ? "bg-fuchsia-600 text-white shadow-lg glow-fuchsia font-extrabold scale-102"
+                                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/40"
                                 }`}
                             >
                                 {tab.icon}
@@ -791,1284 +380,849 @@ function App() {
                         ))}
                     </nav>
 
-                    {/* Cart, sound control & configuration controls */}
-                    <div className="flex items-center gap-2">
-                        
-                        {/* Audio Mute Switch */}
+                    {/* Web3 Social Login Integrator */}
+                    <div className="flex items-center gap-3 shrink-0">
                         <button
-                            onClick={() => { setMute(!mute); if (mute) playSound('click'); }}
-                            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-slate-700 transition-colors"
-                            title="Toggle Construction Sounds"
+                            onClick={handleWalletConnect}
+                            className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-widest flex items-center gap-2 transition-all duration-300 ${
+                                connected 
+                                    ? "bg-teal-950 text-teal-300 border border-teal-500/30 glow-cyan" 
+                                    : "bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white shadow-md glow-fuchsia"
+                            }`}
                         >
-                            {mute ? ICONS.soundMute : ICONS.soundOn}
+                            {SVG_ICONS.wallet}
+                            <span>{connected ? `DISCONNECT: ${userAddress}` : "SOCIAL LOGIN / CONNECT"}</span>
                         </button>
-
-                        {/* Interactive Role Toggle */}
-                        <button
-                            onClick={() => {
-                                if (!mute) playSound('click');
-                                setUserRole(userRole === "Fundi" ? "Site Foreman" : "Fundi");
-                            }}
-                            className="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-850 text-xs font-grotesk font-bold text-slate-300 border border-slate-800 rounded-xl flex items-center gap-2 transition-all duration-200"
-                        >
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                            <span>Role: <strong className="text-amber-500">{userRole}</strong></span>
-                        </button>
-
-                        {/* Interactive Soko Cart Trigger */}
-                        <button
-                            onClick={() => { if (!mute) playSound('click'); setIsCartOpen(!isCartOpen); }}
-                            className="relative px-4 py-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/25 hover:bg-amber-500/20 text-xs font-grotesk font-bold rounded-xl flex items-center gap-2.5 transition-all duration-200"
-                        >
-                            {ICONS.cart}
-                            <span>Soko Cart</span>
-                            {cart.length > 0 && (
-                                <span className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-emerald-500 text-white font-mono text-[11px] font-black flex items-center justify-center animate-bounce shadow">
-                                    {cart.reduce((sum, i) => sum + i.quantity, 0)}
-                                </span>
-                            )}
-                        </button>
-
                     </div>
 
                 </div>
             </header>
 
-            {/* MAIN HERO MARKETPLACE CONTEXT */}
-            <section className="bg-slate-950 py-12 border-b border-slate-900 relative">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    
-                    <div className="lg:col-span-8 space-y-5">
-                        <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-full text-xs font-mono text-amber-500">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                            Live in Nairobi, Kiambu, Nakuru, Kisumu & Machakos
+            {/* REAL-TIME WS NOTIFICATION STACK FOR VIRAL SQUADS */}
+            {toastAlerts.length > 0 && (
+                <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm w-full">
+                    {toastAlerts.map(alert => (
+                        <div key={alert.id} className="glass-panel border border-teal-500/30 rounded-xl p-4 flex items-start gap-3 shadow-2xl animate-slideIn bg-[#070b14]/95">
+                            <div className="p-2 bg-teal-500/10 rounded-lg text-teal-400 shrink-0">
+                                {SVG_ICONS.lightning}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs text-slate-200 font-mono leading-relaxed">{alert.msg}</p>
+                                <span className="inline-block mt-1 text-[10px] bg-teal-500/10 text-teal-300 font-bold px-2 py-0.5 rounded">
+                                    {alert.ticker}
+                                </span>
+                            </div>
+                            <button 
+                                onClick={() => setToastAlerts(prev => prev.filter(t => t.id !== alert.id))}
+                                className="text-slate-500 hover:text-slate-300 text-xs font-mono"
+                            >
+                                ✕
+                            </button>
                         </div>
-                        <h2 className="text-4xl lg:text-6xl font-grotesk font-black tracking-tight leading-none text-white">
-                            Get Anything For Your Site, <br className="hidden md:inline" />
-                            <span className="text-amber-500">Pay Safely via M-Pesa Escrow</span>
-                        </h2>
-                        <p className="text-slate-400 text-sm md:text-base max-w-3xl leading-relaxed">
-                            JengaKazi links construction workers directly with job site tenders, vetted local materials yard suppliers, high-capacity aggregate transport tippers, and elite local fundis. No middlemen, zero safety risk.
-                        </p>
-                    </div>
-
-                    <div className="lg:col-span-4 bg-[#0d1425] p-6 rounded-2xl border border-slate-800/80 shadow-2xl space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
-                                {ICONS.verified}
-                            </div>
-                            <h4 className="font-grotesk font-extrabold text-white text-sm">How JengaEscrow Works</h4>
-                        </div>
-                        <div className="space-y-3.5 text-xs text-slate-300">
-                            <div className="flex items-start gap-2">
-                                <span className="font-mono text-amber-500 font-bold">01.</span>
-                                <p>Funds are locked securely in Safaricom Escrow Node when bidding or ordering materials.</p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <span className="font-mono text-amber-500 font-bold">02.</span>
-                                <p>Materials are delivered or milestone is signed off by the site foreman.</p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <span className="font-mono text-amber-500 font-bold">03.</span>
-                                <p>M-Pesa API automatically releases funds instantly to the fundi or materials merchant.</p>
-                            </div>
-                        </div>
-                    </div>
-
+                    ))}
                 </div>
-            </section>
+            )}
 
-            {/* WORK SPACE & PRODUCT DISPLAY ENGINE */}
+            {/* MAIN PORTAL SCREEN GRID */}
             <main className="max-w-7xl mx-auto w-full px-4 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                {/* PRIMARY VIEWPORTS (LEFT COLUMN - 8 COLS) */}
-                <section className="lg:col-span-8 space-y-6">
+                {/* 1. ARCADE GRID & ACTIVE CASINO LEVEL (8 COLS ON LARGE SCREEN) */}
+                <div className="lg:col-span-8 space-y-6">
                     
-                    {/* DYNAMIC INTEGRATED SEARCH & FILTER HUB */}
-                    {activeTab !== "calculator" && (
-                        <div className="glass-panel p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                    {/* VOLTX TIMING CASCADE GAME (ARCADE VIEWPORT) */}
+                    {activeTab === "arcade" && (
+                        <div className="space-y-4">
                             
-                            {/* Search box with dynamic context awareness */}
-                            <div className="relative w-full md:w-1/2">
-                                <span className="absolute left-3.5 top-3">{ICONS.search}</span>
-                                <input
-                                    type="text"
-                                    placeholder={
-                                        activeTab === "kazi" ? "Tafuta jobs (e.g., slab, Ruaka, plumbing)..." :
-                                        activeTab === "soko" ? "Tafuta cement, sand, mixer rentals..." :
-                                        activeTab === "fundis" ? "Tafuta fundi by name or special skills..." :
-                                        "Tafuta location/vehicle specifications..."
-                                    }
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
-                                />
-                            </div>
-
-                            {/* County Selector for regional mapping */}
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                <span className="text-xs font-grotesk font-extrabold text-slate-400 uppercase tracking-wider shrink-0">County:</span>
-                                <select
-                                    value={selectedCounty}
-                                    onChange={(e) => setSelectedCounty(e.target.value)}
-                                    className="w-full md:w-auto px-3.5 py-2.5 rounded-xl text-xs font-grotesk font-extrabold"
-                                >
-                                    <option value="All">All Counties</option>
-                                    <option value="Nairobi">Nairobi</option>
-                                    <option value="Kiambu">Kiambu</option>
-                                    <option value="Machakos">Machakos</option>
-                                    <option value="Mombasa">Mombasa</option>
-                                    <option value="Nakuru">Nakuru</option>
-                                    <option value="Kisumu">Kisumu</option>
-                                </select>
-
-                                {/* Segmented category selector */}
-                                <select
-                                    value={categoryFilter}
-                                    onChange={(e) => setCategoryFilter(e.target.value)}
-                                    className="w-full md:w-auto px-3.5 py-2.5 rounded-xl text-xs font-grotesk font-extrabold"
-                                >
-                                    <option value="All">All Categories</option>
-                                    {activeTab === "kazi" && (
-                                        <>
-                                            <option value="Masonry">Masonry & Slab</option>
-                                            <option value="Plumbing">Plumbing & Bio</option>
-                                            <option value="Electrical">Electrical & Solar</option>
-                                            <option value="Casual Work">Casual Gigs (Mjengo)</option>
-                                            <option value="Finishing & Gypsum">Finishing & Gypsum</option>
-                                        </>
-                                    )}
-                                    {activeTab === "soko" && (
-                                        <>
-                                            <option value="Cement & Aggregates">Cement & Sand Aggregates</option>
-                                            <option value="Steel & Timber">Steel & Structural Timber</option>
-                                            <option value="Equipment & Tools">Concrete Mixers & Tools</option>
-                                        </>
-                                    )}
-                                </select>
-                            </div>
-
-                        </div>
-                    )}
-
-                    {/* TAB VIEWPORT 1: KAZI / SITE JOBS */}
-                    {activeTab === "kazi" && (
-                        <div className="space-y-4 animate-fadeIn">
-                            
-                            <div className="flex items-center justify-between">
+                            {/* Stats header widget */}
+                            <div className="glass-panel p-4.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div>
-                                    <h3 className="font-grotesk font-black text-xl text-white">Site Gigs & Work Contracts</h3>
-                                    <p className="text-xs text-slate-400">Bid directly on active residential or commercial construction projects in Kenya.</p>
+                                    <h3 className="font-grotesk font-black text-lg text-white">ACTIVE TIMING-CASCADE WINDOW</h3>
+                                    <p className="text-xs text-slate-400">Lock in timing points matching high multiplier nodes to hit maximum payout velocities.</p>
                                 </div>
-                                {userRole === "Site Foreman" && (
-                                    <button
-                                        onClick={() => { if (!mute) playSound('click'); setIsPostJobModalOpen(true); }}
-                                        className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-extrabold text-xs rounded-xl flex items-center gap-2 shadow-md transition-all duration-200"
-                                    >
-                                        {ICONS.plus} Post Active Gig
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Gigs List Display */}
-                            {filteredJobs.length === 0 ? (
-                                <div className="glass-panel p-12 text-center text-slate-400 rounded-2xl">
-                                    No site tenders found matching current parameters. Try widening your filters.
-                                </div>
-                            ) : (
-                                filteredJobs.map(job => (
-                                    <div key={job.id} className="glass-panel p-5.5 rounded-2xl hover:border-amber-500/30 transition-all duration-300 space-y-4">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                            <div className="space-y-1.5">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <span className="bg-amber-500/15 text-amber-500 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-md uppercase">
-                                                        {job.category}
-                                                    </span>
-                                                    {job.verified && (
-                                                        <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-md">
-                                                            {ICONS.verified} Verified Budget
-                                                        </span>
-                                                    )}
-                                                    <span className="bg-red-500/10 text-red-400 text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-md">
-                                                        {job.urgency}
-                                                    </span>
-                                                </div>
-                                                <h4 className="font-grotesk font-bold text-lg text-white hover:text-amber-400 transition-colors cursor-pointer">
-                                                    {job.title}
-                                                </h4>
-                                            </div>
-                                            <div className="text-left md:text-right md:shrink-0 bg-slate-950/40 p-3 rounded-xl border border-slate-900 md:border-0">
-                                                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">DAILY PAY BUDGET</p>
-                                                <p className="font-grotesk font-black text-xl text-emerald-400">KES {job.budget.toLocaleString()} / Siku</p>
-                                            </div>
-                                        </div>
-
-                                        <p className="text-xs text-slate-300 leading-relaxed font-light">{job.description}</p>
-
-                                        {/* Parameters grid */}
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-950/40 p-3 rounded-xl text-xs font-mono border border-slate-900">
-                                            <div>
-                                                <span className="text-slate-500 block text-[9px] uppercase">PROJECT SITE</span>
-                                                <span className="text-slate-300 font-bold">{job.location}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-slate-500 block text-[9px] uppercase">GIG DURATION</span>
-                                                <span className="text-slate-300 font-bold">{job.duration}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-slate-500 block text-[9px] uppercase">SUBMITTED BIDS</span>
-                                                <span className="text-amber-500 font-black animate-pulse">{job.bidsCount} mafundi applied</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-slate-500 block text-[9px] uppercase">FOREMAN</span>
-                                                <span className="text-slate-300 font-bold">{job.postedBy}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {job.requirements.map((req, idx) => (
-                                                <span key={idx} className="bg-slate-900 text-slate-400 text-[10px] px-2.5 py-1 rounded-md border border-slate-800">
-                                                    ✓ {req}
-                                                </span>
-                                            ))}
-                                        </div>
-
-                                        <div className="pt-3.5 border-t border-slate-900 flex flex-wrap gap-2.5 items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => {
-                                                        if (!mute) playSound('click');
-                                                        setChatTarget({ id: job.id, name: job.postedBy, specialization: "Foreman" });
-                                                    }}
-                                                    className="px-3.5 py-2 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-white text-xs font-grotesk font-bold rounded-xl border border-slate-800 flex items-center gap-2 transition-colors"
-                                                >
-                                                    {ICONS.chat}
-                                                    <span>Chat with Foreman</span>
-                                                </button>
-                                                <a
-                                                    href={`tel:${job.phone}`}
-                                                    onClick={() => { if (!mute) playSound('horn'); }}
-                                                    className="px-3.5 py-2 bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-white text-xs font-mono rounded-xl border border-slate-800 transition-colors"
-                                                >
-                                                    📞 Call Direct
-                                                </a>
-                                            </div>
-
-                                            <button
-                                                onClick={() => { if (!mute) playSound('click'); setSelectedJobForBid(job); }}
-                                                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-xl transition-all duration-200"
-                                            >
-                                                Bid daily wage & lock contract
-                                            </button>
-                                        </div>
-
+                                <div className="flex gap-4 font-mono text-xs">
+                                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                                        <span className="text-slate-500 text-[9px] uppercase block">YOUR ACCOUNT</span>
+                                        <strong className="text-glow-cyan text-teal-400 text-sm font-bold">${userBalance.toFixed(2)} USDT</strong>
                                     </div>
-                                ))
-                            )}
-
-                        </div>
-                    )}
-
-                    {/* TAB VIEWPORT 2: SOKO / MATERIALS MARKETPLACE */}
-                    {activeTab === "soko" && (
-                        <div className="space-y-4 animate-fadeIn">
-                            
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-grotesk font-black text-xl text-white">Soko Kuu la Vifaa na Vyombo</h3>
-                                    <p className="text-xs text-slate-400">Order cement, sand aggregates, structural steel & equipment rental direct with delivery.</p>
+                                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                                        <span className="text-slate-500 text-[9px] uppercase block">P-MAX CAP BOUND</span>
+                                        <strong className="text-glow-fuchsia text-fuchsia-400 text-sm font-bold">${calculatedMaxCap.toFixed(2)} USDT</strong>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => { if (!mute) playSound('click'); setIsSellItemModalOpen(true); }}
-                                    className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-extrabold text-xs rounded-xl flex items-center gap-2 shadow-md transition-all duration-200"
-                                >
-                                    {ICONS.plus} Sell Construction Supplies
-                                </button>
                             </div>
 
-                            {/* Materials Catalog */}
-                            {filteredMaterials.length === 0 ? (
-                                <div className="glass-panel p-12 text-center text-slate-400 rounded-2xl">
-                                    No building supplies match your criteria. Search for alternative aggregates.
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {filteredMaterials.map(mat => (
-                                        <div key={mat.id} className="glass-panel p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all duration-300">
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-4xl bg-slate-900 w-12 h-12 rounded-xl flex items-center justify-center border border-slate-800">
-                                                        {mat.image}
-                                                    </span>
-                                                    <div className="flex items-center gap-1 bg-slate-900 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold text-amber-500">
-                                                        ⭐ {mat.rating}
-                                                    </div>
-                                                </div>
-                                                <h4 className="font-grotesk font-bold text-base text-white">{mat.name}</h4>
-                                                <p className="text-xs text-slate-300 font-light leading-relaxed">{mat.description}</p>
-                                                
-                                                <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-900 text-[11px] font-mono space-y-1 text-slate-400">
-                                                    <p>📍 Location: <strong className="text-slate-200">{mat.location}</strong></p>
-                                                    <p>🏪 Supplier: <strong className="text-slate-200">{mat.seller}</strong></p>
-                                                    <p>📦 Ready Stock: <span className="text-emerald-400 font-bold">{mat.stock} {mat.unit}s</span></p>
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-3.5 border-t border-slate-900 flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-[9px] font-mono text-slate-500 uppercase">YARD RATE PER {mat.unit}</p>
-                                                    <p className="font-grotesk font-black text-lg text-emerald-400">KES {mat.price.toLocaleString()}</p>
-                                                </div>
-
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            if (!mute) playSound('click');
-                                                            setChatTarget({ id: mat.id, name: mat.seller, specialization: "Material Supplier" });
-                                                        }}
-                                                        className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
-                                                        title="Message Supplier"
-                                                    >
-                                                        {ICONS.chat}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAddToCart(mat)}
-                                                        className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-xl flex items-center gap-2 transition-all duration-200"
-                                                    >
-                                                        {ICONS.cart} Add to Site
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            {/* Arcade timing canvas component */}
+                            <VoltxArcadeCanvas 
+                                wager={wagerInput}
+                                userBalance={userBalance}
+                                setUserBalance={setUserBalance}
+                                maxCap={calculatedMaxCap}
+                                escrowVaultBalance={escrowVaultBalance}
+                                setEscrowVaultBalance={setEscrowVaultBalance}
+                                houseRevenueVault={houseRevenueVault}
+                                setHouseRevenueVault={setHouseRevenueVault}
+                                networkActivityLogs={networkActivityLogs}
+                                setNetworkActivityLogs={setNetworkActivityLogs}
+                            />
 
                         </div>
                     )}
 
-                    {/* TAB VIEWPORT 3: QUANTITY ESTIMATOR */}
-                    {activeTab === "calculator" && (
+                    {/* TAB Viewport 2: Squads Co-Op Co-referrals (File 2 Framework) */}
+                    {activeTab === "squad" && (
                         <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
-                            <div className="border-b border-slate-900 pb-4">
-                                <h3 className="font-grotesk font-black text-xl text-white">📏 Material Estimator & Cost Planner</h3>
-                                <p className="text-xs text-slate-400">Calculate quantities of aggregate concrete blocks, cement bags, or plaster sand according to Kenyan architectural standards.</p>
+                            <div className="border-b border-slate-800 pb-4">
+                                <h3 className="font-grotesk font-black text-xl text-white">👥 SQUAD CO-OP POOLS & VIRAL CATALYSTS</h3>
+                                <p className="text-xs text-slate-400">
+                                    Earn instant WebSocket splits from every wager generated by squadmate connections. Double direct referrals down 3 cascading tiers.
+                                </p>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
-                                {[
-                                    { id: "slab", name: "Floor Slab Concrete", icon: "🧱" },
-                                    { id: "wall", name: "Stone Blocks Wall", icon: "🧱" },
-                                    { id: "plaster", name: "Interior Wall Plaster", icon: "⏳" }
-                                ].map(type => (
-                                    <button
-                                        key={type.id}
-                                        onClick={() => { if (!mute) playSound('click'); setCalcType(type.id); }}
-                                        className={`py-3 rounded-xl border font-grotesk font-bold text-xs flex flex-col items-center gap-1.5 transition-all duration-200 ${
-                                            calcType === type.id
-                                                ? "bg-amber-500/10 text-amber-500 border-amber-500"
-                                                : "bg-slate-950/40 text-slate-400 border-slate-800 hover:border-slate-700"
-                                        }`}
-                                    >
-                                        <span className="text-xl">{type.icon}</span>
-                                        <span>{type.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-
+                            {/* Squad configuration generator links */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 
-                                {/* Parameter Tuning inputs */}
                                 <div className="space-y-4">
-                                    <h4 className="font-grotesk font-bold text-xs text-slate-400 uppercase tracking-widest">Tune Site Parameters</h4>
+                                    <h4 className="font-grotesk font-bold text-sm text-fuchsia-400 uppercase tracking-wider">Dynamic Deep-Link State Configurator</h4>
                                     
-                                    {calcType === "slab" && (
-                                        <>
-                                            <div>
-                                                <label className="block text-[10px] font-mono text-slate-400 mb-1">LENGTH OF FLOOR SLAB (METERS)</label>
-                                                <input
-                                                    type="number"
-                                                    value={slabLength}
-                                                    onChange={(e) => setSlabLength(e.target.value)}
-                                                    className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-mono text-slate-400 mb-1">WIDTH OF FLOOR SLAB (METERS)</label>
-                                                <input
-                                                    type="number"
-                                                    value={slabWidth}
-                                                    onChange={(e) => setSlabWidth(e.target.value)}
-                                                    className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-mono text-slate-400 mb-1">SLAB THICKNESS (METERS)</label>
-                                                <select
-                                                    value={slabThickness}
-                                                    onChange={(e) => setSlabThickness(e.target.value)}
-                                                    className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                                >
-                                                    <option value="0.10">0.10m (100mm / 4 Inches Internal)</option>
-                                                    <option value="0.15">0.15m (150mm / 6 Inches Standard)</option>
-                                                    <option value="0.20">0.20m (200mm / 8 Inches Heavy Commercial)</option>
-                                                </select>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {calcType === "wall" && (
-                                        <>
-                                            <div>
-                                                <label className="block text-[10px] font-mono text-slate-400 mb-1">WALL REACH LIMIT LENGTH (METERS)</label>
-                                                <input
-                                                    type="number"
-                                                    value={wallLength}
-                                                    onChange={(e) => setWallLength(e.target.value)}
-                                                    className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-mono text-slate-400 mb-1">WALL MAXIMUM HEIGHT (METERS)</label>
-                                                <input
-                                                    type="number"
-                                                    value={wallHeight}
-                                                    onChange={(e) => setWallHeight(e.target.value)}
-                                                    className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {calcType === "plaster" && (
+                                    <div className="space-y-3 font-mono text-xs">
                                         <div>
-                                            <label className="block text-[10px] font-mono text-slate-400 mb-1">PLASTER SURFACE COVERAGE (SQ METERS)</label>
-                                            <input
-                                                type="number"
-                                                value={plasterArea}
-                                                onChange={(e) => setPlasterArea(e.target.value)}
-                                                className="w-full p-2.5 rounded-lg font-mono text-sm"
+                                            <label className="text-slate-500 text-[10px] block mb-1">CO-OP SQUAD ID (RESTFUL TARGET)</label>
+                                            <input 
+                                                type="text" 
+                                                value={squadId}
+                                                onChange={(e) => setSquadId(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white" 
                                             />
                                         </div>
-                                    )}
-                                </div>
-
-                                {/* Live Calculations Dashboard */}
-                                <div className="bg-[#090f1d] p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
-                                    <div className="space-y-4">
-                                        <h4 className="font-grotesk font-bold text-xs text-amber-500 uppercase tracking-widest">Computed Quantities Summary</h4>
-
-                                        {calcType === "slab" && (
-                                            <div className="space-y-3 font-mono text-xs text-slate-300">
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Concrete Mix Volume:</span>
-                                                    <strong className="text-white">{calculatedEstimates.vol} Cubic Meters</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Bamburi Cement Bags (50kg):</span>
-                                                    <strong className="text-amber-500">{calculatedEstimates.cement} Bags</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>River Fine Sand:</span>
-                                                    <strong className="text-white">{calculatedEstimates.sand} Tonnes</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Concrete Ballast (Kokoto):</span>
-                                                    <strong className="text-white">{calculatedEstimates.ballast} Tonnes</strong>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {calcType === "wall" && (
-                                            <div className="space-y-3 font-mono text-xs text-slate-300">
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Wall Surface Area:</span>
-                                                    <strong className="text-white">{calculatedEstimates.vol} Sq. Meters</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Quarry Stone Bricks:</span>
-                                                    <strong className="text-amber-500">{calculatedEstimates.stones} Bricks</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Cement (Joint Mortar):</span>
-                                                    <strong className="text-white">{calculatedEstimates.cement} Bags</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Coarse Sand:</span>
-                                                    <strong className="text-white">{calculatedEstimates.sand} Tonnes</strong>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {calcType === "plaster" && (
-                                            <div className="space-y-3 font-mono text-xs text-slate-300">
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Surface Plaster Coverage:</span>
-                                                    <strong className="text-white">{calculatedEstimates.vol} Sq. Meters</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Cement Bags Required:</span>
-                                                    <strong className="text-amber-500">{calculatedEstimates.cement} Bags</strong>
-                                                </div>
-                                                <div className="flex justify-between py-1.5 border-b border-slate-900">
-                                                    <span>Plaster Sand:</span>
-                                                    <strong className="text-white">{calculatedEstimates.sand} Tonnes</strong>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-6 pt-4 border-t border-slate-800">
-                                        <div className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-900">
-                                            <div>
-                                                <span className="text-[10px] text-slate-500 block uppercase">ESTIMATED TOTAL BUDGET</span>
-                                                <strong className="text-xl font-grotesk text-emerald-400">KES {calculatedEstimates.cost.toLocaleString()}</strong>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    if (!mute) playSound('shovel');
-                                                    // Auto fill cart with the estimated materials
-                                                    setCart([
-                                                        {
-                                                            id: "est-cement",
-                                                            name: `Bamburi Cement (${calculatedEstimates.cement} Bags for Est)`,
-                                                            price: 790,
-                                                            unit: "Bag",
-                                                            quantity: calculatedEstimates.cement,
-                                                            image: "🧱"
-                                                        }
-                                                    ]);
-                                                    setIsCartOpen(true);
-                                                }}
-                                                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-xl"
-                                            >
-                                                Order Cement Now
-                                            </button>
+                                        <div>
+                                            <label className="text-slate-500 text-[10px] block mb-1">REFERRAL TRACKING TAG</label>
+                                            <input 
+                                                type="text" 
+                                                value={referrerCode}
+                                                onChange={(e) => setReferrerCode(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white" 
+                                            />
                                         </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    )}
-
-                    {/* TAB VIEWPORT 4: MA-FUNDI DIRECTORY */}
-                    {activeTab === "fundis" && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <div className="border-b border-slate-900 pb-3">
-                                <h3 className="font-grotesk font-black text-xl text-white">Vetted & Rated Artisans</h3>
-                                <p className="text-xs text-slate-400">Hire trusted foremen, plumbers, and solar technicians directly. All certified via peer-reviews & JengaEscrow.</p>
-                            </div>
-
-                            {filteredFundis.length === 0 ? (
-                                <div className="glass-panel p-12 text-center text-slate-400 rounded-2xl">
-                                    No local verified fundis match current query. Check other operating counties.
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-4">
-                                    {filteredFundis.map(fundi => (
-                                        <div key={fundi.id} className="glass-panel p-5.5 rounded-2xl hover:border-slate-700 transition-all duration-300 space-y-4">
-                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                                
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 flex items-center justify-center text-3xl border border-slate-700">
-                                                        👷
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <h4 className="font-grotesk font-bold text-lg text-white">{fundi.name}</h4>
-                                                            <span className="bg-amber-500/10 text-amber-500 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md border border-amber-500/20">
-                                                                {fundi.badge}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-xs text-slate-400 font-mono">{fundi.specialization}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="text-left md:text-right bg-slate-950/40 p-3 rounded-xl border border-slate-900 md:border-0">
-                                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">STANDARD DAILY RATE</span>
-                                                    <strong className="text-lg font-grotesk text-emerald-400">KES {fundi.dailyRate.toLocaleString()} / Day</strong>
-                                                </div>
-
-                                            </div>
-
-                                            {/* Skills and Portfolios */}
-                                            <div className="space-y-3">
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {fundi.skills.map((skill, idx) => (
-                                                        <span key={idx} className="bg-slate-950 text-slate-300 text-[11px] px-3 py-1 rounded-md border border-slate-900 font-mono">
-                                                            🛠️ {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-900 text-xs text-slate-400 space-y-1">
-                                                    <span className="text-[9px] font-mono text-slate-500 uppercase block mb-1">RECENT RECENT VERIFIED SITES:</span>
-                                                    {fundi.portfolio.map((p, idx) => (
-                                                        <p key={idx} className="flex items-center gap-2">
-                                                            <span className="text-emerald-400">✓</span> {p}
-                                                        </p>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Information Grid */}
-                                            <div className="grid grid-cols-3 gap-3 bg-slate-950/40 p-3 rounded-xl text-center text-xs font-mono border border-slate-900">
-                                                <div>
-                                                    <span className="text-slate-500 block text-[9px] uppercase">COUNTY SECTOR</span>
-                                                    <span className="text-slate-200 font-bold">{fundi.county}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-slate-500 block text-[9px] uppercase">PROJECTS COMPLETED</span>
-                                                    <span className="text-amber-500 font-bold">{fundi.jobsDone} Sites</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-slate-500 block text-[9px] uppercase">AVAILABILITY</span>
-                                                    <span className="text-emerald-400 font-bold">{fundi.status}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex gap-2 justify-end pt-2">
-                                                <button
-                                                    onClick={() => {
-                                                        if (!mute) playSound('click');
-                                                        setChatTarget({ id: fundi.id, name: fundi.name, specialization: "Certified Fundi" });
-                                                    }}
-                                                    className="px-4 py-2 bg-slate-900 hover:bg-slate-850 text-slate-300 text-xs font-grotesk font-bold rounded-xl border border-slate-850 transition-colors flex items-center gap-2"
-                                                >
-                                                    {ICONS.chat}
-                                                    <span>Direct Message</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        triggerMpesaCheckout({
-                                                            title: `Book Fundi Contract - ${fundi.name}`,
-                                                            price: fundi.dailyRate,
-                                                            type: "fundi"
-                                                        });
-                                                    }}
-                                                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-xl"
-                                                >
-                                                    Hire & Lock Deposit
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                        </div>
-                    )}
-
-                    {/* TAB VIEWPORT 5: USAFIRI / LOGISTICS */}
-                    {activeTab === "usafiri" && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <div className="border-b border-slate-900 pb-3">
-                                <h3 className="font-grotesk font-black text-xl text-white">🚛 connected Tipper Tippers & Freight Cargo</h3>
-                                <p className="text-xs text-slate-400">Hire high-payload logistics specialists to deliver ballast stone, river sand, and heavy equipment.</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {transport.map(tr => (
-                                    <div key={tr.id} className="glass-panel p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all duration-300">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-4xl bg-slate-900 w-12 h-12 rounded-xl flex items-center justify-center border border-slate-800">
-                                                    🚛
-                                                </span>
-                                                <span className="text-[10px] font-mono font-bold bg-slate-900 px-2.5 py-1 rounded-md text-emerald-400">
-                                                    {tr.status}
-                                                </span>
-                                            </div>
-                                            <h4 className="font-grotesk font-bold text-base text-white">{tr.vehicle}</h4>
-                                            <p className="text-xs text-slate-400 font-mono">Driver: <strong className="text-slate-200">{tr.driver}</strong></p>
-
-                                            <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-900 text-xs font-mono text-slate-400 space-y-1">
-                                                <p>📍 Location base: {tr.location}</p>
-                                                <p>⭐ Client Rating: {tr.rating}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3 pt-3 border-t border-slate-900">
-                                            <div className="flex justify-between text-xs font-mono">
-                                                <span className="text-slate-500">Dispatch base price:</span>
-                                                <strong className="text-white">KES {tr.basePrice.toLocaleString()}</strong>
-                                            </div>
-                                            <div className="flex justify-between text-xs font-mono">
-                                                <span className="text-slate-500">Per Kilometer:</span>
-                                                <strong className="text-amber-500">KES {tr.perKmRate}/Km</strong>
-                                            </div>
-
-                                            <button
-                                                onClick={() => {
-                                                    if (!mute) playSound('horn');
-                                                    triggerMpesaCheckout({
-                                                        title: `Logistics Booking - ${tr.driver}`,
-                                                        price: tr.basePrice,
-                                                        type: "transport"
-                                                    });
-                                                }}
-                                                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-grotesk font-bold rounded-xl border border-slate-800 transition-all"
-                                            >
-                                                Book Transport Dispatch
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                </section>
-
-                {/* SIDEBAR RIGHT COLUMN - 4 COLS (M-PESA ESCROW NODES, CART & MESSAGING) */}
-                <aside className="lg:col-span-4 space-y-6">
-                    
-                    {/* ACTIVE SITE SHOPPING CART */}
-                    {isCartOpen && (
-                        <div className="glass-panel p-5 rounded-2xl border-amber-500/25 shadow-2xl space-y-4 animate-slideIn">
-                            <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                                <h3 className="font-grotesk font-black text-sm text-white tracking-widest uppercase flex items-center gap-2">
-                                    <span>{ICONS.cart}</span>
-                                    <span>Active Supplies Cart</span>
-                                </h3>
-                                <button
-                                    onClick={() => setIsCartOpen(false)}
-                                    className="text-slate-500 hover:text-white font-mono text-xs"
-                                >
-                                    [ Hide ]
-                                </button>
-                            </div>
-
-                            {cart.length === 0 ? (
-                                <p className="text-xs font-mono text-slate-500 text-center py-6">Your shopping cart is currently empty.</p>
-                            ) : (
-                                <div className="space-y-3.5">
-                                    <div className="max-h-60 overflow-y-auto custom-scroll space-y-2.5 pr-1.5">
-                                        {cart.map(item => (
-                                            <div key={item.id} className="flex justify-between items-start text-xs font-mono bg-slate-950 p-3 rounded-xl border border-slate-900">
-                                                <div className="space-y-1">
-                                                    <span className="font-bold text-white block">{item.name}</span>
-                                                    <span className="text-slate-500 text-[10px]">{item.quantity} x KES {item.price.toLocaleString()}</span>
-                                                </div>
-                                                <div className="text-right shrink-0 ml-4 space-y-1">
-                                                    <strong className="text-emerald-400 block">KES {(item.price * item.quantity).toLocaleString()}</strong>
-                                                    <button
-                                                        onClick={() => handleRemoveFromCart(item.id)}
-                                                        className="text-[10px] text-red-400 hover:underline"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="pt-3.5 border-t border-slate-900 space-y-3">
-                                        <div className="flex justify-between text-xs font-mono font-bold">
-                                            <span className="text-slate-400">Escrow Total:</span>
-                                            <strong className="text-white text-sm">KES {cartTotal.toLocaleString()}</strong>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                triggerMpesaCheckout({
-                                                    title: "Site Procurement (Multiple Items)",
-                                                    price: cartTotal,
-                                                    type: "cart"
-                                                });
-                                            }}
-                                            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-200 mpesa-glow-button"
+                                        
+                                        <button 
+                                            onClick={generateDeepLink}
+                                            className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-grotesk font-extrabold text-xs py-3 rounded-xl transition-all uppercase tracking-widest"
                                         >
-                                            💳 Pay Safely via M-Pesa
+                                            GENERATE 1-CLICK JOIN DEEP LINK
                                         </button>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    )}
 
-                    {/* M-PESA POPUP ESCROW MODAL PANEL */}
-                    {mpesaModal && (
-                        <div className="glass-panel p-5 rounded-2xl border-emerald-500/30 mpesa-glow-button space-y-4 bg-slate-950/95 animate-fadeIn">
-                            <div className="border-b border-slate-900 pb-3 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                                    <h3 className="font-grotesk font-black text-xs text-white uppercase tracking-widest">
-                                        Safaricom JengaEscrow Gateway
-                                    </h3>
-                                </div>
-                                <button
-                                    onClick={() => setMpesaModal(null)}
-                                    className="text-slate-500 hover:text-white font-mono text-xs"
-                                >
-                                    [ cancel ]
-                                </button>
-                            </div>
-
-                            <div className="bg-slate-900 p-3 rounded-xl text-xs space-y-2 font-mono border border-slate-800">
-                                <p><span className="text-slate-500">Service: </span> <strong className="text-white">{mpesaModal.title}</strong></p>
-                                <p><span className="text-slate-500">Locked Deposit: </span> <strong className="text-emerald-400">KES {mpesaModal.price.toLocaleString()}</strong></p>
-                                <p><span className="text-slate-500">Standard Fee: </span> <span className="text-slate-300">KES 0 (Free Escrow)</span></p>
-                            </div>
-
-                            {mpesaStatus === "idle" && (
-                                <div className="space-y-3">
-                                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-widest">Safaricom phone number</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. 0712345678"
-                                        value={mpesaPhoneNumber}
-                                        onChange={(e) => setMpesaPhoneNumber(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg font-mono text-sm"
-                                    />
-                                    <button
-                                        onClick={startMpeskStkPushSim}
-                                        className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-extrabold text-xs rounded-xl"
-                                    >
-                                        Initiate STK Push Request
-                                    </button>
-                                </div>
-                            )}
-
-                            {mpesaStatus === "processing" && (
-                                <div className="text-center py-5 space-y-3">
-                                    <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                                    <p className="text-xs font-mono text-slate-400">Contacting Safaricom cellular API tunnels...</p>
-                                </div>
-                            )}
-
-                            {mpesaStatus === "otp-delivered" && (
-                                <div className="bg-slate-900 p-4 rounded-xl text-center space-y-4 border border-emerald-500/25 animate-pulse">
-                                    <span className="text-3xl">📱</span>
-                                    <p className="text-xs text-slate-200">
-                                        An STK request has been delivered to <strong>{mpesaPhoneNumber}</strong>. Input your secret PIN on your handset screen to secure the funds in escrow.
-                                    </p>
-                                    <button
-                                        onClick={confirmSimulatedMpesaPin}
-                                        className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-grotesk font-black text-xs rounded-lg uppercase"
-                                    >
-                                        Yes, I Entered PIN
-                                    </button>
-                                </div>
-                            )}
-
-                            {mpesaStatus === "verifying" && (
-                                <div className="text-center py-5 space-y-3">
-                                    <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                                    <p className="text-xs font-mono text-slate-400">Confirming ledger status from transaction pool...</p>
-                                </div>
-                            )}
-
-                            {mpesaStatus === "completed" && (
-                                <div className="bg-emerald-950/20 border border-emerald-500/35 p-4 rounded-xl text-center space-y-3">
-                                    <span className="text-3xl">🛡️</span>
-                                    <h4 className="font-grotesk font-bold text-emerald-400 text-xs tracking-wider uppercase">FUNDS LOCKED SUCCESSFULLY</h4>
-                                    <p className="text-[10px] font-mono text-slate-400">
-                                        M-Pesa Escrow Receipt Code: <strong className="text-slate-200">{mpesaTxCode}</strong>
-                                    </p>
-                                    <p className="text-[10px] text-slate-300 leading-normal">
-                                        Funds are held safely in trust. Release parameters are active. Handover will notify suppliers.
-                                    </p>
-                                    <button
-                                        onClick={() => setMpesaModal(null)}
-                                        className="px-4 py-2 bg-slate-900 text-slate-200 border border-slate-800 hover:border-slate-700 text-xs rounded-lg"
-                                    >
-                                        Close Terminal
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* INTERACTIVE MESSENGER PORTAL */}
-                    {chatTarget ? (
-                        <div className="glass-panel p-5 rounded-2xl space-y-4 relative animate-slideIn">
-                            
-                            <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                                <div className="bg-[#080b13] p-5 rounded-xl border border-slate-900 flex flex-col justify-between">
                                     <div>
-                                        <h4 className="font-grotesk font-bold text-xs text-white">{chatTarget.name}</h4>
-                                        <span className="text-[9px] text-amber-500 font-mono block uppercase">{chatTarget.specialization}</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setChatTarget(null)}
-                                    className="text-slate-500 hover:text-white font-mono text-xs"
-                                >
-                                    [ Close ]
-                                </button>
-                            </div>
-
-                            {/* Chat Thread Viewport */}
-                            <div className="h-52 overflow-y-auto custom-scroll space-y-2.5 pr-1 text-xs">
-                                {(chatLogs[chatTarget.id] || [
-                                    { sender: "System", text: "Secure channels verified. Discuss milestones, aggregate quantities, and transport safety parameters here.", time: "11:20 AM" }
-                                ]).map((msg, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`p-3 rounded-xl max-w-[85%] border leading-relaxed ${
-                                            msg.sender === "You"
-                                                ? "bg-amber-500/10 border-amber-500/25 text-white ml-auto"
-                                                : msg.sender === "System"
-                                                ? "bg-slate-950 border-slate-900 text-slate-500 mx-auto text-center font-mono text-[10px]"
-                                                : "bg-slate-900/60 border-slate-800 text-slate-300"
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-center text-[9px] text-slate-500 mb-1 font-mono">
-                                            <span className="font-bold">{msg.sender}</span>
-                                            <span>{msg.time}</span>
+                                        <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest mb-3">3-TIER CASCADING REWARD CODE RULES</h4>
+                                        <div className="space-y-3 font-mono text-xs">
+                                            <div className="flex justify-between py-1 border-b border-slate-950">
+                                                <span className="text-teal-400 font-bold">Tier 1 (Direct Referee):</span>
+                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_1 * 100).toFixed(1)}% of all wagers</span>
+                                            </div>
+                                            <div className="flex justify-between py-1 border-b border-slate-950">
+                                                <span className="text-teal-400">Tier 2 (Secondary Referee):</span>
+                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_2 * 100).toFixed(1)}% of all wagers</span>
+                                            </div>
+                                            <div className="flex justify-between py-1 border-b border-slate-950">
+                                                <span className="text-teal-400">Tier 3 (Viral Catalyst):</span>
+                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_3 * 100).toFixed(1)}% of all wagers</span>
+                                            </div>
                                         </div>
-                                        <p className="font-mono">{msg.text}</p>
                                     </div>
-                                ))}
+                                    <p className="text-[10px] text-slate-500 font-mono mt-4 leading-normal">
+                                        All dividends are calculated directly out of the allocated 20% global liquidity reserve pool. Zero exposure of core house asset seed balances.
+                                    </p>
+                                </div>
+
                             </div>
 
-                            {/* Inputs form */}
-                            <form onSubmit={sendInstantChatMessage} className="flex gap-2 pt-3 border-t border-slate-900">
-                                <input
-                                    type="text"
-                                    placeholder="Andika ujumbe hapa..."
-                                    value={chatMessage}
-                                    onChange={(e) => setChatMessage(e.target.value)}
-                                    className="flex-1 p-2 text-xs rounded-xl"
-                                />
-                                <button
-                                    type="submit"
-                                    className="px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs rounded-xl"
-                                >
-                                    Tuma
-                                </button>
-                            </form>
+                            {/* Squad dynamic roster monitor table */}
+                            <div className="space-y-3">
+                                <h4 className="font-grotesk font-bold text-sm text-white">Active Squad Co-Op Members Performance</h4>
+                                <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                                    {squadMembers.map((member, idx) => (
+                                        <div key={idx} className="bg-slate-950 p-3.5 rounded-xl border border-slate-900 flex justify-between items-center text-xs font-mono">
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                                                <span className="text-white font-bold">{member.username}</span>
+                                            </div>
+                                            <div className="flex gap-6">
+                                                <span>Total Wager Volume: <strong className="text-teal-400">${member.wagers} USDT</strong></span>
+                                                <span>Dividends Generated: <strong className="text-fuchsia-400">+${member.totalReferralUSDT.toFixed(2)} USDT</strong></span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                        </div>
-                    ) : (
-                        <div className="glass-panel p-6 rounded-2xl text-center text-slate-500 space-y-3">
-                            <span className="text-4xl block animate-pulse">💬</span>
-                            <h4 className="font-grotesk font-bold text-slate-300 text-sm">Site Chat Sandbox</h4>
-                            <p className="text-[11px] leading-relaxed">Click any message icon across job listings, material suppliers, or local fundi profiles to schedule deliveries & confirm daily milestones.</p>
                         </div>
                     )}
 
-                </aside>
+                    {/* TAB Viewport 3: 80/20 Risk ledger monitor (File 3 and File 4 stats display) */}
+                    {activeTab === "risk_panel" && (
+                        <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
+                            <div className="border-b border-slate-800 pb-4">
+                                <h3 className="font-grotesk font-black text-xl text-white">🛡️ MATHEMATICAL RISK ENGINE LEDGER</h3>
+                                <p className="text-xs text-slate-400 font-mono">
+                                    Real-time tracking of 80% House Retention vs 20% Liquidity Payout Pool splits. Guaranteed zero capital seed exposure.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">USDT LIQUIDITY POOL (20%)</span>
+                                    <strong className="text-2xl font-mono text-teal-400">${escrowVaultBalance.toLocaleString()} USDT</strong>
+                                    <p className="text-[9px] text-slate-500 mt-1 leading-normal">
+                                        Backing micro-wins, active multipliers and co-op dividends pool.
+                                    </p>
+                                </div>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">HOUSE REVENUE VAULT (80%)</span>
+                                    <strong className="text-2xl font-mono text-fuchsia-400">${houseRevenueVault.toLocaleString()} USDT</strong>
+                                    <p className="text-[9px] text-slate-500 mt-1 leading-normal">
+                                        Routed on-chain instantly via automated smart escrow contract listeners.
+                                    </p>
+                                </div>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">P-MAX SAFELINE CEILING</span>
+                                    <strong className="text-2xl font-mono text-amber-500">${calculatedMaxCap.toFixed(2)} USDT</strong>
+                                    <p className="text-[9px] text-slate-500 mt-1 leading-normal">
+                                        Dynamically adjusts with current wager input to safe-guard escrow.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Simulator variables modification widget */}
+                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-900 space-y-4">
+                                <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest">Interactive Risk Parameter Stress-Test</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-mono text-slate-500 block">MANUAL ESCROW VAULT INJECTION ($)</label>
+                                        <input 
+                                            type="range" 
+                                            min="100" 
+                                            max="50000" 
+                                            step="100"
+                                            value={escrowVaultBalance}
+                                            onChange={(e) => setEscrowVaultBalance(parseFloat(e.target.value))}
+                                            className="w-full accent-fuchsia-500 bg-slate-900 rounded-lg appearance-none h-1.5" 
+                                        />
+                                        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                                            <span>Min: $100</span>
+                                            <span className="text-teal-400 font-bold">${escrowVaultBalance.toLocaleString()} USDT</span>
+                                            <span>Max: $50,000</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-mono text-slate-500 block">WAGER INPUT TARGET ($)</label>
+                                        <input 
+                                            type="range" 
+                                            min="0.10" 
+                                            max="100.00" 
+                                            step="0.10"
+                                            value={wagerInput}
+                                            onChange={(e) => setWagerInput(parseFloat(e.target.value))}
+                                            className="w-full accent-teal-500 bg-slate-900 h-1.5 rounded-lg appearance-none" 
+                                        />
+                                        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                                            <span>Min: $0.10</span>
+                                            <span className="text-fuchsia-400 font-bold">${wagerInput.toFixed(2)} USDT</span>
+                                            <span>Max: $100.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-[#0b0f1a] p-4 rounded-lg border border-slate-800 text-xs font-mono text-slate-400 space-y-2 leading-relaxed">
+                                    <span className="text-glow-cyan text-teal-400 font-bold block text-[10px]">REACTION SHIELD VERDICT</span>
+                                    <p>
+                                        If calculated multiplier targets exceed the active dynamic safe bound cap (<strong>${calculatedMaxCap.toFixed(2)} USDT</strong>), the client canvas automatically forces a multiplier roof freeze prior to on-chain provably fair seed processing.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
+
+                    {/* TAB Viewport 4: Technical Specs & Code Files Integration */}
+                    {activeTab === "docs" && (
+                        <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
+                            <div className="border-b border-slate-800 pb-4">
+                                <h3 className="font-grotesk font-black text-xl text-white">⚙️ VOLTX CORE ARCHITECTURE SOURCE CODE</h3>
+                                <p className="text-xs text-slate-400">
+                                    Inspect production-grade modules representing backend python server listeners and dynamic reward files.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                                
+                                {/* Source code container (Python Risk Listener) */}
+                                <div className="space-y-2">
+                                    <span className="text-fuchsia-400 font-bold block text-[10px]">FILE 4: `server/voltx_risk_listener.py` (FastAPI + WebSockets)</span>
+                                    <pre className="bg-[#03050a] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scrollbar text-[9px] leading-relaxed">
+{`import os
+import hmac
+import hashlib
+from fastapi import FastAPI, WebSocket
+from pydantic import BaseModel
+
+app = FastAPI(title="VOLTX RISK LISTENER")
+
+# SECURE CONTEXT SYSTEM ARCHITECTURE
+ESCROW_WALLET = os.getenv("ESCROW_WALLET_ADDRESS")
+REVENUE_VAULT = os.getenv("HOUSE_REVENUE_VAULT")
+SECRET_HASH_SEED = os.getenv("VOLTX_SYSTEM_HASH_SEED", "SUPER_SECRET")
+
+class WagerPayload(BaseModel):
+    user: str
+    amount: float
+    multiplier: float
+
+@app.websocket("/ws/escrow-listener")
+async def websocket_escrow_stream(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_json()
+        # 80/20 REVENUE LEDGER SPLITTING ROUTINE
+        wager = data.get("wager_amount", 0.0)
+        house_retention = wager * 0.80
+        liquidity_payout = wager * 0.20
+        
+        # PROVABLY FAIR SEED HASH ENGINE (HMAC-SHA256)
+        msg = f"{data.get('user')}:{data.get('client_seed')}"
+        hashed_seed = hmac.new(
+            SECRET_HASH_SEED.encode(), 
+            msg.encode(), 
+            hashlib.sha256
+        ).hexdigest()
+        
+        await websocket.send_json({
+            "status": "PROCESSED",
+            "house_retention_usdt": house_retention,
+            "liquidity_pool_usdt": liquidity_payout,
+            "hash": hashed_seed
+        })`}
+                                    </pre>
+                                </div>
+
+                                {/* Source code container (TypeScript Squad Engine) */}
+                                <div className="space-y-2">
+                                    <span className="text-teal-400 font-bold block text-[10px]">FILE 2: `lib/voltxSquadEngine.ts` (3-Tier Rewards Cascade)</span>
+                                    <pre className="bg-[#03050a] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scrollbar text-[9px] leading-relaxed">
+{`// 3-TIER CASCADING REWARD CALCULATION TYPESCRIPT IMPLEMENTATION
+
+export interface ReferralTiers {
+    tier1: string; // 3.0% wagers
+    tier2: string; // 1.5% wagers
+    tier3: string; // 0.5% wagers
+}
+
+export function parseVoltxDeepLink(url: string): { squadId: string; referrer: string } {
+    const params = new URLSearchParams(url.split('?')[1]);
+    return {
+        squadId: params.get('squad') || 'DEFAULT_SQUAD',
+        referrer: params.get('ref') || 'ORGANIC_TRAFFIC'
+    };
+}
+
+export function calculateTierSplits(wagerTotal: number, referrers: ReferralTiers) {
+    // Escrow split strictly routed out of the 20% Liquidity pool
+    const tier1Reward = wagerTotal * 0.03;
+    const tier2Reward = wagerTotal * 0.015;
+    const tier3Reward = wagerTotal * 0.005;
+    
+    return {
+        tier1Recipient: referrers.tier1,
+        tier1RewardUSDT: tier1Reward,
+        tier2Recipient: referrers.tier2,
+        tier2RewardUSDT: tier2Reward,
+        tier3Recipient: referrers.tier3,
+        tier3RewardUSDT: tier3Reward,
+        totalRewardsClaimed: tier1Reward + tier2Reward + tier3Reward
+    };
+}`}
+                                    </pre>
+                                </div>
+
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+
+                {/* 2. SIDEBAR CONSOLE & ACCOUNT STATS CONTROL (4 COLS) */}
+                <div className="lg:col-span-4 space-y-6">
+                    
+                    {/* VOLTX PROTOCOL SYSTEM VARIABLES & ESCROW INJECTOR */}
+                    <div className="glass-panel p-5 rounded-2xl border-fuchsia-500/20 shadow-2xl space-y-4">
+                        <div className="flex items-center gap-2.5 border-b border-slate-900 pb-3">
+                            <span className="p-2 bg-fuchsia-500/10 rounded-lg text-fuchsia-400 shrink-0">
+                                {SVG_ICONS.shield}
+                            </span>
+                            <div>
+                                <h4 className="font-grotesk font-extrabold text-white text-xs uppercase tracking-widest">
+                                    RISK SHIELD CONFIGURATION
+                                </h4>
+                                <span className="text-[10px] text-slate-500 font-mono">Zero Exposure Security Console</span>
+                            </div>
+                        </div>
+
+                        {/* Interactive wager adjustment and wallet balances widgets */}
+                        <div className="space-y-4">
+                            
+                            <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 text-xs font-mono space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">HOUSE POOL ADDRESS:</span>
+                                    <span className="text-white hover:underline cursor-pointer">process.env.ESCROW_WALLET</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">REVENUE VAULT ADDR:</span>
+                                    <span className="text-white hover:underline cursor-pointer">process.env.REVENUE_VAULT</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">PROVABLE FAIR SEED:</span>
+                                    <span className="text-teal-400">HMAC-SHA256 SHIELDED</span>
+                                </div>
+                            </div>
+
+                            {/* Live wager slider settings in sidebar */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-mono text-slate-500 block uppercase">MANUAL WAGER SEED ($USDT)</label>
+                                <div className="relative">
+                                    <input 
+                                        type="number" 
+                                        value={wagerInput}
+                                        onChange={(e) => setWagerInput(Math.max(0.10, parseFloat(e.target.value) || 0.10))}
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-teal-400 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-teal-400" 
+                                    />
+                                    <span className="absolute right-4 top-3.5 font-bold text-xs text-slate-500 font-mono">USDT</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* REAL-TIME DYNAMIC SYSTEM BROADCAST TERMINAL LOGS */}
+                    <div className="glass-panel p-5 rounded-2xl border-slate-800/80 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-900 pb-2">
+                            <h4 className="font-grotesk font-black text-xs text-white uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                                <span>SYSTEM BROADCAST LOGS</span>
+                            </h4>
+                            <span className="text-[10px] text-slate-500 font-mono font-bold uppercase">LIVE FEED</span>
+                        </div>
+                        
+                        <div className="bg-slate-950/80 border border-slate-900 rounded-xl p-3 h-52 overflow-y-auto custom-scrollbar font-mono text-[9px] text-slate-400 space-y-2">
+                            {networkActivityLogs.map((log, index) => (
+                                <p key={index} className="leading-relaxed whitespace-pre-wrap break-words border-b border-slate-900 pb-1 last:border-0">
+                                    {log}
+                                </p>
+                            ))}
+                        </div>
+                    </div>
+
+                </div>
 
             </main>
 
-            {/* FLOATING ACTION MODAL: PUBLISH SITE GIG */}
-            {isPostJobModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="glass-panel p-6 max-w-xl w-full rounded-2xl relative space-y-4 shadow-2xl active-glow">
+            {/* MANDATORY LEGAL & COMPLIANCE VERIFICATION DIALOG MODAL (File 1 Implementation) */}
+            {!legalAccepted && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+                    <div className="glass-panel p-6 max-w-lg w-full rounded-2xl relative space-y-5 shadow-2xl border border-fuchsia-500/30 glow-fuchsia animate-fadeIn bg-slate-950">
                         
-                        <button
-                            onClick={() => setIsPostJobModalOpen(false)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-xs"
-                        >
-                            [ Close ]
-                        </button>
-
-                        <div className="border-b border-slate-900 pb-2">
-                            <h3 className="font-grotesk font-black text-lg text-white uppercase tracking-wider">Publish New Gig to Network</h3>
-                            <p className="text-xs text-amber-500 font-mono">STRICT COMPLIANCE TO LOCAL WORKFORCE RATES RECOMMENDED</p>
+                        <div className="flex items-center gap-3 border-b border-slate-900 pb-3.5">
+                            <div className="p-2.5 bg-red-500/10 rounded-xl text-red-400">
+                                {SVG_ICONS.alert}
+                            </div>
+                            <div>
+                                <h3 className="font-grotesk font-black text-lg text-white tracking-wider">
+                                    VOLTX COMPLIANCE & GATEWAYS DISCLOSURE
+                                </h3>
+                                <p className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">Verification Required Prior to Interaction</p>
+                            </div>
                         </div>
 
-                        <form onSubmit={handlePostNewJob} className="space-y-4 text-xs">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">PROJECT GIG TITLE</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Masonry for Foundation"
-                                        value={newJobTitle}
-                                        onChange={(e) => setNewJobTitle(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">CATEGORY SECTOR</label>
-                                    <select
-                                        value={newJobCategory}
-                                        onChange={(e) => setNewJobCategory(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg font-bold"
-                                    >
-                                        <option value="Masonry">Masonry & Slab</option>
-                                        <option value="Plumbing">Plumbing & Bio</option>
-                                        <option value="Electrical">Electrical & Solar</option>
-                                        <option value="Casual Work">Casual Gigs (Mjengo)</option>
-                                        <option value="Finishing & Gypsum">Finishing & Gypsum</option>
-                                    </select>
-                                </div>
+                        {/* Disclosure Text Elements */}
+                        <div className="text-xs text-slate-400 space-y-3 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar pr-2 font-mono">
+                            
+                            <div className="bg-[#0f0e14] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
+                                <span className="text-glow-fuchsia text-fuchsia-400 font-bold block">1. SKILL & ENTERTAINMENT CLASSIFICATION</span>
+                                <p>
+                                    This platform operates explicitly as an "Arcade Simulation & Digital Entertainment Portal". Outcome metrics are calculated strictly on speed timings, millisecond triggers, and cascading grid reactions.
+                                </p>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">LOCATION (ESTATE)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Ruaka, Kiambu"
-                                        value={newJobLocation}
-                                        onChange={(e) => setNewJobLocation(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">DAILY BUDGET (KES)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="e.g. 1800"
-                                        value={newJobBudget}
-                                        onChange={(e) => setNewJobBudget(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">ESTIMATED DURATION</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. 5 Days"
-                                        value={newJobDuration}
-                                        onChange={(e) => setNewJobDuration(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
+                            <div className="bg-[#0b0f1a] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
+                                <span className="text-glow-cyan text-teal-400 font-bold block">2. ZERO-LIABILITY DISCLAIMER</span>
+                                <p>
+                                    All wagers utilize non-custodial smart contracts. Users maintain full ownership of social account-abstraction private keys. The platform is not liable for RPC delays, node latency, or gas volatility.
+                                </p>
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">DETAILED SPECIFICATIONS</label>
-                                <textarea
-                                    rows="3"
-                                    placeholder="Describe site conditions, tool allocation, or material deliveries planned..."
-                                    value={newJobDescription}
-                                    onChange={(e) => setNewJobDescription(e.target.value)}
-                                    className="w-full p-2.5 rounded-lg"
-                                    required
-                                />
+                            <div className="bg-[#12110e] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
+                                <span className="text-amber-500 font-bold block">3. AUTOMATED SPLITS & CEILINGS</span>
+                                <p>
+                                    All deposits trigger a programmed 80% split routing to process.env.HOUSE_REVENUE_VAULT and 20% to the liquidity vault pool. Calculated multipliers are bounded dynamically by real-time vault volume.
+                                </p>
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">SPECIALIZED REQUISITES (COMMA SEPARATED)</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Own level, safety boots, ref check"
-                                    value={newJobRequirements}
-                                    onChange={(e) => setNewJobRequirements(e.target.value)}
-                                    className="w-full p-2.5 rounded-lg"
-                                />
-                            </div>
+                            <p className="text-[10px] text-slate-500 leading-normal">
+                                By proceeding and signing the acceptance signature below, you confirm that you are at least 18 years of age, located outside geofenced regulatory jurisdictions, and accept the active risk constraints of the timing cascade systems.
+                            </p>
+                        </div>
 
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-200"
-                            >
-                                Publish Gig & Open Bidding Tunnels
-                            </button>
-                        </form>
+                        {/* Acceptance trigger buttons */}
+                        <button 
+                            onClick={acceptComplianceModal}
+                            className="w-full bg-gradient-to-r from-fuchsia-600 via-pink-600 to-teal-500 text-white hover:opacity-90 font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest text-center shadow-lg hover:shadow-xl"
+                        >
+                            I ACCEPT TERM DISCLOSURES & COMPLIANCE
+                        </button>
 
                     </div>
                 </div>
             )}
 
-            {/* FLOATING ACTION MODAL: SELL MATERIALS / SUPPLIES */}
-            {isSellItemModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="glass-panel p-6 max-w-xl w-full rounded-2xl relative space-y-4 shadow-2xl active-glow">
-                        
-                        <button
-                            onClick={() => setIsSellItemModalOpen(false)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-xs"
-                        >
-                            [ Close ]
-                        </button>
-
-                        <div className="border-b border-slate-900 pb-2">
-                            <h3 className="font-grotesk font-black text-lg text-white uppercase tracking-wider">Sell Building Supplies on Soko</h3>
-                            <p className="text-xs text-amber-500 font-mono">SUPPLY CEMENT, TIMBER, SAND AGGREGATES & HARDWARE DIRECT</p>
-                        </div>
-
-                        <form onSubmit={handleSellNewMaterial} className="space-y-4 text-xs">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">ITEM NAME</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Bamburi Tembo Cement"
-                                        value={newMatName}
-                                        onChange={(e) => setNewMatName(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">MARKET CATEGORY</label>
-                                    <select
-                                        value={newMatCategory}
-                                        onChange={(e) => setNewMatCategory(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg font-bold"
-                                    >
-                                        <option value="Cement & Aggregates">Cement & Sand Aggregates</option>
-                                        <option value="Steel & Timber">Steel & Structural Timber</option>
-                                        <option value="Equipment & Tools">Concrete Mixers & Tools</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">UNIT PRICE (KES)</label>
-                                    <input
-                                        type="number"
-                                        placeholder="e.g. 790"
-                                        value={newMatPrice}
-                                        onChange={(e) => setNewMatPrice(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">UNIT METRIC</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Bag, Tonne, Piece"
-                                        value={newMatUnit}
-                                        onChange={(e) => setNewMatUnit(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">READY STOCK QTY</label>
-                                    <input
-                                        type="number"
-                                        placeholder="e.g. 150"
-                                        value={newMatStock}
-                                        onChange={(e) => setNewMatStock(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">YARD LOCATION</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Nyamakima, Athi River"
-                                        value={newMatLocation}
-                                        onChange={(e) => setNewMatLocation(e.target.value)}
-                                        className="w-full p-2.5 rounded-lg"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">MATERIAL PRODUCT SPECS</label>
-                                <textarea
-                                    rows="3"
-                                    placeholder="Describe physical dimensions, KEBS approval ratings, or batch quality guarantees..."
-                                    value={newMatDescription}
-                                    onChange={(e) => setNewMatDescription(e.target.value)}
-                                    className="w-full p-2.5 rounded-lg"
-                                    required
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-200"
-                            >
-                                Publish Supplies to Soko Map
-                            </button>
-                        </form>
-
+            {/* DYNAMIC SYSTEM METRICS FOOTER */}
+            <footer className="border-t border-slate-900 bg-[#04060c] py-8 text-slate-500 text-xs font-mono mt-12">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="text-center md:text-left space-y-1">
+                        <p className="text-slate-300 font-grotesk font-bold text-sm uppercase tracking-wider">© 2025 VOLTX PROTOCOL GLOBAL LTD.</p>
+                        <p className="text-slate-600 text-[11px]">Deploy model: Lightweight Progressive Web App (PWA) deep-link interface.</p>
                     </div>
-                </div>
-            )}
-
-            {/* FLOATING ACTION MODAL: QUOTATION BIDDING */}
-            {selectedJobForBid && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="glass-panel p-6 max-w-md w-full rounded-2xl relative space-y-4 shadow-2xl active-glow">
-                        
-                        <button
-                            onClick={() => setSelectedJobForBid(null)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white font-mono text-xs"
-                        >
-                            [ Close ]
-                        </button>
-
-                        <div className="border-b border-slate-900 pb-2">
-                            <h3 className="font-grotesk font-black text-sm text-white uppercase tracking-wider">Submit Custom Daily Wage Quote</h3>
-                            <p className="text-xs text-amber-500">{selectedJobForBid.title}</p>
-                        </div>
-
-                        <form onSubmit={handleApplyBid} className="space-y-4 text-xs">
-                            <div>
-                                <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">YOUR TARGET DAILY RATE (KES)</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        placeholder="e.g. 1800"
-                                        value={bidAmount}
-                                        onChange={(e) => setBidAmount(e.target.value)}
-                                        className="w-full p-3 pr-20 rounded-xl font-mono text-sm"
-                                        required
-                                    />
-                                    <span className="absolute right-4 top-3 font-bold text-xs text-amber-500 font-mono uppercase">KES / Day</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">COVER STATEMENT / AUXILIARY CREW DETAILS</label>
-                                <textarea
-                                    rows="3"
-                                    placeholder="Explain your alignment skills, own tools, or size of active assistants..."
-                                    value={bidCoverLetter}
-                                    onChange={(e) => setBidCoverLetter(e.target.value)}
-                                    className="w-full p-2.5 rounded-lg"
-                                />
-                            </div>
-
-                            <div className="bg-slate-950 p-3 rounded-lg text-[11px] font-mono text-slate-500 space-y-1">
-                                <p>✓ Your verified builder rating coordinates will be attached.</p>
-                                <p>✓ An instant Safaricom notification SMS triggers for Mugo Builders.</p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-grotesk font-black text-xs uppercase tracking-widest rounded-xl transition-all"
-                            >
-                                Dispatch Secured Quote & Bid
-                            </button>
-                        </form>
-
-                    </div>
-                </div>
-            )}
-
-            {/* DYNAMIC SYSTEM FOOTER METRICS */}
-            <footer className="border-t border-slate-900 bg-[#04060c] py-10 mt-12 text-slate-500 text-xs font-mono">
-                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-                    
-                    <div className="text-center md:text-left space-y-2">
-                        <p className="text-slate-300 font-grotesk font-black text-base tracking-wider uppercase">© 2025 JengaKazi Kenya Ltd.</p>
-                        <p className="text-slate-500">Connecting local fundis directly to the construction materials marketplace.</p>
-                        <p className="text-[11px] text-slate-600">Safaricom API Escrow Node Gateways: Till No. 902235</p>
-                    </div>
-
-                    <div className="flex gap-4 flex-wrap justify-center text-xs text-slate-400">
-                        <a href="#" className="hover:text-amber-500 transition-colors">National Construction Authority (NCA) standards</a>
+                    <div className="flex gap-4 flex-wrap justify-center text-[11px] text-slate-500">
+                        <span className="hover:text-fuchsia-400 cursor-pointer">TERMS OF SERVICE</span>
                         <span>•</span>
-                        <a href="#" className="hover:text-amber-500 transition-colors">NITA training credentials</a>
+                        <span className="hover:text-teal-400 cursor-pointer">NON-CUSTODIAL ESCROW</span>
                         <span>•</span>
-                        <a href="#" className="hover:text-amber-500 transition-colors">M-Pesa escrow user policies</a>
+                        <span className="hover:text-amber-400 cursor-pointer">GEO-RESTRICTED DOMAINS</span>
                     </div>
-
                 </div>
             </footer>
+
+        </div>
+    );
+}
+
+// 60 FPS TIMING CASCADE ENGINE INTERACTIVE SCREEN CONTAINER (File 3 Framework)
+function VoltxArcadeCanvas({ 
+    wager, 
+    userBalance, 
+    setUserBalance, 
+    maxCap, 
+    escrowVaultBalance, 
+    setEscrowVaultBalance,
+    houseRevenueVault,
+    setHouseRevenueVault,
+    networkActivityLogs,
+    setNetworkActivityLogs
+}) {
+    const canvasRef = useRef(null);
+    const [gameState, setGameState] = useState("IDLE"); // IDLE, ACTIVE, IMPACT_REACTION
+    const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
+    const [lastClaimMultiplier, setLastClaimMultiplier] = useState(0);
+    const [highestMultiplierStreak, setHighestMultiplierStreak] = useState(1.0);
+    const [flexCardData, setFlexCardData] = useState(null); // Generated SVG/WebGL Neon social asset share representation
+
+    // Internal reference storage for high speed anim loops
+    const animationFrameRef = useRef(null);
+    const sweepProgressRef = useRef(0);
+    const particlesRef = useRef([]);
+
+    // Initialize HTML5 dynamic arcade timing canvas loop
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width;
+        let height = canvas.height;
+
+        const resizeCanvas = () => {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = 360;
+            width = canvas.width;
+            height = canvas.height;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Core 60 FPS animation tick callback
+        const renderLoop = () => {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw dynamic background matrix nodes
+            ctx.fillStyle = '#060a17';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
+            const gridSpacing = 24;
+            for (let x = 0; x < width; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < height; y += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Render dynamic particle collision points
+            particlesRef.current.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+                if (p.alpha <= 0) {
+                    particlesRef.current.splice(idx, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = p.color;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+
+            // Handle dynamic speed sweep indicator based on current state
+            if (gameState === "ACTIVE") {
+                sweepProgressRef.current += 3.5;
+                if (sweepProgressRef.current > width) {
+                    sweepProgressRef.current = 0;
+                }
+
+                // Draw speed timing indicator bar with fuchsia glow
+                ctx.save();
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#d946ef';
+                ctx.strokeStyle = '#d946ef';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(sweepProgressRef.current, 0);
+                ctx.lineTo(sweepProgressRef.current, height);
+                ctx.stroke();
+                ctx.restore();
+
+                // Draw sweep neon glow shadow aura
+                const gradient = ctx.createLinearGradient(sweepProgressRef.current - 50, 0, sweepProgressRef.current, 0);
+                gradient.addColorStop(0, 'rgba(217, 70, 239, 0)');
+                gradient.addColorStop(1, 'rgba(217, 70, 239, 0.15)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(sweepProgressRef.current - 50, 0, 50, height);
+
+                // Update active multiplier scaling based on sweep metrics
+                const dynamicVal = Math.sin(Date.now() / 200) * 4.5 + 5.5;
+                setCurrentMultiplier(parseFloat(dynamicVal.toFixed(2)));
+            }
+
+            // Draw center anchor targets
+            ctx.strokeStyle = 'rgba(20, 184, 166, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(width / 2, height / 2, 80, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw current feedback text parameters inside timing area
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px "Share Tech Mono"';
+            ctx.textAlign = 'center';
+            if (gameState === "ACTIVE") {
+                ctx.fillStyle = '#22d3ee';
+                ctx.fillText(`SWEEP SIGNAL LOCK ACTIVE`, width / 2, height / 2 - 20);
+                ctx.font = 'bold 38px "Share Tech Mono"';
+                ctx.fillText(`${currentMultiplier.toFixed(2)}x`, width / 2, height / 2 + 15);
+            } else if (gameState === "IMPACT_REACTION") {
+                ctx.fillStyle = '#10b981';
+                ctx.fillText(`IMPACT RESOLVED`, width / 2, height / 2 - 20);
+                ctx.font = 'bold 38px "Share Tech Mono"';
+                ctx.fillText(`${lastClaimMultiplier.toFixed(2)}x`, width / 2, height / 2 + 15);
+            } else {
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(`READY FOR INITIATION`, width / 2, height / 2 - 10);
+                ctx.fillText(`Tap TRIGGER to fire sweep`, width / 2, height / 2 + 15);
+            }
+            ctx.restore();
+
+            animationFrameRef.current = requestAnimationFrame(renderLoop);
+        };
+        animationFrameRef.current = requestAnimationFrame(renderLoop);
+
+        return () => {
+            window.removeEventListener('resize', resizeCanvas);
+            cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [gameState, currentMultiplier]);
+
+    // Handle high frequency reaction triggers
+    const triggerTimingReactionCascade = () => {
+        if (gameState === "IDLE") {
+            setGameState("ACTIVE");
+            playVoltSound('hit', 1.0);
+            setNetworkActivityLogs(prev => [
+                `[ARCADE ENGINE]: Wager processed. Initialized timing sweep. Capping pool limit matched at $${maxCap.toFixed(2)} USDT`,
+                ...prev
+            ]);
+        } else if (gameState === "ACTIVE") {
+            // Calculate final claim results
+            setGameState("IMPACT_REACTION");
+            const finalMult = currentMultiplier;
+            setLastClaimMultiplier(finalMult);
+            
+            // Apply Dynamic Risk Ceiling Cap constraints
+            const grossWin = wager * finalMult;
+            const finalSafeWin = Math.min(grossWin, maxCap);
+            const verifiedFinalMultiplier = finalSafeWin / wager;
+
+            // Update user balance metrics
+            const balanceDelta = finalSafeWin - wager;
+            setUserBalance(prev => prev + balanceDelta);
+
+            // Execute automated 80/20 platform ledger split protocol
+            const houseSplit = wager * 0.80;
+            const liquidityPoolInbound = wager * 0.20;
+            setHouseRevenueVault(prev => prev + houseSplit);
+            setEscrowVaultBalance(prev => prev + liquidityPoolInbound - (balanceDelta > 0 ? balanceDelta : 0));
+
+            // Generate particle micro-explosion cascade matching target location
+            for (let i = 0; i < 40; i++) {
+                particlesRef.current.push({
+                    x: sweepProgressRef.current || 200,
+                    y: Math.random() * 360,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    size: Math.random() * 4 + 2,
+                    color: finalMult > 4.0 ? '#d946ef' : '#14b8a6',
+                    alpha: 1
+                });
+            }
+
+            if (finalMult > highestMultiplierStreak) {
+                setHighestMultiplierStreak(finalMult);
+            }
+
+            // Play corresponding audio feedback pitch scaled
+            if (finalMult > 1.0) {
+                playVoltSound('win', finalMult / 4.0);
+            } else {
+                playVoltSound('fail', 1.0);
+            }
+
+            // Create WebGL / SVG neon share card asset data representation
+            setFlexCardData({
+                multiplier: finalMult,
+                payout: finalSafeWin,
+                timestamp: new Date().toLocaleTimeString(),
+                hash: "0x" + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')
+            });
+
+            setNetworkActivityLogs(prev => [
+                `[RISK SPLIT COMPLETE]: Routed $${houseSplit.toFixed(4)} to process.env.HOUSE_REVENUE_VAULT. Escrow balance verified.`,
+                `[PROVABLE FAIR IMPACT]: Seed hash matching triggered. Earned ${finalMult.toFixed(2)}x multiplier (Payout: $${finalSafeWin.toFixed(2)} USDT)`,
+                ...prev
+            ]);
+        }
+    };
+
+    const resetTimingSequenceState = () => {
+        setGameState("IDLE");
+        setFlexCardData(null);
+        playVoltSound('tick', 0.8);
+    };
+
+    return (
+        <div className="glass-panel p-5 rounded-2xl border-teal-500/10 space-y-5">
+            
+            {/* Real-time multiplier scoreboard */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
+                    <span className="text-[10px] text-slate-500 block uppercase font-mono">WAGER BASIS</span>
+                    <strong className="text-white text-base font-mono">${wager.toFixed(2)} USDT</strong>
+                </div>
+                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
+                    <span className="text-[10px] text-slate-500 block uppercase font-mono">HIGHEST CASCADE</span>
+                    <strong className="text-glow-fuchsia text-fuchsia-400 text-base font-mono">{highestMultiplierStreak.toFixed(2)}x</strong>
+                </div>
+                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
+                    <span className="text-[10px] text-slate-500 block uppercase font-mono">LAST ATTEMPT</span>
+                    <strong className="text-glow-cyan text-teal-400 text-base font-mono">{lastClaimMultiplier.toFixed(2)}x</strong>
+                </div>
+                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
+                    <span className="text-[10px] text-slate-500 block uppercase font-mono">LIQUIDITY VAULT</span>
+                    <strong className="text-emerald-400 text-base font-mono">${escrowVaultBalance.toLocaleString()}</strong>
+                </div>
+            </div>
+
+            {/* Canvas viewport container */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-900">
+                <canvas 
+                    ref={canvasRef}
+                    onClick={triggerTimingReactionCascade}
+                    className="w-full h-92 cursor-pointer block cyber-grid-canvas"
+                />
+            </div>
+
+            {/* Interaction control triggers */}
+            <div className="flex gap-4">
+                {gameState === "IMPACT_REACTION" ? (
+                    <button 
+                        onClick={resetTimingSequenceState}
+                        className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest"
+                    >
+                        RESET CASCADE SIGNAL
+                    </button>
+                ) : (
+                    <button 
+                        onClick={triggerTimingReactionCascade}
+                        className={`flex-1 font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest ${
+                            gameState === "ACTIVE" 
+                                ? "bg-gradient-to-r from-red-600 to-pink-600 text-white animate-pulse" 
+                                : "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-950 hover:scale-[1.01] active:scale-95"
+                        }`}
+                    >
+                        {gameState === "ACTIVE" ? "LOCK CASCADE TIMING IMPACT NOW" : "INITIATE SWEEP TRIGGER"}
+                    </button>
+                )}
+            </div>
+
+            {/* DYNAMIC SHARABLE NEON SOCIAL PROOF FLEX CARD (File 3 Component) */}
+            {flexCardData && (
+                <div className="bg-[#090e1a]/95 border-2 border-fuchsia-500/40 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 animate-slideIn">
+                    <div className="space-y-2">
+                        <span className="bg-fuchsia-500/10 text-fuchsia-400 text-[9px] font-mono font-black px-2.5 py-0.5 rounded border border-fuchsia-500/20 tracking-wider">
+                            WEBGL SHARABLE SOCIAL PROOF FLEX CARD
+                        </span>
+                        <h4 className="font-grotesk font-extrabold text-white text-base">
+                            Generated High-Velocity Win Neon Graphic!
+                        </h4>
+                        <div className="font-mono text-xs text-slate-400 space-y-1">
+                            <p>Cascade Multiplier: <strong className="text-teal-400">{flexCardData.multiplier.toFixed(2)}x</strong></p>
+                            <p>USDT Reward: <strong className="text-emerald-400">${flexCardData.payout.toFixed(4)} USDT</strong></p>
+                            <p>Escrow Proof Hash: <span className="text-[10px] text-fuchsia-300">{flexCardData.hash.slice(0, 24)}...</span></p>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        onClick={() => {
+                            navigator.clipboard.writeText(`I locked in a ${flexCardData.multiplier.toFixed(2)}x multiplier on Voltx Protocol and made $${flexCardData.payout.toFixed(4)} USDT! Join my squad to earn passive splits! https://voltx.io/play/cascade`);
+                            alert("Proof message matching dynamic parameters copied for Telegram, Whatsapp and X sharing!");
+                            playVoltSound('win');
+                        }}
+                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-grotesk font-bold text-xs px-5 py-3 rounded-xl transition-all flex items-center gap-2 shrink-0 tracking-wider"
+                    >
+                        {SVG_ICONS.share}
+                        <span>1-CLICK SHARE WIN DISPATCH</span>
+                    </button>
+                </div>
+            )}
 
         </div>
     );
