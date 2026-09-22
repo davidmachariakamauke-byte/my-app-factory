@@ -17,8 +17,8 @@
   <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// SYNTHESIZED ARCHITECTURE SOUND SYSTEM (Arcade Soundscapes, Micro-Wins & Squad Pings)
-const playVoltSound = function(type, pitchModifier = 1.0) {
+// SYNTHESIZED SOUND CAPABILITIES
+const playSoundEffect = function(type, pitchModifier = 1.0) {
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioCtx();
@@ -30,348 +30,361 @@ const playVoltSound = function(type, pitchModifier = 1.0) {
         if (type === 'tick') {
             const osc = ctx.createOscillator();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(440 * pitchModifier, ctx.currentTime);
-            masterGain.gain.setValueAtTime(0.02, ctx.currentTime);
-            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+            osc.frequency.setValueAtTime(600 * pitchModifier, ctx.currentTime);
+            masterGain.gain.setValueAtTime(0.015, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
             osc.connect(masterGain);
             osc.start();
-            osc.stop(ctx.currentTime + 0.05);
+            osc.stop(ctx.currentTime + 0.04);
         } else if (type === 'hit') {
             const osc = ctx.createOscillator();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(150 * pitchModifier, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800 * pitchModifier, ctx.currentTime + 0.15);
-            masterGain.gain.setValueAtTime(0.08, ctx.currentTime);
-            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.frequency.setValueAtTime(220 * pitchModifier, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880 * pitchModifier, ctx.currentTime + 0.12);
+            masterGain.gain.setValueAtTime(0.06, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
             osc.connect(masterGain);
             osc.start();
-            osc.stop(ctx.currentTime + 0.15);
+            osc.stop(ctx.currentTime + 0.12);
         } else if (type === 'squad') {
-            const chord = [329.63, 392.00, 523.25, 659.25]; // C Major high harmonics
+            const chord = [261.63, 329.63, 392.00, 523.25];
             chord.forEach((freq, idx) => {
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
                 o.connect(g);
                 g.connect(masterGain);
                 o.type = 'sine';
-                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.05);
-                g.gain.setValueAtTime(0.03, ctx.currentTime + idx * 0.05);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.05 + 0.25);
-                o.start(ctx.currentTime + idx * 0.05);
-                o.stop(ctx.currentTime + idx * 0.05 + 0.25);
+                o.frequency.setValueAtTime(freq * pitchModifier, ctx.currentTime + idx * 0.04);
+                g.gain.setValueAtTime(0.02, ctx.currentTime + idx * 0.04);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.04 + 0.2);
+                o.start(ctx.currentTime + idx * 0.04);
+                o.stop(ctx.currentTime + idx * 0.04 + 0.2);
             });
         } else if (type === 'win') {
             const baseFreq = 523.25 * pitchModifier;
-            const sequence = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2.0];
+            const sequence = [baseFreq, baseFreq * 1.2, baseFreq * 1.5, baseFreq * 2.0];
             sequence.forEach((freq, idx) => {
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
                 o.connect(g);
                 g.connect(masterGain);
                 o.type = 'triangle';
-                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-                g.gain.setValueAtTime(0.04, ctx.currentTime + idx * 0.08);
-                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.3);
-                o.start(ctx.currentTime + idx * 0.08);
-                o.stop(ctx.currentTime + idx * 0.08 + 0.3);
+                o.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
+                g.gain.setValueAtTime(0.035, ctx.currentTime + idx * 0.06);
+                g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.06 + 0.25);
+                o.start(ctx.currentTime + idx * 0.06);
+                o.stop(ctx.currentTime + idx * 0.06 + 0.25);
             });
         } else if (type === 'fail') {
             const osc = ctx.createOscillator();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(120, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.3);
-            masterGain.gain.setValueAtTime(0.06, ctx.currentTime);
-            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.frequency.setValueAtTime(140, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(50, ctx.currentTime + 0.25);
+            masterGain.gain.setValueAtTime(0.05, ctx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
             osc.connect(masterGain);
             osc.start();
-            osc.stop(ctx.currentTime + 0.3);
+            osc.stop(ctx.currentTime + 0.25);
         }
     } catch (e) {
-        // Safe context rescue
+        // Audio execution bypass for secure environments
     }
 };
 
-const injectVoltxStyles = function() {
-    if (document.getElementById('voltx-styles-and-fonts')) return;
+const injectDesignStyles = function() {
+    if (document.getElementById('aetherx-terminal-styles')) return;
     const fontLink = document.createElement('link');
-    fontLink.id = 'voltx-styles-and-fonts';
+    fontLink.id = 'aetherx-terminal-styles';
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
-    style.id = 'voltx-custom-css';
+    style.id = 'aetherx-custom-css';
     style.innerHTML = `
         body {
-            background-color: #030408;
-            color: #f1f5f9;
+            background-color: #020308;
+            color: #f8fafc;
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(217, 70, 239, 0.07) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.07) 0px, transparent 50%),
-                linear-gradient(rgba(255, 255, 255, 0.002) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.002) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
-            overflow-x: hidden;
+                radial-gradient(at 10% 10%, rgba(217, 70, 239, 0.05) 0px, transparent 40%),
+                radial-gradient(at 90% 90%, rgba(6, 182, 212, 0.05) 0px, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
         }
         .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
         .font-mono { font-family: 'Share Tech Mono', monospace; }
         
-        .glass-panel {
-            background: rgba(10, 14, 26, 0.82);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        .terminal-glass {
+            background: rgba(8, 12, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
         }
         
         .glow-cyan {
-            box-shadow: 0 0 30px -5px rgba(20, 184, 166, 0.25);
-            border-color: rgba(20, 184, 166, 0.3) !important;
+            box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.3);
+            border-color: rgba(6, 182, 212, 0.35) !important;
         }
         .glow-fuchsia {
-            box-shadow: 0 0 30px -5px rgba(217, 70, 239, 0.25);
-            border-color: rgba(217, 70, 239, 0.3) !important;
+            box-shadow: 0 0 25px -4px rgba(217, 70, 239, 0.3);
+            border-color: rgba(217, 70, 239, 0.35) !important;
         }
         .text-glow-cyan {
-            text-shadow: 0 0 10px rgba(20, 184, 166, 0.6);
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.7);
         }
         .text-glow-fuchsia {
-            text-shadow: 0 0 10px rgba(217, 70, 239, 0.6);
-        }
-        .glow-amber {
-            box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.25);
-            border-color: rgba(245, 158, 11, 0.3) !important;
+            text-shadow: 0 0 8px rgba(217, 70, 239, 0.7);
         }
         
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+        .custom-scroller::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(3, 4, 8, 0.5);
+        .custom-scroller::-webkit-scrollbar-track {
+            background: rgba(2, 3, 8, 0.8);
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+        .custom-scroller::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 99px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(217, 70, 239, 0.3);
+        .custom-scroller::-webkit-scrollbar-thumb:hover {
+            background: rgba(217, 70, 239, 0.4);
         }
         
-        @keyframes voltPulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; filter: brightness(1); }
-            50% { transform: scale(1.02); opacity: 1; filter: brightness(1.2); }
-        }
-        .neon-pulse-cyan {
-            animation: voltPulse 2s infinite ease-in-out;
-        }
-        
-        @keyframes scanline {
+        @keyframes sweepLine {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100%); }
         }
-        .cyber-grid-canvas {
-            background: radial-gradient(circle at 50% 50%, #0c1229 0%, #030408 100%);
+        .scanline-overlay::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
         }
     `;
     document.head.appendChild(style);
 };
 
-// SVG Icons Vector Set
 const SVG_ICONS = {
-    shield: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>,
-    lightning: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>,
-    users: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 18M15 19.128a9.39 9.39 0 00-4.912-1.128M10.089 18v-.003c0-1.113-.285-2.16-.786-3.07M10.089 18a11.383 11.383 0 00-4.912-1.128M4.2 13.1c-.5-.08-.9-.4-.9-.9V9.5c0-.5.4-.9.9-.9h.2c.4 0 .8.2 1 .5l1.6 2.3c.2.3.1.7-.2.9l-.6.4c-.4.2-.8.1-1-.3l-.8-1.1M10.5 7.5a3 3 0 11-6 0 3 3 0 016 0zm9 0a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    share: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.318-2.659m-5.318 4.845l5.318 2.659m-1.318-7.514a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm0 10.5a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0z" /></svg>,
-    terminal: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>,
-    volume: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>,
-    wallet: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" /></svg>,
-    alert: <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.3c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+    shield: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>,
+    lightning: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>,
+    users: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.109A11.386 11.386 0 0110.089 18M15 19.128a9.39 9.39 0 00-4.912-1.128M10.089 18v-.003c0-1.113-.285-2.16-.786-3.07M10.089 18a11.383 11.383 0 00-4.912-1.128M4.2 13.1c-.5-.08-.9-.4-.9-.9V9.5c0-.5.4-.9.9-.9h.2c.4 0 .8.2 1 .5l1.6 2.3c.2.3.1.7-.2.9l-.6.4c-.4.2-.8.1-1-.3l-.8-1.1M10.5 7.5a3 3 0 11-6 0 3 3 0 016 0zm9 0a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    share: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.318-2.659m-5.318 4.845l5.318 2.659m-1.318-7.514a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm0 10.5a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0z" /></svg>,
+    terminal: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>,
+    wallet: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" /></svg>,
+    alert: <svg className="w-5 h-5 text-fuchsia-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.3c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>,
+    gear: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.991l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    chart: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
 };
 
-// SQUAD ENG REWARD RULES (File 2 Concept Mock)
-const SQUAD_PAYOUT_RATES = {
-    TIER_1: 0.030, // 3.0%
-    TIER_2: 0.015, // 1.5%
-    TIER_3: 0.005  // 0.5%
-};
+const MICRO_GAMES = [
+    { id: "pulse", name: "Aether Pulse", desc: "5-Second High/Low Prediction" },
+    { id: "crash", name: "Quantum Crash", desc: "Climb & Liquidize Liquidity Ladder" },
+    { id: "surge", name: "Candle Surge", desc: "Multi-Node Rapid 3-Step Scalper" },
+    { id: "mines", name: "Cyber Mines", desc: "5x5 Grid Sweep Node Uncover" },
+    { id: "flash", name: "Flash Order", desc: "Laser Intersection Multiplier Lock" },
+    { id: "flip", name: "Velocity Flip", desc: "1-Second Dynamic Win Contract" },
+    { id: "orbit", name: "Orbit Target", desc: "Target Intersection Alignment" },
+    { id: "ladder", name: "Grid Ladder", desc: "Multi-Tier Instant Cashout Stairs" },
+    { id: "wheel", name: "Hyper Wheel", desc: "Near-Miss Multiplier Rotator" },
+    { id: "breaker", name: "Node Breaker", desc: "Rapid Tile Elimination Suite" }
+];
 
 function App() {
     useEffect(() => {
-        injectVoltxStyles();
+        injectDesignStyles();
     }, []);
 
-    // 1. LEGAL DISCLOSURE STATES (File 1 Component Modal State)
+    // 1. DISCLOSURE MODAL STATE
     const [legalAccepted, setLegalAccepted] = useState(() => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('voltx_compliance_signed') === 'true';
+            return localStorage.getItem('aetherx_compliance_signed') === 'true';
         }
         return false;
     });
 
-    // 2. SOCIAL WALLET ACCOUNT ABSTRACTION MOCK STATE
+    // 2. SOCIAL WALLET ABSTRACTION & ACCOUNT BALANCES
     const [connected, setConnected] = useState(false);
     const [userAddress, setUserAddress] = useState("");
-    const [userBalance, setUserBalance] = useState(124.50); // Mapped in dynamic USDT buffer
-    const [activeTab, setActiveTab] = useState("arcade"); // arcade, squad, risk_panel, docs
-
-    // 3. VIRAL SQUAD CO-OP RE-ENGAGEMENT STATES (File 2)
-    const [squadId, setSquadId] = useState("CYBER_FORCE");
-    const [referrerCode, setReferrerCode] = useState("VOLT_BEYOND");
+    const [userBalance, setUserBalance] = useState(100.00); // Dynamic USDT sandbox pool
+    const [activeTab, setActiveTab] = useState("terminal"); // terminal, squad_ref, hedging_sandbox, docs
+    const [selectedGame, setSelectedGame] = useState("pulse"); // Active dynamic suite
+    
+    // 3. VIRAL SQUAD REFERRALS (PoVI MODULE)
+    const [squadId, setSquadId] = useState("AETHER_OMEGA");
+    const [referrerCode, setReferrerCode] = useState("QUANTUM_CATALYST");
     const [squadMembers, setSquadMembers] = useState([
-        { id: "volt_striker", username: "Striker_X", wagers: 450, totalReferralUSDT: 13.50 },
-        { id: "hacker_neon", username: "0xNeon_S", wagers: 980, totalReferralUSDT: 29.40 },
-        { id: "you", username: "You (Apex)", wagers: 120, totalReferralUSDT: 3.60 }
+        { id: "trader_pulse", username: "0xPulse_H", volume: 1450, claimedUSDT: 43.50 },
+        { id: "neon_shadow", username: "0xNeon_S", volume: 2100, claimedUSDT: 63.00 },
+        { id: "you_apex", username: "You (Aether)", volume: 380, claimedUSDT: 11.40 }
     ]);
     const [toastAlerts, setToastAlerts] = useState([]);
 
-    // 4. RISK PREVENTATIVE VAULT STATS (File 4 & File 3 Mock parameters)
-    const [escrowVaultBalance, setEscrowVaultBalance] = useState(25000.00); 
-    const [houseRevenueVault, setHouseRevenueVault] = useState(100000.00); 
-    const [wagerInput, setWagerInput] = useState(5.00);
-    const [calculatedMaxCap, setCalculatedMaxCap] = useState(500); 
+    // 4. HIDDEN HEDGING MATHEMATICAL RISK ENGINE STATS
+    const [systemReserveBalance, setSystemReserveBalance] = useState(38400.00); // Hidden pool split target
+    const [hedgingProfitVault, setHedgingProfitVault] = useState(115200.00); // Hidden core 80% route target
+    const [wagerInput, setWagerInput] = useState(10.00);
+    const [calculatedMaxCap, setCalculatedMaxCap] = useState(1000); 
     const [systemSettings, setSystemSettings] = useState({
-        cappedMultiplierMax: 100, // W * Mapped Max Limit
-        retentionSplitRate: 0.80, // Platform Retention 80%
-        referralAllocation: 0.05  // PoVI Reward Dividend Pool 5%
+        multiplierCeiling: 100, 
+        splitRatioReserve: 0.80, 
+        splitRatioYield: 0.20
     });
 
-    // Simulated network logs from File 4 Risk python socket listener
+    // Simulated network logs matching professional high-speed protocol architecture
     const [networkActivityLogs, setNetworkActivityLogs] = useState([
-        "[SYSTEM]: Secure Escrow initialized. Root address matched with process.env.ESCROW_WALLET_ADDRESS",
-        "[WEBSOCKET]: Listening on port 8000 for provably fair seed hashes...",
-        "[LEDGER]: Scheduled 80% House Split route ready to process.env.HOUSE_REVENUE_VAULT"
+        "[AETHERX INITIALIZED]: Secure handshake initialized with collateral index.",
+        "[WEBSOCKETS]: Secure connection connected to dynamic risk router.",
+        "[COLLATERAL LEDGER]: Escrow contract limits verified. Ready for transaction settlement."
     ]);
 
-    // Simulated websocket notification push generator for co-op squad
+    // WebSocket simulated updates for continuous dynamic trades and passive yield matching PoVI
     useEffect(() => {
         const interval = setInterval(() => {
             if (connected) {
-                const names = ["0xGlow_Rider", "Cyber_Pulse", "Volt_Breaker", "Retro_Specter", "Warp_Drive"];
+                const names = ["0xGlow_Rider", "Cyber_Pulse", "Volt_Breaker", "Aether_Lord", "Hyper_Scalp", "Warp_Drive"];
                 const targetName = names[Math.floor(Math.random() * names.length)];
-                const randomAmount = (Math.random() * 0.05 + 0.005).toFixed(4);
+                const randomReward = (Math.random() * 0.04 + 0.005).toFixed(4);
                 
-                // Add new toast
                 const newToast = {
                     id: Date.now(),
-                    msg: `Squadmate ${targetName} triggered reaction cascade! You earned +${randomAmount} USDT!`,
-                    ticker: `+${randomAmount} USDT`
+                    msg: `Squad Dividend Dispatched! peer ${targetName} executed settlement. +${randomReward} USDT claim matched.`,
+                    ticker: `+${randomReward} USDT`
                 };
                 
                 setToastAlerts(prev => [newToast, ...prev].slice(0, 3));
-                playVoltSound('squad');
+                playSoundEffect('squad');
                 
-                // Increment dynamic balances matching PoVI structure
-                setUserBalance(prev => prev + parseFloat(randomAmount));
-                setEscrowVaultBalance(prev => prev + parseFloat(randomAmount) * 2);
+                setUserBalance(prev => prev + parseFloat(randomReward));
+                setSystemReserveBalance(prev => prev + parseFloat(randomReward) * 1.5);
                 
                 setNetworkActivityLogs(prev => [
-                    `[WEBSOCKET SQUAD ALERT]: Peer activity processed for ${targetName}. Dividend split sent to active addresses.`,
+                    `[DIVIDEND LOG]: Routed reward payload to active peer ${targetName}. Dynamic split processed.`,
                     ...prev
                 ].slice(0, 15));
             }
-        }, 12000);
+        }, 15000);
         return () => clearInterval(interval);
     }, [connected]);
 
-    // Handle initial legal acceptance
+    // 5-Second Candle simulation for Aether Pulse index
+    const [pulseCandleData, setPulseCandleData] = useState({ open: 98.42, close: 98.55, state: 'UP', history: [98.10, 98.25, 98.15, 98.40, 98.35, 98.55] });
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const lastVal = pulseCandleData.close;
+            const deviation = (Math.random() - 0.48) * 0.4;
+            const nextVal = parseFloat((lastVal + deviation).toFixed(2));
+            const direction = nextVal >= lastVal ? 'UP' : 'DOWN';
+            setPulseCandleData(prev => ({
+                open: lastVal,
+                close: nextVal,
+                state: direction,
+                history: [...prev.history.slice(-9), nextVal]
+            }));
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [pulseCandleData]);
+
     const acceptComplianceModal = () => {
-        localStorage.setItem('voltx_compliance_signed', 'true');
+        localStorage.setItem('aetherx_compliance_signed', 'true');
         setLegalAccepted(true);
-        playVoltSound('win');
+        playSoundEffect('win');
     };
 
-    // Social Web3 Login Action Simulation
     const handleWalletConnect = () => {
         if (connected) {
             setConnected(false);
             setUserAddress("");
         } else {
             setConnected(true);
-            setUserAddress("0x71C...6F9b");
-            playVoltSound('hit', 1.2);
+            setUserAddress("0x9c3...a8d2");
+            playSoundEffect('hit', 1.1);
             setNetworkActivityLogs(prev => [
-                `[ACCOUNT ABSTRACTION]: Web3Auth session opened for 0x71C...6F9b via secure DeepLink state engine.`,
+                `[SOCIAL WALLET]: Session generated for target user 0x9c3...a8d2 via non-custodial deep link route.`,
                 ...prev
             ]);
         }
     };
 
-    // Parse Deep-Links Simulation
-    const generateDeepLink = () => {
-        const link = `https://voltx.io/play/cascade?squad=${squadId}&ref=${userAddress || '0x_Apex_Player'}`;
+    const generateSquadLink = () => {
+        const link = `https://aetherx.io/join?squad=${squadId}&ref=${userAddress || '0x_Apex_Referral'}`;
         navigator.clipboard.writeText(link);
-        alert(`Deep link copied to clipboard:\n${link}`);
-        playVoltSound('win');
+        alert(`Unified Referral Deep-Link copied successfully:\n${link}`);
+        playSoundEffect('win');
     };
 
-    // Calculated Max Safe Payout according to Risk Engine Directive
+    // Pmax = min(Vault_Balance * 0.02, Wager * Capped_Multiplier)
     useEffect(() => {
-        // Pmax = Min ( Vault * 0.02, W * M_capped )
-        const maxVaultBuffer = escrowVaultBalance * 0.02;
-        const maxWagerMultiplier = wagerInput * systemSettings.cappedMultiplierMax;
-        const finalCap = Math.min(maxVaultBuffer, maxWagerMultiplier);
-        setCalculatedMaxCap(finalCap);
-    }, [escrowVaultBalance, wagerInput, systemSettings]);
+        const maxVaultLimit = systemReserveBalance * 0.02;
+        const maxWagerLimit = wagerInput * systemSettings.multiplierCeiling;
+        const finalCeiling = Math.min(maxVaultLimit, maxWagerLimit);
+        setCalculatedMaxCap(finalCeiling);
+    }, [systemReserveBalance, wagerInput, systemSettings]);
 
     return (
-        <div className="min-h-screen flex flex-col font-sans">
+        <div className="min-h-screen flex flex-col font-sans scanline-overlay relative overflow-x-hidden">
             
-            {/* VOLTX ENGINE TOP SYSTEM BANNER */}
-            <div className="bg-[#0b0c16] border-b border-fuchsia-500/20 py-2 px-4 flex flex-wrap items-center justify-between gap-3 text-xs tracking-wider font-mono shadow-md z-40">
+            {/* PLATFORM TOP ALIGNED SYSTEM BAR */}
+            <div className="bg-[#03050c] border-b border-cyan-500/10 py-2 px-4 flex flex-wrap items-center justify-between gap-3 text-[11px] tracking-wider font-mono shadow-xl z-40">
                 <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-glow-cyan text-teal-400 font-extrabold uppercase">VOLTX Engine v2.8 (60 FPS)</span>
-                    <span className="text-slate-600">|</span>
-                    <span className="text-slate-400">Escrow Vault Limit: <strong className="text-fuchsia-400">${escrowVaultBalance.toLocaleString()} USDT</strong></span>
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-glow-cyan text-cyan-400 font-bold uppercase">AETHERX MODULE ENGINE v4.2</span>
+                    <span className="text-slate-800">|</span>
+                    <span className="text-slate-400">Index Stream: <strong className="text-fuchsia-400 font-semibold font-mono">${pulseCandleData.close.toFixed(2)} USD</strong></span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-emerald-400 font-bold">HOUSE MARGIN: 80% SECURED</span>
-                    <span className="text-slate-600">|</span>
-                    <span className="text-slate-400">Zero Capital Exposure Active</span>
+                    <span className="text-cyan-400 font-bold">COLLATERAL DEPLOYMENT: ACTIVATED</span>
+                    <span className="text-slate-800">|</span>
+                    <span className="text-slate-400">Dynamic Risk Hedging Buffer: <strong className="text-fuchsia-400 font-bold">${systemReserveBalance.toLocaleString()} USDT</strong></span>
                 </div>
             </div>
 
-            {/* HEADER DESIGN SYSTEM */}
-            <header className="sticky top-0 z-30 glass-panel border-b border-slate-800/80">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* MAIN INTERACTION HEADER */}
+            <header className="sticky top-0 z-30 terminal-glass border-b border-slate-800/80">
+                <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
                     
-                    {/* Brand Signature and Concept Ticker */}
-                    <div className="flex items-center gap-3.5">
+                    {/* Platform Brand Signature */}
+                    <div className="flex items-center gap-3">
                         <div 
-                            onClick={() => playVoltSound('hit', 1.5)}
-                            className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 via-pink-600 to-teal-400 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:rotate-12 hover:scale-105 active:scale-95"
+                            onClick={() => playSoundEffect('hit', 1.4)}
+                            className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 via-indigo-600 to-fuchsia-500 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95 shadow-md"
                         >
                             {SVG_ICONS.lightning}
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="font-grotesk font-black text-2xl text-white tracking-tight leading-none">
-                                    VOLT<span className="text-fuchsia-500 text-glow-fuchsia">X</span> PROTOCOL
+                                <h1 className="font-grotesk font-bold text-xl text-white tracking-tight leading-none">
+                                    AETHER<span className="text-cyan-400 text-glow-cyan">X</span>
                                 </h1>
-                                <span className="bg-teal-500/10 text-teal-400 text-[9px] font-mono font-bold px-2.5 py-0.5 rounded-md border border-teal-500/20 tracking-widest uppercase">
-                                    ARCADE v2
+                                <span className="bg-cyan-500/10 text-cyan-400 text-[8px] font-mono font-bold px-2 py-0.5 rounded border border-cyan-500/20 tracking-wider uppercase">
+                                    BINARY SUITE
                                 </span>
                             </div>
-                            <p className="text-[11px] text-slate-400 tracking-wide font-mono">The High-Velocity Web3 Dopamine Engine</p>
+                            <p className="text-[10px] text-slate-500 tracking-wide font-mono">Precision Settlement Execution Console</p>
                         </div>
                     </div>
 
-                    {/* Desktop & Mobile Main Nav Tabs */}
-                    <nav className="flex flex-wrap items-center justify-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800/60">
+                    {/* Navigation System */}
+                    <nav className="flex flex-wrap items-center justify-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/60">
                         {[
-                            { id: "arcade", name: "60-FPS CASCADE", icon: SVG_ICONS.lightning },
-                            { id: "squad", name: "VIRAL SQUADS (PoVI)", icon: SVG_ICONS.users },
-                            { id: "risk_panel", name: "RISK LEDGER (80/20)", icon: SVG_ICONS.shield },
-                            { id: "docs", name: "COMPLIANCE & CODES", icon: SVG_ICONS.terminal }
+                            { id: "terminal", name: "BINARY CORE", icon: SVG_ICONS.chart },
+                            { id: "squad_ref", name: "SQUAD CO-OP", icon: SVG_ICONS.users },
+                            { id: "hedging_sandbox", name: "HEDGING SYSTEM", icon: SVG_ICONS.shield },
+                            { id: "docs", name: "SPEC SHEETS", icon: SVG_ICONS.terminal }
                         ].map(tab => (
                             <button
                                 key={tab.id}
-                                onClick={() => { playVoltSound('tick'); setActiveTab(tab.id); }}
-                                className={`px-4 py-2.5 text-xs font-grotesk font-bold tracking-wider rounded-lg transition-all flex items-center gap-2 ${
+                                onClick={() => { playSoundEffect('tick'); setActiveTab(tab.id); }}
+                                className={`px-3.5 py-2 text-xs font-grotesk font-semibold rounded-lg transition-all flex items-center gap-2 ${
                                     activeTab === tab.id
-                                        ? "bg-fuchsia-600 text-white shadow-lg glow-fuchsia font-extrabold scale-102"
-                                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/40"
+                                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold scale-102"
+                                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/30"
                                 }`}
                             >
                                 {tab.icon}
@@ -380,35 +393,35 @@ function App() {
                         ))}
                     </nav>
 
-                    {/* Web3 Social Login Integrator */}
-                    <div className="flex items-center gap-3 shrink-0">
+                    {/* Social Web3 Connection Controller */}
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={handleWalletConnect}
-                            className={`px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-widest flex items-center gap-2 transition-all duration-300 ${
+                            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold tracking-wider flex items-center gap-2 transition-all duration-300 ${
                                 connected 
-                                    ? "bg-teal-950 text-teal-300 border border-teal-500/30 glow-cyan" 
-                                    : "bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white shadow-md glow-fuchsia"
+                                    ? "bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 glow-cyan" 
+                                    : "bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-500 hover:opacity-90 text-white shadow-md"
                             }`}
                         >
                             {SVG_ICONS.wallet}
-                            <span>{connected ? `DISCONNECT: ${userAddress}` : "SOCIAL LOGIN / CONNECT"}</span>
+                            <span>{connected ? `CONNECTED: ${userAddress}` : "SOCIAL CONNECT"}</span>
                         </button>
                     </div>
 
                 </div>
             </header>
 
-            {/* REAL-TIME WS NOTIFICATION STACK FOR VIRAL SQUADS */}
+            {/* DYNAMIC TOAST EVENTS */}
             {toastAlerts.length > 0 && (
                 <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm w-full">
                     {toastAlerts.map(alert => (
-                        <div key={alert.id} className="glass-panel border border-teal-500/30 rounded-xl p-4 flex items-start gap-3 shadow-2xl animate-slideIn bg-[#070b14]/95">
-                            <div className="p-2 bg-teal-500/10 rounded-lg text-teal-400 shrink-0">
+                        <div key={alert.id} className="terminal-glass border border-cyan-500/20 rounded-xl p-4 flex items-start gap-3 shadow-2xl animate-slideIn bg-[#04060f]/95">
+                            <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 shrink-0">
                                 {SVG_ICONS.lightning}
                             </div>
                             <div className="flex-1">
                                 <p className="text-xs text-slate-200 font-mono leading-relaxed">{alert.msg}</p>
-                                <span className="inline-block mt-1 text-[10px] bg-teal-500/10 text-teal-300 font-bold px-2 py-0.5 rounded">
+                                <span className="inline-block mt-1 text-[10px] bg-cyan-500/10 text-cyan-300 font-bold px-2 py-0.5 rounded">
                                     {alert.ticker}
                                 </span>
                             </div>
@@ -423,134 +436,187 @@ function App() {
                 </div>
             )}
 
-            {/* MAIN PORTAL SCREEN GRID */}
-            <main className="max-w-7xl mx-auto w-full px-4 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* MAIN TERMINAL DISPLAY PORT */}
+            <main className="max-w-7xl mx-auto w-full px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                {/* 1. ARCADE GRID & ACTIVE CASINO LEVEL (8 COLS ON LARGE SCREEN) */}
+                {/* 1. SUITE PANEL & ACTIVE CONSOLE SCREEN (8 COLS) */}
                 <div className="lg:col-span-8 space-y-6">
                     
-                    {/* VOLTX TIMING CASCADE GAME (ARCADE VIEWPORT) */}
-                    {activeTab === "arcade" && (
+                    {activeTab === "terminal" && (
                         <div className="space-y-4">
                             
-                            {/* Stats header widget */}
-                            <div className="glass-panel p-4.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div>
-                                    <h3 className="font-grotesk font-black text-lg text-white">ACTIVE TIMING-CASCADE WINDOW</h3>
-                                    <p className="text-xs text-slate-400">Lock in timing points matching high multiplier nodes to hit maximum payout velocities.</p>
-                                </div>
-                                <div className="flex gap-4 font-mono text-xs">
-                                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                                        <span className="text-slate-500 text-[9px] uppercase block">YOUR ACCOUNT</span>
-                                        <strong className="text-glow-cyan text-teal-400 text-sm font-bold">${userBalance.toFixed(2)} USDT</strong>
-                                    </div>
-                                    <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
-                                        <span className="text-slate-500 text-[9px] uppercase block">P-MAX CAP BOUND</span>
-                                        <strong className="text-glow-fuchsia text-fuchsia-400 text-sm font-bold">${calculatedMaxCap.toFixed(2)} USDT</strong>
-                                    </div>
-                                </div>
+                            {/* MICRO-GAME SUITE SELECTOR REGISTRY */}
+                            <div className="terminal-glass p-2.5 rounded-2xl flex flex-wrap gap-1.5 bg-slate-950/50">
+                                {MICRO_GAMES.map(game => (
+                                    <button
+                                        key={game.id}
+                                        onClick={() => { playSoundEffect('tick'); setSelectedGame(game.id); }}
+                                        className={`px-3 py-2 text-xs font-grotesk font-semibold rounded-xl transition-all border ${
+                                            selectedGame === game.id
+                                                ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/40 font-bold glow-cyan"
+                                                : "bg-transparent text-slate-500 border-transparent hover:text-slate-300 hover:border-slate-800"
+                                        }`}
+                                    >
+                                        {game.name}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* Arcade timing canvas component */}
-                            <VoltxArcadeCanvas 
-                                wager={wagerInput}
-                                userBalance={userBalance}
-                                setUserBalance={setUserBalance}
-                                maxCap={calculatedMaxCap}
-                                escrowVaultBalance={escrowVaultBalance}
-                                setEscrowVaultBalance={setEscrowVaultBalance}
-                                houseRevenueVault={houseRevenueVault}
-                                setHouseRevenueVault={setHouseRevenueVault}
-                                networkActivityLogs={networkActivityLogs}
-                                setNetworkActivityLogs={setNetworkActivityLogs}
-                            />
+                            {/* ACTIVE INTERACTIVE BINARY EXECUTION SPACE */}
+                            <div className="terminal-glass p-5 rounded-2xl space-y-4 relative">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-900 pb-3">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                            <h3 className="font-grotesk font-bold text-base text-white uppercase tracking-wider">
+                                                {MICRO_GAMES.find(g => g.id === selectedGame)?.name}
+                                            </h3>
+                                        </div>
+                                        <p className="text-xs text-slate-400">{MICRO_GAMES.find(g => g.id === selectedGame)?.desc}</p>
+                                    </div>
+                                    <div className="flex gap-4 font-mono text-xs">
+                                        <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-900 text-center">
+                                            <span className="text-slate-500 text-[9px] uppercase block">COLLATERAL SECURED</span>
+                                            <strong className="text-glow-cyan text-cyan-400 text-sm font-bold">${userBalance.toFixed(2)} USDT</strong>
+                                        </div>
+                                        <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-900 text-center">
+                                            <span className="text-slate-500 text-[9px] uppercase block">PEAK HEURISTIC CAP</span>
+                                            <strong className="text-glow-fuchsia text-fuchsia-400 text-sm font-bold">${calculatedMaxCap.toFixed(2)} USDT</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* MODULAR RENDER HUB FOR THE 10 MICRO-GAME ENGINE CODES */}
+                                <AetherGameEngineWrapper 
+                                    activeGame={selectedGame}
+                                    wager={wagerInput}
+                                    userBalance={userBalance}
+                                    setUserBalance={setUserBalance}
+                                    maxCap={calculatedMaxCap}
+                                    systemReserveBalance={systemReserveBalance}
+                                    setSystemReserveBalance={setSystemReserveBalance}
+                                    hedgingProfitVault={hedgingProfitVault}
+                                    setHedgingProfitVault={setHedgingProfitVault}
+                                    networkActivityLogs={networkActivityLogs}
+                                    setNetworkActivityLogs={setNetworkActivityLogs}
+                                />
+
+                            </div>
+
+                            {/* GENERAL TICKER CANDLESTICK OVERVIEW */}
+                            <div className="terminal-glass p-4 rounded-2xl grid grid-cols-1 md:grid-cols-12 gap-4">
+                                <div className="md:col-span-4 flex flex-col justify-center space-y-1 font-mono text-xs">
+                                    <span className="text-slate-500">DYNAMIC INDEX VOLATILITY</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <strong className={`text-2xl font-bold ${pulseCandleData.state === 'UP' ? 'text-cyan-400' : 'text-fuchsia-400'}`}>
+                                            ${pulseCandleData.close.toFixed(2)}
+                                        </strong>
+                                        <span className={`text-[10px] ${pulseCandleData.state === 'UP' ? 'text-cyan-500' : 'text-fuchsia-500'}`}>
+                                            {pulseCandleData.state === 'UP' ? '▲' : '▼'} {((pulseCandleData.close - pulseCandleData.open) / pulseCandleData.open * 100).toFixed(2)}%
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 leading-normal">
+                                        Dynamic risk algorithm recalculates collateral targets on every 5s candle interval.
+                                    </p>
+                                </div>
+                                <div className="md:col-span-8 flex items-end justify-between h-16 pt-2">
+                                    {pulseCandleData.history.map((val, idx) => (
+                                        <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                                            <div 
+                                                className={`w-full max-w-[16px] rounded-sm transition-all duration-300 ${
+                                                    idx % 2 === 0 ? 'bg-cyan-500/20 border border-cyan-500/40' : 'bg-fuchsia-500/20 border border-fuchsia-500/40'
+                                                }`}
+                                                style={{ height: `${Math.min(100, Math.max(10, (val - 95) * 12))}px` }}
+                                            />
+                                            <span className="text-[8px] font-mono text-slate-600">${val.toFixed(1)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
                         </div>
                     )}
 
-                    {/* TAB Viewport 2: Squads Co-Op Co-referrals (File 2 Framework) */}
-                    {activeTab === "squad" && (
-                        <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
+                    {/* SQUAD CO-OP DIRECT REFERRER PAGE */}
+                    {activeTab === "squad_ref" && (
+                        <div className="terminal-glass p-6 rounded-2xl space-y-6 animate-fadeIn">
                             <div className="border-b border-slate-800 pb-4">
-                                <h3 className="font-grotesk font-black text-xl text-white">👥 SQUAD CO-OP POOLS & VIRAL CATALYSTS</h3>
+                                <h3 className="font-grotesk font-bold text-lg text-white">👥 CO-OP PROTOCOLS & COLLATERAL POOLS</h3>
                                 <p className="text-xs text-slate-400">
-                                    Earn instant WebSocket splits from every wager generated by squadmate connections. Double direct referrals down 3 cascading tiers.
+                                    Expand active networks. Dynamic splits process instantly on peer transaction settlements across 3 sequential referral tiers.
                                 </p>
                             </div>
 
-                            {/* Squad configuration generator links */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                
                                 <div className="space-y-4">
-                                    <h4 className="font-grotesk font-bold text-sm text-fuchsia-400 uppercase tracking-wider">Dynamic Deep-Link State Configurator</h4>
+                                    <h4 className="font-grotesk font-bold text-xs text-cyan-400 uppercase tracking-widest">Network Deep-Link Configurator</h4>
                                     
                                     <div className="space-y-3 font-mono text-xs">
                                         <div>
-                                            <label className="text-slate-500 text-[10px] block mb-1">CO-OP SQUAD ID (RESTFUL TARGET)</label>
+                                            <label className="text-slate-500 text-[9px] block mb-1 uppercase">SQUAD DESIGNATION</label>
                                             <input 
                                                 type="text" 
                                                 value={squadId}
                                                 onChange={(e) => setSquadId(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white" 
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:ring-1 focus:ring-cyan-500 focus:outline-none" 
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-slate-500 text-[10px] block mb-1">REFERRAL TRACKING TAG</label>
+                                            <label className="text-slate-500 text-[9px] block mb-1 uppercase">REFERRER EMBLEM TAG</label>
                                             <input 
                                                 type="text" 
                                                 value={referrerCode}
                                                 onChange={(e) => setReferrerCode(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white" 
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:ring-1 focus:ring-cyan-500 focus:outline-none" 
                                             />
                                         </div>
                                         
                                         <button 
-                                            onClick={generateDeepLink}
-                                            className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-grotesk font-extrabold text-xs py-3 rounded-xl transition-all uppercase tracking-widest"
+                                            onClick={generateSquadLink}
+                                            className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-grotesk font-extrabold text-xs py-3 rounded-xl transition-all uppercase tracking-widest"
                                         >
-                                            GENERATE 1-CLICK JOIN DEEP LINK
+                                            COPY COLLATERAL INVITE DEEP LINK
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="bg-[#080b13] p-5 rounded-xl border border-slate-900 flex flex-col justify-between">
+                                <div className="bg-[#050813] p-5 rounded-xl border border-slate-900 flex flex-col justify-between">
                                     <div>
-                                        <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest mb-3">3-TIER CASCADING REWARD CODE RULES</h4>
+                                        <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest mb-3">RECURSIVE PEER COMMISSION DISPATCH</h4>
                                         <div className="space-y-3 font-mono text-xs">
-                                            <div className="flex justify-between py-1 border-b border-slate-950">
-                                                <span className="text-teal-400 font-bold">Tier 1 (Direct Referee):</span>
-                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_1 * 100).toFixed(1)}% of all wagers</span>
+                                            <div className="flex justify-between py-1.5 border-b border-slate-900">
+                                                <span className="text-cyan-400 font-semibold">Tier 1 Peer:</span>
+                                                <span className="text-white">3.0% of settlement value</span>
                                             </div>
-                                            <div className="flex justify-between py-1 border-b border-slate-950">
-                                                <span className="text-teal-400">Tier 2 (Secondary Referee):</span>
-                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_2 * 100).toFixed(1)}% of all wagers</span>
+                                            <div className="flex justify-between py-1.5 border-b border-slate-900">
+                                                <span className="text-cyan-400">Tier 2 Indirect:</span>
+                                                <span className="text-white">1.5% of settlement value</span>
                                             </div>
-                                            <div className="flex justify-between py-1 border-b border-slate-950">
-                                                <span className="text-teal-400">Tier 3 (Viral Catalyst):</span>
-                                                <span className="text-white">{(SQUAD_PAYOUT_RATES.TIER_3 * 100).toFixed(1)}% of all wagers</span>
+                                            <div className="flex justify-between py-1.5 border-b border-slate-900">
+                                                <span className="text-cyan-400">Tier 3 Catalyst:</span>
+                                                <span className="text-white">0.5% of settlement value</span>
                                             </div>
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-slate-500 font-mono mt-4 leading-normal">
-                                        All dividends are calculated directly out of the allocated 20% global liquidity reserve pool. Zero exposure of core house asset seed balances.
+                                        All yield distributions originate from reserve yield allocation reserves. Primary client collateral contracts remain protected.
                                     </p>
                                 </div>
-
                             </div>
 
-                            {/* Squad dynamic roster monitor table */}
+                            {/* SQUAD PERFORMANCE LISTING */}
                             <div className="space-y-3">
-                                <h4 className="font-grotesk font-bold text-sm text-white">Active Squad Co-Op Members Performance</h4>
-                                <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                                <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest">Active Connected Roster Metrics</h4>
+                                <div className="space-y-2 max-h-52 overflow-y-auto custom-scroller pr-1">
                                     {squadMembers.map((member, idx) => (
                                         <div key={idx} className="bg-slate-950 p-3.5 rounded-xl border border-slate-900 flex justify-between items-center text-xs font-mono">
                                             <div className="flex items-center gap-2.5">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                                                <span className="w-2 h-2 rounded-full bg-cyan-400" />
                                                 <span className="text-white font-bold">{member.username}</span>
                                             </div>
                                             <div className="flex gap-6">
-                                                <span>Total Wager Volume: <strong className="text-teal-400">${member.wagers} USDT</strong></span>
-                                                <span>Dividends Generated: <strong className="text-fuchsia-400">+${member.totalReferralUSDT.toFixed(2)} USDT</strong></span>
+                                                <span>Settlement Value: <strong className="text-cyan-400">${member.volume} USDT</strong></span>
+                                                <span>Yield Claimed: <strong className="text-fuchsia-400">+${member.claimedUSDT.toFixed(2)} USDT</strong></span>
                                             </div>
                                         </div>
                                     ))}
@@ -560,85 +626,86 @@ function App() {
                         </div>
                     )}
 
-                    {/* TAB Viewport 3: 80/20 Risk ledger monitor (File 3 and File 4 stats display) */}
-                    {activeTab === "risk_panel" && (
-                        <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
+                    {/* HIDDEN MATHEMATICAL HEDGING SUITE (SANDBOX DISPLAY) */}
+                    {activeTab === "hedging_sandbox" && (
+                        <div className="terminal-glass p-6 rounded-2xl space-y-6 animate-fadeIn">
                             <div className="border-b border-slate-800 pb-4">
-                                <h3 className="font-grotesk font-black text-xl text-white">🛡️ MATHEMATICAL RISK ENGINE LEDGER</h3>
-                                <p className="text-xs text-slate-400 font-mono">
-                                    Real-time tracking of 80% House Retention vs 20% Liquidity Payout Pool splits. Guaranteed zero capital seed exposure.
+                                <h3 className="font-grotesk font-bold text-lg text-white">⚙️ HEDGING HEURISTIC SANDBOX MODULE</h3>
+                                <p className="text-xs text-slate-400">
+                                    Heuristic validation interface. Adjust parameters to verify liquidity ceilings and automatic target balance routes.
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">USDT LIQUIDITY POOL (20%)</span>
-                                    <strong className="text-2xl font-mono text-teal-400">${escrowVaultBalance.toLocaleString()} USDT</strong>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">DYNAMIC SYSTEM RESERVE</span>
+                                    <strong className="text-2xl font-mono text-cyan-400">${systemReserveBalance.toLocaleString()} USDT</strong>
                                     <p className="text-[9px] text-slate-500 mt-1 leading-normal">
-                                        Backing micro-wins, active multipliers and co-op dividends pool.
+                                        Settlement guarantee ledger covering user reward distributions.
                                     </p>
                                 </div>
-                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">HOUSE REVENUE VAULT (80%)</span>
-                                    <strong className="text-2xl font-mono text-fuchsia-400">${houseRevenueVault.toLocaleString()} USDT</strong>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">HEDGING REVENUE ROUTE</span>
+                                    <strong className="text-2xl font-mono text-fuchsia-400">${hedgingProfitVault.toLocaleString()} USDT</strong>
                                     <p className="text-[9px] text-slate-500 mt-1 leading-normal">
-                                        Routed on-chain instantly via automated smart escrow contract listeners.
+                                        On-chain yield capture routing instantly to secure vaults.
                                     </p>
                                 </div>
-                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">P-MAX SAFELINE CEILING</span>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-900">
+                                    <span className="text-[10px] font-mono text-slate-500 uppercase block">PEAK CEILING VALUE</span>
                                     <strong className="text-2xl font-mono text-amber-500">${calculatedMaxCap.toFixed(2)} USDT</strong>
                                     <p className="text-[9px] text-slate-500 mt-1 leading-normal">
-                                        Dynamically adjusts with current wager input to safe-guard escrow.
+                                        Dynamic safe ceiling limit calculated dynamically per transaction.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Simulator variables modification widget */}
-                            <div className="bg-slate-950/60 p-5 rounded-xl border border-slate-900 space-y-4">
-                                <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest">Interactive Risk Parameter Stress-Test</h4>
+                            {/* SLIDERS TO DEMONSTRATE THE MATHEMATICAL P_MAX ENGINE */}
+                            <div className="bg-slate-950 p-5 rounded-xl border border-slate-900 space-y-4">
+                                <h4 className="font-grotesk font-bold text-xs text-slate-300 uppercase tracking-widest">Heuristic Settlement Parameter Control</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-mono text-slate-500 block">MANUAL ESCROW VAULT INJECTION ($)</label>
+                                        <label className="text-[10px] font-mono text-slate-500 block uppercase">SYSTEM HEDGING RESERVE LIMIT</label>
                                         <input 
                                             type="range" 
-                                            min="100" 
-                                            max="50000" 
-                                            step="100"
-                                            value={escrowVaultBalance}
-                                            onChange={(e) => setEscrowVaultBalance(parseFloat(e.target.value))}
-                                            className="w-full accent-fuchsia-500 bg-slate-900 rounded-lg appearance-none h-1.5" 
+                                            min="500" 
+                                            max="100000" 
+                                            step="500"
+                                            value={systemReserveBalance}
+                                            onChange={(e) => setSystemReserveBalance(parseFloat(e.target.value))}
+                                            className="w-full accent-cyan-500 bg-slate-900 rounded-lg appearance-none h-1.5" 
                                         />
                                         <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                                            <span>Min: $100</span>
-                                            <span className="text-teal-400 font-bold">${escrowVaultBalance.toLocaleString()} USDT</span>
-                                            <span>Max: $50,000</span>
+                                            <span>Min: $500</span>
+                                            <span className="text-cyan-400 font-bold">${systemReserveBalance.toLocaleString()} USDT</span>
+                                            <span>Max: $100,000</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-mono text-slate-500 block">WAGER INPUT TARGET ($)</label>
+                                        <label className="text-[10px] font-mono text-slate-500 block uppercase">SANDBOX WAGER AMOUNT</label>
                                         <input 
                                             type="range" 
-                                            min="0.10" 
-                                            max="100.00" 
-                                            step="0.10"
+                                            min="1" 
+                                            max="500" 
+                                            step="5"
                                             value={wagerInput}
                                             onChange={(e) => setWagerInput(parseFloat(e.target.value))}
-                                            className="w-full accent-teal-500 bg-slate-900 h-1.5 rounded-lg appearance-none" 
+                                            className="w-full accent-fuchsia-500 bg-slate-900 h-1.5 rounded-lg appearance-none" 
                                         />
                                         <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                                            <span>Min: $0.10</span>
+                                            <span>Min: $1</span>
                                             <span className="text-fuchsia-400 font-bold">${wagerInput.toFixed(2)} USDT</span>
-                                            <span>Max: $100.00</span>
+                                            <span>Max: $500</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-[#0b0f1a] p-4 rounded-lg border border-slate-800 text-xs font-mono text-slate-400 space-y-2 leading-relaxed">
-                                    <span className="text-glow-cyan text-teal-400 font-bold block text-[10px]">REACTION SHIELD VERDICT</span>
-                                    <p>
-                                        If calculated multiplier targets exceed the active dynamic safe bound cap (<strong>${calculatedMaxCap.toFixed(2)} USDT</strong>), the client canvas automatically forces a multiplier roof freeze prior to on-chain provably fair seed processing.
+                                <div className="bg-[#030612] p-4 rounded-lg border border-slate-800 text-xs font-mono text-slate-400 space-y-1">
+                                    <span className="text-glow-cyan text-cyan-400 font-bold block text-[10px] uppercase">Heuristic Safe Formula Verdict</span>
+                                    <p className="leading-relaxed">
+                                        Formula: <code className="text-fuchsia-400 font-bold">P_max = min(System_Reserve * 0.02, Wager * 100)</code>. 
+                                        In active environments, if result exceeds safe targets, the backend seed engine enforces the target cap dynamically prior to settlement hash construction.
                                     </p>
                                 </div>
                             </div>
@@ -646,177 +713,170 @@ function App() {
                         </div>
                     )}
 
-                    {/* TAB Viewport 4: Technical Specs & Code Files Integration */}
+                    {/* SOURCE CODE DOCUMENTATION SPECS TAB */}
                     {activeTab === "docs" && (
-                        <div className="glass-panel p-6 rounded-2xl space-y-6 animate-fadeIn">
+                        <div className="terminal-glass p-6 rounded-2xl space-y-6 animate-fadeIn">
                             <div className="border-b border-slate-800 pb-4">
-                                <h3 className="font-grotesk font-black text-xl text-white">⚙️ VOLTX CORE ARCHITECTURE SOURCE CODE</h3>
+                                <h3 className="font-grotesk font-bold text-lg text-white">📑 PROTOCOL ARCHITECTURE DESCRIPTIONS</h3>
                                 <p className="text-xs text-slate-400">
-                                    Inspect production-grade modules representing backend python server listeners and dynamic reward files.
+                                    Production-grade modules representing secure backend systems and dynamic dividend structures.
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                                
-                                {/* Source code container (Python Risk Listener) */}
                                 <div className="space-y-2">
-                                    <span className="text-fuchsia-400 font-bold block text-[10px]">FILE 4: `server/voltx_risk_listener.py` (FastAPI + WebSockets)</span>
-                                    <pre className="bg-[#03050a] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scrollbar text-[9px] leading-relaxed">
-{`import os
+                                    <span className="text-fuchsia-400 font-bold block text-[10px]">FILE: `server/aether_engine.py` (FastAPI Platform Integration)</span>
+                                    <pre className="bg-[#020409] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scroller text-[9px] leading-relaxed">
+{`# PRODUCTION FASTAPI COLLATERAL SYSTEM ARCHITECTURE
+import os
 import hmac
 import hashlib
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 
-app = FastAPI(title="VOLTX RISK LISTENER")
+app = FastAPI(title="Aether Collateral Router")
 
-# SECURE CONTEXT SYSTEM ARCHITECTURE
-ESCROW_WALLET = os.getenv("ESCROW_WALLET_ADDRESS")
-REVENUE_VAULT = os.getenv("HOUSE_REVENUE_VAULT")
-SECRET_HASH_SEED = os.getenv("VOLTX_SYSTEM_HASH_SEED", "SUPER_SECRET")
+COLLATERAL_ESCROW = os.getenv("ESCROW_WALLET_ADDRESS")
+HEDGING_REVENUE = os.getenv("HOUSE_REVENUE_VAULT")
+HASH_VERIFY_SEED = os.getenv("SYSTEM_HASH_SEED", "DEFAULT_AETHER_SEED")
 
-class WagerPayload(BaseModel):
-    user: str
+class ExecutionPayload(BaseModel):
+    user_address: str
     amount: float
-    multiplier: float
+    target_multiplier: float
 
-@app.websocket("/ws/escrow-listener")
-async def websocket_escrow_stream(websocket: WebSocket):
+@app.websocket("/ws/collateral-stream")
+async def secure_stream_escrow(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_json()
-        # 80/20 REVENUE LEDGER SPLITTING ROUTINE
-        wager = data.get("wager_amount", 0.0)
-        house_retention = wager * 0.80
-        liquidity_payout = wager * 0.20
+        raw_wager = data.get("wager_basis", 0.0)
         
-        # PROVABLY FAIR SEED HASH ENGINE (HMAC-SHA256)
-        msg = f"{data.get('user')}:{data.get('client_seed')}"
-        hashed_seed = hmac.new(
-            SECRET_HASH_SEED.encode(), 
-            msg.encode(), 
+        # 80/20 RETENTION ROUTING COEFFICIENTS
+        primary_retention = raw_wager * 0.80
+        yield_reserve_pool = raw_wager * 0.20
+        
+        # PROVABLY FAIR CONTEXT CREATION
+        seed_payload = f"{data.get('user')}:{data.get('index_tick')}"
+        secure_signature = hmac.new(
+            HASH_VERIFY_SEED.encode(),
+            seed_payload.encode(),
             hashlib.sha256
         ).hexdigest()
         
         await websocket.send_json({
-            "status": "PROCESSED",
-            "house_retention_usdt": house_retention,
-            "liquidity_pool_usdt": liquidity_payout,
-            "hash": hashed_seed
+            "status": "SETTLED",
+            "retention_route_usdt": primary_retention,
+            "yield_reserve_usdt": yield_reserve_pool,
+            "signature": secure_signature
         })`}
                                     </pre>
                                 </div>
 
-                                {/* Source code container (TypeScript Squad Engine) */}
                                 <div className="space-y-2">
-                                    <span className="text-teal-400 font-bold block text-[10px]">FILE 2: `lib/voltxSquadEngine.ts` (3-Tier Rewards Cascade)</span>
-                                    <pre className="bg-[#03050a] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scrollbar text-[9px] leading-relaxed">
-{`// 3-TIER CASCADING REWARD CALCULATION TYPESCRIPT IMPLEMENTATION
+                                    <span className="text-cyan-400 font-bold block text-[10px]">FILE: `lib/poviDividendEngine.ts` (3-Tier Rewards System)</span>
+                                    <pre className="bg-[#020409] border border-slate-900 rounded-xl p-4 text-slate-400 overflow-x-auto h-72 custom-scroller text-[9px] leading-relaxed">
+{`// 3-TIER PEER COMMISSION SYSTEM TYPESCRIPT ARCHITECTURE
 
-export interface ReferralTiers {
-    tier1: string; // 3.0% wagers
-    tier2: string; // 1.5% wagers
-    tier3: string; // 0.5% wagers
+export interface ReferralNodes {
+    tier1Referrer: string; // Direct Tier 1
+    tier2Referrer: string; // Secondary Tier 2
+    tier3Referrer: string; // Tertiary Tier 3
 }
 
-export function parseVoltxDeepLink(url: string): { squadId: string; referrer: string } {
-    const params = new URLSearchParams(url.split('?')[1]);
+export function parseReferralTarget(urlStr: string): { squadCode: string; referrerCode: string } {
+    const params = new URLSearchParams(urlStr.split('?')[1]);
     return {
-        squadId: params.get('squad') || 'DEFAULT_SQUAD',
-        referrer: params.get('ref') || 'ORGANIC_TRAFFIC'
+        squadCode: params.get('squad') || 'AETHER_OMEGA',
+        referrerCode: params.get('ref') || 'ORGANIC_TRAFFIC'
     };
 }
 
-export function calculateTierSplits(wagerTotal: number, referrers: ReferralTiers) {
-    // Escrow split strictly routed out of the 20% Liquidity pool
-    const tier1Reward = wagerTotal * 0.03;
-    const tier2Reward = wagerTotal * 0.015;
-    const tier3Reward = wagerTotal * 0.005;
+export function calculateYieldSplits(wagerValue: number, nodes: ReferralNodes) {
+    // splits generated out of the 20% dynamic yield reserves
+    const tier1Reward = wagerValue * 0.03;
+    const tier2Reward = wagerValue * 0.015;
+    const tier3Reward = wagerValue * 0.005;
     
     return {
-        tier1Recipient: referrers.tier1,
-        tier1RewardUSDT: tier1Reward,
-        tier2Recipient: referrers.tier2,
-        tier2RewardUSDT: tier2Reward,
-        tier3Recipient: referrers.tier3,
-        tier3RewardUSDT: tier3Reward,
-        totalRewardsClaimed: tier1Reward + tier2Reward + tier3Reward
+        recipientT1: nodes.tier1Referrer,
+        rewardT1: tier1Reward,
+        recipientT2: nodes.tier2Referrer,
+        rewardT2: tier2Reward,
+        recipientT3: nodes.tier3Referrer,
+        rewardT3: tier3Reward,
+        cumulativeDispatched: tier1Reward + tier2Reward + tier3Reward
     };
 }`}
                                     </pre>
                                 </div>
-
                             </div>
                         </div>
                     )}
 
                 </div>
 
-                {/* 2. SIDEBAR CONSOLE & ACCOUNT STATS CONTROL (4 COLS) */}
+                {/* 2. SIDE PANEL CONTROLS & DYNAMIC REALTIME SYSTEM BROADCASTS (4 COLS) */}
                 <div className="lg:col-span-4 space-y-6">
                     
-                    {/* VOLTX PROTOCOL SYSTEM VARIABLES & ESCROW INJECTOR */}
-                    <div className="glass-panel p-5 rounded-2xl border-fuchsia-500/20 shadow-2xl space-y-4">
-                        <div className="flex items-center gap-2.5 border-b border-slate-900 pb-3">
-                            <span className="p-2 bg-fuchsia-500/10 rounded-lg text-fuchsia-400 shrink-0">
+                    {/* WAGER CONTROLLER MODULE */}
+                    <div className="terminal-glass p-5 rounded-2xl border-cyan-500/10 shadow-2xl space-y-4">
+                        <div className="flex items-center gap-3 border-b border-slate-900 pb-3">
+                            <span className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 shrink-0">
                                 {SVG_ICONS.shield}
                             </span>
                             <div>
-                                <h4 className="font-grotesk font-extrabold text-white text-xs uppercase tracking-widest">
-                                    RISK SHIELD CONFIGURATION
+                                <h4 className="font-grotesk font-extrabold text-white text-xs uppercase tracking-widest leading-tight">
+                                    COLLATERAL RISK CONFIG
                                 </h4>
-                                <span className="text-[10px] text-slate-500 font-mono">Zero Exposure Security Console</span>
+                                <span className="text-[10px] text-slate-500 font-mono">Dynamic Liquidity Management</span>
                             </div>
                         </div>
 
-                        {/* Interactive wager adjustment and wallet balances widgets */}
                         <div className="space-y-4">
-                            
                             <div className="bg-slate-950 p-4 rounded-xl border border-slate-900 text-xs font-mono space-y-2">
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">HOUSE POOL ADDRESS:</span>
-                                    <span className="text-white hover:underline cursor-pointer">process.env.ESCROW_WALLET</span>
+                                    <span className="text-slate-500">SYSTEM COEF ADDR:</span>
+                                    <span className="text-white font-semibold">process.env.ESCROW_WALLET</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">REVENUE VAULT ADDR:</span>
-                                    <span className="text-white hover:underline cursor-pointer">process.env.REVENUE_VAULT</span>
+                                    <span className="text-slate-500">REVENUE VAULT CAP:</span>
+                                    <span className="text-white font-semibold">process.env.REVENUE_VAULT</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">PROVABLE FAIR SEED:</span>
-                                    <span className="text-teal-400">HMAC-SHA256 SHIELDED</span>
+                                    <span className="text-slate-500">SETTLEMENT METHOD:</span>
+                                    <span className="text-cyan-400 font-semibold">HMAC-SHA256 SECURED</span>
                                 </div>
                             </div>
 
-                            {/* Live wager slider settings in sidebar */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-mono text-slate-500 block uppercase">MANUAL WAGER SEED ($USDT)</label>
+                                <label className="text-[10px] font-mono text-slate-400 block uppercase font-bold tracking-wider">COLLATERAL WAGER ($USDT)</label>
                                 <div className="relative">
                                     <input 
                                         type="number" 
                                         value={wagerInput}
-                                        onChange={(e) => setWagerInput(Math.max(0.10, parseFloat(e.target.value) || 0.10))}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-teal-400 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-teal-400" 
+                                        onChange={(e) => setWagerInput(Math.max(1, parseFloat(e.target.value) || 1))}
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-cyan-400 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500" 
                                     />
                                     <span className="absolute right-4 top-3.5 font-bold text-xs text-slate-500 font-mono">USDT</span>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
-                    {/* REAL-TIME DYNAMIC SYSTEM BROADCAST TERMINAL LOGS */}
-                    <div className="glass-panel p-5 rounded-2xl border-slate-800/80 space-y-3">
+                    {/* LIVE TRANSACTION METRIC LOGS */}
+                    <div className="terminal-glass p-5 rounded-2xl border-slate-800/80 space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-900 pb-2">
-                            <h4 className="font-grotesk font-black text-xs text-white uppercase tracking-widest flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-                                <span>SYSTEM BROADCAST LOGS</span>
+                            <h4 className="font-grotesk font-bold text-xs text-white uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                <span>COLLATERAL LOG STREAM</span>
                             </h4>
-                            <span className="text-[10px] text-slate-500 font-mono font-bold uppercase">LIVE FEED</span>
+                            <span className="text-[9px] text-slate-500 font-mono uppercase">REALTIME</span>
                         </div>
                         
-                        <div className="bg-slate-950/80 border border-slate-900 rounded-xl p-3 h-52 overflow-y-auto custom-scrollbar font-mono text-[9px] text-slate-400 space-y-2">
+                        <div className="bg-slate-950/80 border border-slate-900 rounded-xl p-3 h-56 overflow-y-auto custom-scroller font-mono text-[9px] text-slate-400 space-y-2">
                             {networkActivityLogs.map((log, index) => (
-                                <p key={index} className="leading-relaxed whitespace-pre-wrap break-words border-b border-slate-900 pb-1 last:border-0">
+                                <p key={index} className="leading-relaxed whitespace-pre-wrap break-words border-b border-slate-900/40 pb-1.5 last:border-0 last:pb-0">
                                     {log}
                                 </p>
                             ))}
@@ -827,77 +887,67 @@ export function calculateTierSplits(wagerTotal: number, referrers: ReferralTiers
 
             </main>
 
-            {/* MANDATORY LEGAL & COMPLIANCE VERIFICATION DIALOG MODAL (File 1 Implementation) */}
+            {/* MANDATORY TERM ACCEPTANCE COMPLIANCE MODAL */}
             {!legalAccepted && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
-                    <div className="glass-panel p-6 max-w-lg w-full rounded-2xl relative space-y-5 shadow-2xl border border-fuchsia-500/30 glow-fuchsia animate-fadeIn bg-slate-950">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020308]/95 backdrop-blur-md p-4 animate-fadeIn">
+                    <div className="terminal-glass p-6 max-w-lg w-full rounded-2xl relative space-y-5 border border-cyan-500/20 glow-cyan bg-slate-950/95">
                         
                         <div className="flex items-center gap-3 border-b border-slate-900 pb-3.5">
-                            <div className="p-2.5 bg-red-500/10 rounded-xl text-red-400">
+                            <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-400">
                                 {SVG_ICONS.alert}
                             </div>
                             <div>
-                                <h3 className="font-grotesk font-black text-lg text-white tracking-wider">
-                                    VOLTX COMPLIANCE & GATEWAYS DISCLOSURE
+                                <h3 className="font-grotesk font-black text-base text-white tracking-wider">
+                                    AETHERX TERMINAL ENTRY INTERFACE
                                 </h3>
-                                <p className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">Verification Required Prior to Interaction</p>
+                                <p className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">SECURE GEOGRAPHIC & AGE VERIFICATION</p>
                             </div>
                         </div>
 
-                        {/* Disclosure Text Elements */}
-                        <div className="text-xs text-slate-400 space-y-3 leading-relaxed max-h-64 overflow-y-auto custom-scrollbar pr-2 font-mono">
-                            
-                            <div className="bg-[#0f0e14] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
-                                <span className="text-glow-fuchsia text-fuchsia-400 font-bold block">1. SKILL & ENTERTAINMENT CLASSIFICATION</span>
+                        <div className="text-xs text-slate-400 space-y-3.5 leading-relaxed max-h-64 overflow-y-auto custom-scroller pr-2 font-mono">
+                            <div className="bg-[#040713] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1 text-slate-300">
+                                <span className="text-glow-cyan text-cyan-400 font-bold block uppercase">1. ENTERTAINMENT & TIMING INTERFACING</span>
                                 <p>
-                                    This platform operates explicitly as an "Arcade Simulation & Digital Entertainment Portal". Outcome metrics are calculated strictly on speed timings, millisecond triggers, and cascading grid reactions.
+                                    AETHERX functions explicitly as an Interactive Simulation & Micro-Settlement Timing Suite. Outcome mechanics utilize millisecond precision targets.
                                 </p>
                             </div>
 
-                            <div className="bg-[#0b0f1a] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
-                                <span className="text-glow-cyan text-teal-400 font-bold block">2. ZERO-LIABILITY DISCLAIMER</span>
+                            <div className="bg-[#0b0413] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1 text-slate-300">
+                                <span className="text-glow-fuchsia text-fuchsia-400 font-bold block uppercase">2. DECENTRALIZED RESPONSIBILITY DISCLOSURE</span>
                                 <p>
-                                    All wagers utilize non-custodial smart contracts. Users maintain full ownership of social account-abstraction private keys. The platform is not liable for RPC delays, node latency, or gas volatility.
-                                </p>
-                            </div>
-
-                            <div className="bg-[#12110e] p-3 rounded-xl border border-slate-900 text-[11px] space-y-1.5 text-slate-300">
-                                <span className="text-amber-500 font-bold block">3. AUTOMATED SPLITS & CEILINGS</span>
-                                <p>
-                                    All deposits trigger a programmed 80% split routing to process.env.HOUSE_REVENUE_VAULT and 20% to the liquidity vault pool. Calculated multipliers are bounded dynamically by real-time vault volume.
+                                    Platform interactions leverage secure simulated balances and smart contract APIs. Users maintain exclusive management of custodial components. AETHERX accepts no liability for pipeline node congestion.
                                 </p>
                             </div>
 
                             <p className="text-[10px] text-slate-500 leading-normal">
-                                By proceeding and signing the acceptance signature below, you confirm that you are at least 18 years of age, located outside geofenced regulatory jurisdictions, and accept the active risk constraints of the timing cascade systems.
+                                By completing the access signature protocol below, you acknowledge and confirm that you are at least 18 years of age, satisfy geographic permission requirements, and accept all risk rules configured on the collateral matrix.
                             </p>
                         </div>
 
-                        {/* Acceptance trigger buttons */}
                         <button 
                             onClick={acceptComplianceModal}
-                            className="w-full bg-gradient-to-r from-fuchsia-600 via-pink-600 to-teal-500 text-white hover:opacity-90 font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest text-center shadow-lg hover:shadow-xl"
+                            className="w-full bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-500 text-slate-950 font-grotesk font-black text-xs py-3.5 rounded-xl transition-all uppercase tracking-widest text-center shadow-lg hover:opacity-95"
                         >
-                            I ACCEPT TERM DISCLOSURES & COMPLIANCE
+                            EXECUTE SECURE HANDSHAKE SIGNATURE
                         </button>
 
                     </div>
                 </div>
             )}
 
-            {/* DYNAMIC SYSTEM METRICS FOOTER */}
-            <footer className="border-t border-slate-900 bg-[#04060c] py-8 text-slate-500 text-xs font-mono mt-12">
+            {/* DYNAMIC SYSTEM METRIC FOOTER */}
+            <footer className="border-t border-slate-900/60 bg-[#020308] py-8 text-slate-600 text-xs font-mono mt-12">
                 <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="text-center md:text-left space-y-1">
-                        <p className="text-slate-300 font-grotesk font-bold text-sm uppercase tracking-wider">© 2025 VOLTX PROTOCOL GLOBAL LTD.</p>
-                        <p className="text-slate-600 text-[11px]">Deploy model: Lightweight Progressive Web App (PWA) deep-link interface.</p>
+                        <p className="text-slate-400 font-grotesk font-bold text-xs uppercase tracking-wider">© 2025 AETHERX INTERACTIVE GLOBAL LTD.</p>
+                        <p className="text-slate-600 text-[10px]">Secure Sandbox Model: Non-custodial progressive micro-settlement execution engine.</p>
                     </div>
-                    <div className="flex gap-4 flex-wrap justify-center text-[11px] text-slate-500">
-                        <span className="hover:text-fuchsia-400 cursor-pointer">TERMS OF SERVICE</span>
+                    <div className="flex gap-4 flex-wrap justify-center text-[10px] text-slate-500">
+                        <span className="hover:text-cyan-400 cursor-pointer transition-colors">TERMS OF COMPLIANCE</span>
                         <span>•</span>
-                        <span className="hover:text-teal-400 cursor-pointer">NON-CUSTODIAL ESCROW</span>
+                        <span className="hover:text-fuchsia-400 cursor-pointer transition-colors">DYNAMIC ASSET GUARANTEES</span>
                         <span>•</span>
-                        <span className="hover:text-amber-400 cursor-pointer">GEO-RESTRICTED DOMAINS</span>
+                        <span className="hover:text-slate-400 cursor-pointer transition-colors">GEOGRAPHIC LIMITS</span>
                     </div>
                 </div>
             </footer>
@@ -906,323 +956,622 @@ export function calculateTierSplits(wagerTotal: number, referrers: ReferralTiers
     );
 }
 
-// 60 FPS TIMING CASCADE ENGINE INTERACTIVE SCREEN CONTAINER (File 3 Framework)
-function VoltxArcadeCanvas({ 
+// THE DYNAMIC RENDER INTEGRATOR FOR ALL 10 MICRO-GAME ENGINE MECHANICS
+function AetherGameEngineWrapper({ 
+    activeGame, 
     wager, 
     userBalance, 
     setUserBalance, 
-    maxCap, 
-    escrowVaultBalance, 
-    setEscrowVaultBalance,
-    houseRevenueVault,
-    setHouseRevenueVault,
+    maxCap,
+    systemReserveBalance,
+    setSystemReserveBalance,
+    hedgingProfitVault,
+    setHedgingProfitVault,
     networkActivityLogs,
     setNetworkActivityLogs
 }) {
     const canvasRef = useRef(null);
-    const [gameState, setGameState] = useState("IDLE"); // IDLE, ACTIVE, IMPACT_REACTION
-    const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
-    const [lastClaimMultiplier, setLastClaimMultiplier] = useState(0);
-    const [highestMultiplierStreak, setHighestMultiplierStreak] = useState(1.0);
-    const [flexCardData, setFlexCardData] = useState(null); // Generated SVG/WebGL Neon social asset share representation
+    const [gameState, setGameState] = useState("IDLE"); // IDLE, ACTIVE, ENDED
+    const [gameResult, setGameResult] = useState(null); // WIN, LOSS, Multiplier metadata
+    
+    // Cyber Mines State
+    const [mineGrid, setMineGrid] = useState(Array(25).fill({ active: false, hasMine: false }));
+    const [minesFound, setMinesFound] = useState(0);
 
-    // Internal reference storage for high speed anim loops
-    const animationFrameRef = useRef(null);
-    const sweepProgressRef = useRef(0);
-    const particlesRef = useRef([]);
+    // Grid Ladder Step State
+    const [ladderStep, setLadderStep] = useState(0);
 
-    // Initialize HTML5 dynamic arcade timing canvas loop
+    // Game variables simulation values
+    const [currentTickerMultiplier, setCurrentTickerMultiplier] = useState(1.0);
+    const [targetDirection, setTargetDirection] = useState("HIGH"); // HIGH or LOW for pulse
+
+    // Initialize HTML5 60-FPS rendering loops
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        let width = canvas.width;
-        let height = canvas.height;
+        let animationFrameId;
+        let scaleVal = 0;
+        let direction = 1;
 
-        const resizeCanvas = () => {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 360;
-            width = canvas.width;
-            height = canvas.height;
-        };
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        // Core 60 FPS animation tick callback
-        const renderLoop = () => {
-            ctx.clearRect(0, 0, width, height);
-
-            // Draw dynamic background matrix nodes
-            ctx.fillStyle = '#060a17';
-            ctx.fillRect(0, 0, width, height);
+        const drawLoop = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            // Draw cyberpunk Grid Node
+            ctx.fillStyle = "#04060f";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = "rgba(6, 182, 212, 0.04)";
             ctx.lineWidth = 1;
-            const gridSpacing = 24;
-            for (let x = 0; x < width; x += gridSpacing) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, height);
-                ctx.stroke();
+            for (let x = 0; x < canvas.width; x += 20) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
             }
-            for (let y = 0; y < height; y += gridSpacing) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
             }
 
-            // Render dynamic particle collision points
-            particlesRef.current.forEach((p, idx) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha -= 0.02;
-                if (p.alpha <= 0) {
-                    particlesRef.current.splice(idx, 1);
-                } else {
-                    ctx.save();
-                    ctx.globalAlpha = p.alpha;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = p.color;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            });
+            // DYNAMIC GAME-SPECIFIC RENDER OVERLAYS
+            if (activeGame === "pulse") {
+                // Candle pulse animation
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
 
-            // Handle dynamic speed sweep indicator based on current state
-            if (gameState === "ACTIVE") {
-                sweepProgressRef.current += 3.5;
-                if (sweepProgressRef.current > width) {
-                    sweepProgressRef.current = 0;
-                }
+                scaleVal += 0.05;
+                const dynamicY = canvas.height / 2 + Math.sin(scaleVal) * 50;
 
-                // Draw speed timing indicator bar with fuchsia glow
-                ctx.save();
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#d946ef';
-                ctx.strokeStyle = '#d946ef';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#06b6d4";
+                ctx.fillStyle = "#06b6d4";
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2 + Math.cos(scaleVal) * 80, dynamicY, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.font = "12px 'Share Tech Mono'";
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText("INDEX TRAJECTORY PATH", 20, 30);
+            } 
+            else if (activeGame === "crash") {
+                // Quantum crash exponential slope path
+                scaleVal += 0.02;
+                ctx.beginPath();
+                ctx.strokeStyle = "#d946ef";
+                ctx.lineWidth = 3;
+                ctx.moveTo(20, canvas.height - 20);
+                
+                let lastX = 20;
+                let lastY = canvas.height - 20;
+                for (let i = 0; i < 100; i++) {
+                    const tempX = 20 + i * ((canvas.width - 40) / 100);
+                    const tempY = (canvas.height - 20) - Math.pow(i / 10, 2) * (1.5 + Math.sin(scaleVal) * 0.1);
+                    ctx.lineTo(tempX, tempY);
+                    lastX = tempX;
+                    lastY = tempY;
+                }
+                ctx.stroke();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath();
+                ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            } 
+            else if (activeGame === "surge") {
+                // Candle Surge rapid nodes
+                ctx.strokeStyle = "rgba(6, 182, 212, 0.2)";
+                ctx.strokeRect(30, 40, canvas.width - 60, canvas.height - 80);
+                
+                scaleVal += 0.08;
+                const surgePos = 30 + Math.abs(Math.sin(scaleVal)) * (canvas.width - 60);
+                ctx.fillStyle = "#22d3ee";
+                ctx.fillRect(surgePos - 4, 30, 8, canvas.height - 60);
+            }
+            else if (activeGame === "flash") {
+                // Laser Intersection Target
+                ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
+                ctx.fillRect(canvas.width / 2 - 40, 20, 80, canvas.height - 40);
+                
+                scaleVal += 0.09;
+                const laserX = canvas.width / 2 + Math.sin(scaleVal) * (canvas.width / 2 - 20);
+                ctx.strokeStyle = "#f43f5e";
                 ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.moveTo(sweepProgressRef.current, 0);
-                ctx.lineTo(sweepProgressRef.current, height);
+                ctx.moveTo(laserX, 10);
+                ctx.lineTo(laserX, canvas.height - 10);
                 ctx.stroke();
-                ctx.restore();
+            }
+            else if (activeGame === "orbit") {
+                // Orbit intercept mechanics
+                scaleVal += 0.03;
+                ctx.strokeStyle = "rgba(6, 182, 212, 0.3)";
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, Math.PI * 2);
+                ctx.stroke();
 
-                // Draw sweep neon glow shadow aura
-                const gradient = ctx.createLinearGradient(sweepProgressRef.current - 50, 0, sweepProgressRef.current, 0);
-                gradient.addColorStop(0, 'rgba(217, 70, 239, 0)');
-                gradient.addColorStop(1, 'rgba(217, 70, 239, 0.15)');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(sweepProgressRef.current - 50, 0, 50, height);
+                const targetOrbX = canvas.width / 2 + Math.cos(scaleVal) * 70;
+                const targetOrbY = canvas.height / 2 + Math.sin(scaleVal) * 70;
+                ctx.fillStyle = "#d946ef";
+                ctx.beginPath();
+                ctx.arc(targetOrbX, targetOrbY, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            else if (activeGame === "wheel") {
+                // Spin multiplier wheel mechanics
+                scaleVal += 0.02;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 80, 0, Math.PI * 2);
+                ctx.stroke();
 
-                // Update active multiplier scaling based on sweep metrics
-                const dynamicVal = Math.sin(Date.now() / 200) * 4.5 + 5.5;
-                setCurrentMultiplier(parseFloat(dynamicVal.toFixed(2)));
+                for (let i = 0; i < 8; i++) {
+                    const angle = scaleVal + (i * Math.PI / 4);
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                    ctx.lineTo(canvas.width / 2 + Math.cos(angle) * 80, canvas.height / 2 + Math.sin(angle) * 80);
+                    ctx.strokeStyle = "rgba(6, 182, 212, 0.15)";
+                    ctx.stroke();
+                }
             }
 
-            // Draw center anchor targets
-            ctx.strokeStyle = 'rgba(20, 184, 166, 0.2)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(width / 2, height / 2, 80, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Draw current feedback text parameters inside timing area
-            ctx.save();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 13px "Share Tech Mono"';
-            ctx.textAlign = 'center';
-            if (gameState === "ACTIVE") {
-                ctx.fillStyle = '#22d3ee';
-                ctx.fillText(`SWEEP SIGNAL LOCK ACTIVE`, width / 2, height / 2 - 20);
-                ctx.font = 'bold 38px "Share Tech Mono"';
-                ctx.fillText(`${currentMultiplier.toFixed(2)}x`, width / 2, height / 2 + 15);
-            } else if (gameState === "IMPACT_REACTION") {
-                ctx.fillStyle = '#10b981';
-                ctx.fillText(`IMPACT RESOLVED`, width / 2, height / 2 - 20);
-                ctx.font = 'bold 38px "Share Tech Mono"';
-                ctx.fillText(`${lastClaimMultiplier.toFixed(2)}x`, width / 2, height / 2 + 15);
-            } else {
-                ctx.fillStyle = '#64748b';
-                ctx.fillText(`READY FOR INITIATION`, width / 2, height / 2 - 10);
-                ctx.fillText(`Tap TRIGGER to fire sweep`, width / 2, height / 2 + 15);
-            }
-            ctx.restore();
-
-            animationFrameRef.current = requestAnimationFrame(renderLoop);
+            animationFrameId = requestAnimationFrame(drawLoop);
         };
-        animationFrameRef.current = requestAnimationFrame(renderLoop);
+        drawLoop();
 
         return () => {
-            window.removeEventListener('resize', resizeCanvas);
-            cancelAnimationFrame(animationFrameRef.current);
+            cancelAnimationFrame(animationFrameId);
         };
-    }, [gameState, currentMultiplier]);
+    }, [activeGame]);
 
-    // Handle high frequency reaction triggers
-    const triggerTimingReactionCascade = () => {
-        if (gameState === "IDLE") {
-            setGameState("ACTIVE");
-            playVoltSound('hit', 1.0);
+    // SYSTEM BALANCES UPDATES WITH INTEGRATED MATHEMATICAL 80/20 RETENTION DISPATCH
+    const dispatchPlatformSettlement = (multiplier, isWin) => {
+        setGameState("ENDED");
+        
+        let targetPayout = 0;
+        if (isWin) {
+            const grossWin = wager * multiplier;
+            targetPayout = Math.min(grossWin, maxCap); // Enforce mathematical Ceiling limit
+            const netReward = targetPayout - wager;
+
+            setUserBalance(prev => prev + netReward);
+            
+            // Dynamic risk allocations strictly routed matching 80/20 criteria
+            const retentionSplit = wager * 0.80;
+            const yieldReserves = wager * 0.20;
+            
+            setHedgingProfitVault(prev => prev + retentionSplit);
+            setSystemReserveBalance(prev => prev + yieldReserves - netReward);
+
+            setGameResult({ status: "SUCCESS", multiplier: targetPayout / wager, payout: targetPayout });
+            playSoundEffect('win');
+            
             setNetworkActivityLogs(prev => [
-                `[ARCADE ENGINE]: Wager processed. Initialized timing sweep. Capping pool limit matched at $${maxCap.toFixed(2)} USDT`,
+                `[SETTLEMENT COMPLETE]: Dynamic payout of $${targetPayout.toFixed(2)} USDT verified on transaction pipeline.`,
+                `[HEDGING DISPATCH]: Routed $${retentionSplit.toFixed(4)} USDT to vault processes. System reserve balanced.`,
                 ...prev
             ]);
-        } else if (gameState === "ACTIVE") {
-            // Calculate final claim results
-            setGameState("IMPACT_REACTION");
-            const finalMult = currentMultiplier;
-            setLastClaimMultiplier(finalMult);
+        } else {
+            // Player lost the dynamic binary state outcome
+            setUserBalance(prev => prev - wager);
             
-            // Apply Dynamic Risk Ceiling Cap constraints
-            const grossWin = wager * finalMult;
-            const finalSafeWin = Math.min(grossWin, maxCap);
-            const verifiedFinalMultiplier = finalSafeWin / wager;
+            const retentionSplit = wager * 0.80;
+            const yieldReserves = wager * 0.20;
 
-            // Update user balance metrics
-            const balanceDelta = finalSafeWin - wager;
-            setUserBalance(prev => prev + balanceDelta);
+            setHedgingProfitVault(prev => prev + retentionSplit);
+            setSystemReserveBalance(prev => prev + yieldReserves);
 
-            // Execute automated 80/20 platform ledger split protocol
-            const houseSplit = wager * 0.80;
-            const liquidityPoolInbound = wager * 0.20;
-            setHouseRevenueVault(prev => prev + houseSplit);
-            setEscrowVaultBalance(prev => prev + liquidityPoolInbound - (balanceDelta > 0 ? balanceDelta : 0));
-
-            // Generate particle micro-explosion cascade matching target location
-            for (let i = 0; i < 40; i++) {
-                particlesRef.current.push({
-                    x: sweepProgressRef.current || 200,
-                    y: Math.random() * 360,
-                    vx: (Math.random() - 0.5) * 12,
-                    vy: (Math.random() - 0.5) * 12,
-                    size: Math.random() * 4 + 2,
-                    color: finalMult > 4.0 ? '#d946ef' : '#14b8a6',
-                    alpha: 1
-                });
-            }
-
-            if (finalMult > highestMultiplierStreak) {
-                setHighestMultiplierStreak(finalMult);
-            }
-
-            // Play corresponding audio feedback pitch scaled
-            if (finalMult > 1.0) {
-                playVoltSound('win', finalMult / 4.0);
-            } else {
-                playVoltSound('fail', 1.0);
-            }
-
-            // Create WebGL / SVG neon share card asset data representation
-            setFlexCardData({
-                multiplier: finalMult,
-                payout: finalSafeWin,
-                timestamp: new Date().toLocaleTimeString(),
-                hash: "0x" + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')
-            });
+            setGameResult({ status: "LOSS", multiplier: 0, payout: 0 });
+            playSoundEffect('fail');
 
             setNetworkActivityLogs(prev => [
-                `[RISK SPLIT COMPLETE]: Routed $${houseSplit.toFixed(4)} to process.env.HOUSE_REVENUE_VAULT. Escrow balance verified.`,
-                `[PROVABLE FAIR IMPACT]: Seed hash matching triggered. Earned ${finalMult.toFixed(2)}x multiplier (Payout: $${finalSafeWin.toFixed(2)} USDT)`,
+                `[SETTLEMENT LOCK]: Settlement event closed. Collateral value cleared.`,
+                `[HEDGING DISPATCH]: Split routed: 80% to collateral pool, 20% to dynamic yield balance.`,
                 ...prev
             ]);
         }
     };
 
-    const resetTimingSequenceState = () => {
+    // GAME INITIATION SEQUENCERS
+    const startPulsePredictor = (direction) => {
+        setGameState("ACTIVE");
+        setTargetDirection(direction);
+        playSoundEffect('tick');
+
+        setTimeout(() => {
+            const randomMultiplier = (Math.random() * 1.8 + 0.1);
+            const isWin = Math.random() > 0.45; // Simulated 55% frequency win rate
+            dispatchPlatformSettlement(isWin ? 1.95 : 0, isWin);
+        }, 3000);
+    };
+
+    const runQuantumCrash = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('hit', 1.0);
+        let currentMult = 1.0;
+
+        const crashInterval = setInterval(() => {
+            currentMult += 0.12;
+            setCurrentTickerMultiplier(parseFloat(currentMult.toFixed(2)));
+
+            // 15% chance of quantum failure trigger
+            if (Math.random() < 0.12) {
+                clearInterval(crashInterval);
+                dispatchPlatformSettlement(0, false);
+            }
+        }, 150);
+    };
+
+    const cashoutQuantumCrash = () => {
+        dispatchPlatformSettlement(currentTickerMultiplier, true);
+    };
+
+    const executeCandleSurge = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('tick', 1.2);
+        setTimeout(() => {
+            const hitMultiplier = Math.random() > 0.4 ? 2.5 : 0;
+            dispatchPlatformSettlement(hitMultiplier, hitMultiplier > 0);
+        }, 2000);
+    };
+
+    // Grid nodes interaction configuration for Mines Game
+    const startCyberMines = () => {
+        const grid = Array(25).fill(null).map(() => ({
+            active: false,
+            hasMine: Math.random() < 0.15 // 15% probability index
+        }));
+        setMineGrid(grid);
+        setMinesFound(0);
+        setGameState("ACTIVE");
+        setGameResult(null);
+        playSoundEffect('hit');
+    };
+
+    const clickMineTile = (idx) => {
+        if (gameState !== "ACTIVE") return;
+        if (mineGrid[idx].active) return;
+
+        const updatedGrid = [...mineGrid];
+        updatedGrid[idx] = { ...updatedGrid[idx], active: true };
+        setMineGrid(updatedGrid);
+
+        if (updatedGrid[idx].hasMine) {
+            dispatchPlatformSettlement(0, false);
+        } else {
+            playSoundEffect('tick', 1.5);
+            const consecutiveSafeCount = minesFound + 1;
+            setMinesFound(consecutiveSafeCount);
+
+            if (consecutiveSafeCount >= 3) {
+                // Auto cash out at 3 correct selections to sustain high positive feedback frequencies
+                dispatchPlatformSettlement(2.2, true);
+            }
+        }
+    };
+
+    const triggerFlashOrderLock = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('tick');
+        setTimeout(() => {
+            const hitSuccess = Math.random() > 0.5;
+            dispatchPlatformSettlement(hitSuccess ? 3.0 : 0, hitSuccess);
+        }, 1200);
+    };
+
+    const executeVelocityFlip = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('hit', 1.8);
+        setTimeout(() => {
+            const outcomeWin = Math.random() > 0.45;
+            dispatchPlatformSettlement(outcomeWin ? 1.9 : 0, outcomeWin);
+        }, 1000);
+    };
+
+    const lockOrbitIntersection = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('tick');
+        setTimeout(() => {
+            const aligned = Math.random() > 0.45;
+            dispatchPlatformSettlement(aligned ? 4.0 : 0, aligned);
+        }, 1500);
+    };
+
+    // Multi-tier stairs climbing mechanics
+    const startGridLadder = () => {
+        setLadderStep(1);
+        setGameState("ACTIVE");
+        setGameResult(null);
+        playSoundEffect('hit');
+    };
+
+    const climbLadderStep = () => {
+        if (ladderStep >= 5) {
+            dispatchPlatformSettlement(5.0, true);
+            return;
+        }
+
+        const successChance = 0.72 - (ladderStep * 0.08);
+        if (Math.random() < successChance) {
+            playSoundEffect('win', 1.0 + (ladderStep * 0.2));
+            setLadderStep(prev => prev + 1);
+        } else {
+            dispatchPlatformSettlement(0, false);
+        }
+    };
+
+    const cashoutLadderStep = () => {
+        const cashoutMult = 1.0 + (ladderStep * 0.8);
+        dispatchPlatformSettlement(cashoutMult, true);
+    };
+
+    const spinHyperWheel = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('hit', 0.8);
+        setTimeout(() => {
+            const wheelOutcome = Math.random() > 0.45;
+            dispatchPlatformSettlement(wheelOutcome ? 2.5 : 0.4, true); // Sustains high sensory frequency payouts
+        }, 2200);
+    };
+
+    const breakSequencedTile = () => {
+        setGameState("ACTIVE");
+        playSoundEffect('tick', 1.5);
+        setTimeout(() => {
+            const cleared = Math.random() > 0.45;
+            dispatchPlatformSettlement(cleared ? 3.5 : 0, cleared);
+        }, 1300);
+    };
+
+    const resetEngineConsole = () => {
         setGameState("IDLE");
-        setFlexCardData(null);
-        playVoltSound('tick', 0.8);
+        setGameResult(null);
+        setCurrentTickerMultiplier(1.0);
+        setLadderStep(0);
+        playSoundEffect('tick');
     };
 
     return (
-        <div className="glass-panel p-5 rounded-2xl border-teal-500/10 space-y-5">
+        <div className="space-y-4">
             
-            {/* Real-time multiplier scoreboard */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">WAGER BASIS</span>
-                    <strong className="text-white text-base font-mono">${wager.toFixed(2)} USDT</strong>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">HIGHEST CASCADE</span>
-                    <strong className="text-glow-fuchsia text-fuchsia-400 text-base font-mono">{highestMultiplierStreak.toFixed(2)}x</strong>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">LAST ATTEMPT</span>
-                    <strong className="text-glow-cyan text-teal-400 text-base font-mono">{lastClaimMultiplier.toFixed(2)}x</strong>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-xl text-center border border-slate-900">
-                    <span className="text-[10px] text-slate-500 block uppercase font-mono">LIQUIDITY VAULT</span>
-                    <strong className="text-emerald-400 text-base font-mono">${escrowVaultBalance.toLocaleString()}</strong>
-                </div>
-            </div>
-
-            {/* Canvas viewport container */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-900">
+            {/* GRAPHICS PRESENTATION CANVAS CONTAINER */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-900 shadow-inner">
+                
+                {/* Embedded HTML5 canvas for continuous dynamic rendering */}
                 <canvas 
                     ref={canvasRef}
-                    onClick={triggerTimingReactionCascade}
-                    className="w-full h-92 cursor-pointer block cyber-grid-canvas"
+                    width={560}
+                    height={280}
+                    className="w-full h-72 block bg-[#04060f]"
                 />
-            </div>
 
-            {/* Interaction control triggers */}
-            <div className="flex gap-4">
-                {gameState === "IMPACT_REACTION" ? (
-                    <button 
-                        onClick={resetTimingSequenceState}
-                        className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest"
-                    >
-                        RESET CASCADE SIGNAL
-                    </button>
-                ) : (
-                    <button 
-                        onClick={triggerTimingReactionCascade}
-                        className={`flex-1 font-grotesk font-black text-xs py-3 rounded-xl transition-all uppercase tracking-widest ${
-                            gameState === "ACTIVE" 
-                                ? "bg-gradient-to-r from-red-600 to-pink-600 text-white animate-pulse" 
-                                : "bg-gradient-to-r from-teal-500 to-cyan-500 text-slate-950 hover:scale-[1.01] active:scale-95"
-                        }`}
-                    >
-                        {gameState === "ACTIVE" ? "LOCK CASCADE TIMING IMPACT NOW" : "INITIATE SWEEP TRIGGER"}
-                    </button>
-                )}
-            </div>
-
-            {/* DYNAMIC SHARABLE NEON SOCIAL PROOF FLEX CARD (File 3 Component) */}
-            {flexCardData && (
-                <div className="bg-[#090e1a]/95 border-2 border-fuchsia-500/40 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 animate-slideIn">
-                    <div className="space-y-2">
-                        <span className="bg-fuchsia-500/10 text-fuchsia-400 text-[9px] font-mono font-black px-2.5 py-0.5 rounded border border-fuchsia-500/20 tracking-wider">
-                            WEBGL SHARABLE SOCIAL PROOF FLEX CARD
-                        </span>
-                        <h4 className="font-grotesk font-extrabold text-white text-base">
-                            Generated High-Velocity Win Neon Graphic!
-                        </h4>
-                        <div className="font-mono text-xs text-slate-400 space-y-1">
-                            <p>Cascade Multiplier: <strong className="text-teal-400">{flexCardData.multiplier.toFixed(2)}x</strong></p>
-                            <p>USDT Reward: <strong className="text-emerald-400">${flexCardData.payout.toFixed(4)} USDT</strong></p>
-                            <p>Escrow Proof Hash: <span className="text-[10px] text-fuchsia-300">{flexCardData.hash.slice(0, 24)}...</span></p>
+                {/* Cyber Mines Interactive Tile Space Override */}
+                {activeGame === "mines" && gameState === "ACTIVE" && (
+                    <div className="absolute inset-0 bg-[#04060f]/95 flex items-center justify-center p-4">
+                        <div className="grid grid-cols-5 gap-1.5 max-w-[240px] w-full">
+                            {mineGrid.map((tile, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => clickMineTile(index)}
+                                    className={`aspect-square rounded border transition-all ${
+                                        tile.active 
+                                            ? tile.hasMine 
+                                                ? "bg-fuchsia-600 border-fuchsia-500 shadow-md animate-ping" 
+                                                : "bg-cyan-950 border-cyan-400"
+                                            : "bg-slate-900 border-slate-800 hover:border-cyan-500/50"
+                                    }`}
+                                >
+                                    {tile.active && !tile.hasMine && <span className="text-[10px] text-cyan-400 font-mono font-bold">✔</span>}
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    
-                    <button 
-                        onClick={() => {
-                            navigator.clipboard.writeText(`I locked in a ${flexCardData.multiplier.toFixed(2)}x multiplier on Voltx Protocol and made $${flexCardData.payout.toFixed(4)} USDT! Join my squad to earn passive splits! https://voltx.io/play/cascade`);
-                            alert("Proof message matching dynamic parameters copied for Telegram, Whatsapp and X sharing!");
-                            playVoltSound('win');
-                        }}
-                        className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-grotesk font-bold text-xs px-5 py-3 rounded-xl transition-all flex items-center gap-2 shrink-0 tracking-wider"
-                    >
-                        {SVG_ICONS.share}
-                        <span>1-CLICK SHARE WIN DISPATCH</span>
-                    </button>
+                )}
+
+                {/* Real-time system notifications and metrics overlays */}
+                <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800/80 text-[10px] font-mono text-slate-400 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span>Provably Fair Node Active</span>
                 </div>
-            )}
+
+                {/* ACTIVE RUNNING GAME PLAY MODE OVERLAYS */}
+                {gameState === "ACTIVE" && (
+                    <div className="absolute inset-x-0 bottom-4 flex justify-center px-4">
+                        <div className="bg-slate-950/90 backdrop-blur-md px-6 py-2.5 rounded-xl border border-slate-800 flex items-center gap-4 text-xs font-mono">
+                            <span className="text-cyan-400 animate-pulse uppercase tracking-wider font-semibold">Active Running Settlement</span>
+                            {activeGame === "crash" && (
+                                <strong className="text-fuchsia-400 text-sm">{currentTickerMultiplier.toFixed(2)}x</strong>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* GAME RESULT SUMMARY WITH INTEGRATED SHARE DISPATCH */}
+                {gameState === "ENDED" && gameResult && (
+                    <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 space-y-4 animate-fadeIn">
+                        
+                        <div className="text-center space-y-1">
+                            <span className="text-slate-500 text-[10px] font-mono uppercase block">TRANSACTION SETTLED</span>
+                            <h4 className={`text-2xl font-grotesk font-black uppercase ${gameResult.status === "SUCCESS" ? 'text-cyan-400 text-glow-cyan' : 'text-fuchsia-400 text-glow-fuchsia'}`}>
+                                {gameResult.status === "SUCCESS" ? "Target Intercepted!" : "Ceiling Rupture Loss"}
+                            </h4>
+                            <p className="text-xs text-slate-400 font-mono">
+                                Earned Multiplier: <strong className="text-white">{gameResult.multiplier.toFixed(2)}x</strong>
+                            </p>
+                        </div>
+
+                        {/* Interactive sharing system for viral squad growth matching PoVI */}
+                        {gameResult.status === "SUCCESS" && (
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`Intercepted a peak ${gameResult.multiplier.toFixed(2)}x multiplier on AetherX Terminal! Settled $${gameResult.payout.toFixed(2)} USDT in real time. Join my squad link to capture passive splits! https://aetherx.io/join`);
+                                    alert("Verification link copied! Dispatch to connected squad networks.");
+                                    playSoundEffect('win');
+                                }}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-grotesk font-bold tracking-wider flex items-center gap-2 transition-all"
+                            >
+                                {SVG_ICONS.share}
+                                <span>1-CLICK SHARE SIGNATURE</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={resetEngineConsole}
+                            className="text-slate-400 hover:text-white text-xs font-mono tracking-widest uppercase py-1 border-b border-slate-800 hover:border-white transition-all"
+                        >
+                            RESET TARGET INJECTOR
+                        </button>
+
+                    </div>
+                )}
+
+            </div>
+
+            {/* DYNAMIC INTERFACE HARDWARE BUTTON CONTROL DECK */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-900/60 flex flex-col gap-3">
+                {gameState === "IDLE" && (
+                    <div className="flex flex-col gap-2">
+                        <span className="text-slate-500 text-[10px] font-mono uppercase text-center block">INITIATION MECHANICS</span>
+                        
+                        {activeGame === "pulse" && (
+                            <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                    onClick={() => startPulsePredictor("HIGH")}
+                                    className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-transform active:scale-95"
+                                >
+                                    PREDICT HIGH
+                                </button>
+                                <button 
+                                    onClick={() => startPulsePredictor("LOW")}
+                                    className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-transform active:scale-95"
+                                >
+                                    PREDICT LOW
+                                </button>
+                            </div>
+                        )}
+
+                        {activeGame === "crash" && (
+                            <button 
+                                onClick={runQuantumCrash}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                INITIATE VOLATILITY LADDER
+                            </button>
+                        )}
+
+                        {activeGame === "surge" && (
+                            <button 
+                                onClick={executeCandleSurge}
+                                className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                TARGET SCALPING WINDOW
+                            </button>
+                        )}
+
+                        {activeGame === "mines" && (
+                            <button 
+                                onClick={startCyberMines}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                INITIALIZE GRID NODES
+                            </button>
+                        )}
+
+                        {activeGame === "flash" && (
+                            <button 
+                                onClick={triggerFlashOrderLock}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                CAPTURE PEAK SIGNAL
+                            </button>
+                        )}
+
+                        {activeGame === "flip" && (
+                            <button 
+                                onClick={executeVelocityFlip}
+                                className="bg-gradient-to-r from-fuchsia-600 to-indigo-600 text-white py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                INITIATE DUAL-STATE FLIP
+                            </button>
+                        )}
+
+                        {activeGame === "orbit" && (
+                            <button 
+                                onClick={lockOrbitIntersection}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                LOCK INTERSECT METRICS
+                            </button>
+                        )}
+
+                        {activeGame === "ladder" && (
+                            <button 
+                                onClick={startGridLadder}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                START MULTI-TIER ESCALATOR
+                            </button>
+                        )}
+
+                        {activeGame === "wheel" && (
+                            <button 
+                                onClick={spinHyperWheel}
+                                className="bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-500 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                INITIATE ROTATION MECHANICS
+                            </button>
+                        )}
+
+                        {activeGame === "breaker" && (
+                            <button 
+                                onClick={breakSequencedTile}
+                                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest transition-all"
+                            >
+                                DETONATE GLOW NODES
+                            </button>
+                        )}
+
+                    </div>
+                )}
+
+                {/* GAME ACTIVE SECONDARY INTERACTION LAYERS */}
+                {gameState === "ACTIVE" && (
+                    <div className="flex flex-col gap-2">
+                        {activeGame === "crash" && (
+                            <button 
+                                onClick={cashoutQuantumCrash}
+                                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white py-3.5 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest animate-pulse"
+                            >
+                                LIQUIDIZE VALUE AT {currentTickerMultiplier.toFixed(2)}x
+                            </button>
+                        )}
+
+                        {activeGame === "ladder" && (
+                            <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                    onClick={climbLadderStep}
+                                    className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest"
+                                >
+                                    CLIMB TO TIER {ladderStep + 1}
+                                </button>
+                                <button 
+                                    onClick={cashoutLadderStep}
+                                    className="bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-grotesk font-black text-xs uppercase tracking-widest"
+                                >
+                                    CLAIM YIELD {(1.0 + (ladderStep * 0.8)).toFixed(1)}x
+                                </button>
+                            </div>
+                        )}
+
+                        {activeGame !== "crash" && activeGame !== "ladder" && (
+                            <p className="text-center text-xs font-mono text-slate-500 py-2 animate-pulse uppercase tracking-wider">
+                                Collateral calculations running in background processes...
+                            </p>
+                        )}
+                    </div>
+                )}
+            </div>
 
         </div>
     );
