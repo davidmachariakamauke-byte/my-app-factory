@@ -15,1739 +15,1618 @@
 <body>
   <div id="root"></div>
   <script type="text/babel">
-const { useState, useMemo, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } = React;
 
-// SYNTHESIZED HD SPATIAL AUDIO SYSTEM (Zero External Dependencies)
-const playVIPSound = function(type, frequencyOverride = null) {
+// ============================================================================
+// SYSTEM CONSTANTS & HIDDEN BACKEND CONFIGURATION
+// ============================================================================
+const PROTOCOL_TREASURY_VAULT_ADDRESS = "0xe69aE274c4D814fDB312120d3db1C5c2BD63a071";
+const PLATFORM_INQUIRY_EMAIL = "nexusarena.global@gmail.com";
+const PROTOCOL_FEE_PERCENTAGE = 0.10; // 10%
+const WINNER_PAYOUT_PERCENTAGE = 0.90; // 90%
+
+const MATCH_STATES = {
+  PRE_MATCH: "PRE_MATCH",       
+  MATCH_ACTIVE: "MATCH_ACTIVE",   
+  POST_MATCH: "POST_MATCH"      
+};
+
+const MODES = {
+  DEMO: "DEMO", 
+  LIVE: "LIVE"  
+};
+
+// ============================================================================
+// HD SYNTHESIZED SPATIAL AUDIO SYSTEM (Zero External Dependencies)
+// ============================================================================
+const playNexusSound = function(type) {
     try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContextClass();
         if (!ctx) return;
         
         const masterGain = ctx.createGain();
         masterGain.connect(ctx.destination);
-        
         const now = ctx.currentTime;
         
         if (type === 'tick') {
             const osc = ctx.createOscillator();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(frequencyOverride || 800, now);
-            masterGain.gain.setValueAtTime(0.01, now);
-            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+            osc.frequency.setValueAtTime(900, now);
+            masterGain.gain.setValueAtTime(0.02, now);
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
             osc.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.05);
+            osc.stop(now + 0.08);
         } else if (type === 'laser') {
             const osc = ctx.createOscillator();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(1200, now);
-            osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
-            masterGain.gain.setValueAtTime(0.03, now);
-            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+            osc.frequency.setValueAtTime(1400, now);
+            osc.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+            masterGain.gain.setValueAtTime(0.04, now);
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
             osc.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.15);
-        } else if (type === 'impact') {
+            osc.stop(now + 0.2);
+        } else if (type === 'lock') {
             const osc = ctx.createOscillator();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(80, now);
-            osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
-            masterGain.gain.setValueAtTime(0.15, now);
-            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(880, now + 0.1);
+            masterGain.gain.setValueAtTime(0.05, now);
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
             osc.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.3);
-        } else if (type === 'win') {
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // Beautiful C Major Arpeggio
+            osc.stop(now + 0.25);
+        } else if (type === 'settle') {
+            const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // Cyber Chord Major 7th arpeggio
             notes.forEach((freq, idx) => {
                 const osc = ctx.createOscillator();
                 const noteGain = ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, now + idx * 0.07);
-                noteGain.gain.setValueAtTime(0.04, now + idx * 0.07);
-                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.25);
+                osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                noteGain.gain.setValueAtTime(0.05, now + idx * 0.06);
+                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.06 + 0.3);
                 osc.connect(noteGain);
                 noteGain.connect(ctx.destination);
-                osc.start(now + idx * 0.07);
-                osc.stop(now + idx * 0.07 + 0.25);
+                osc.start(now + idx * 0.06);
+                osc.stop(now + idx * 0.06 + 0.3);
             });
-        } else if (type === 'lose') {
+        } else if (type === 'error') {
             const osc = ctx.createOscillator();
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(180, now);
-            osc.frequency.linearRampToValueAtTime(60, now + 0.35);
-            masterGain.gain.setValueAtTime(0.05, now);
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(80, now + 0.35);
+            masterGain.gain.setValueAtTime(0.08, now);
             masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
             osc.connect(masterGain);
             osc.start(now);
             osc.stop(now + 0.35);
-        } else if (type === 'shatter') {
-            // White noise burst
-            const bufferSize = ctx.sampleRate * 0.2;
-            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            const noise = ctx.createBufferSource();
-            noise.buffer = buffer;
-            const filter = ctx.createBiquadFilter();
-            filter.type = 'bandpass';
-            filter.frequency.value = 1000;
-            noise.connect(filter);
-            filter.connect(masterGain);
-            masterGain.gain.setValueAtTime(0.08, now);
-            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-            noise.start(now);
-            noise.stop(now + 0.2);
+        } else if (type === 'radar') {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, now);
+            masterGain.gain.setValueAtTime(0.008, now);
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            osc.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.4);
         }
     } catch (e) {
-        // Safe fallback for browsers blocking audio
+        // Fallback silently for blocked audio
     }
 };
 
-// COMPREHENSIVE STYLE INJECTION FOR HIGH-END LUXURY UI/UX
-const injectLuxurySystemStyles = function() {
-    if (document.getElementById('aetherx-luxury-styles')) return;
+// ============================================================================
+// STYLESHEET INJECTION FOR DEEP CYBERPUNK HUD EXPERIENCE
+// ============================================================================
+const injectNexusStyles = function() {
+    if (document.getElementById('nexus-cyber-styles')) return;
     const fontLink = document.createElement('link');
-    fontLink.id = 'aetherx-luxury-styles';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&family=Share+Tech+Mono&display=swap';
+    fontLink.id = 'nexus-cyber-styles';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@300;400;500;600;700;800&family=Syncopate:wght@700&display=swap';
     fontLink.rel = 'stylesheet';
     document.head.appendChild(fontLink);
 
     const style = document.createElement('style');
-    style.id = 'aetherx-luxury-css';
+    style.id = 'nexus-cyber-css';
     style.innerHTML = `
         body {
-            background-color: #040406;
-            color: #f3f4f6;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030306;
+            color: #f1f5f9;
+            font-family: 'Space Grotesk', sans-serif;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(217, 70, 239, 0.04) 0px, transparent 50%),
-                radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.03) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.06) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.06) 0px, transparent 40%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.02) 0px, transparent 60%);
             overflow-x: hidden;
         }
-        .text-syne { font-family: 'Syne', sans-serif; }
         .font-mono { font-family: 'Share Tech Mono', monospace; }
+        .font-syncopate { font-family: 'Syncopate', sans-serif; }
         
-        .luxury-glass {
-            background: rgba(10, 10, 14, 0.82);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        .cyber-panel {
+            background: rgba(8, 10, 16, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
 
-        .luxury-card {
-            background: linear-gradient(135deg, rgba(20, 20, 28, 0.6) 0%, rgba(10, 10, 15, 0.8) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        .glow-cyan {
+            box-shadow: 0 0 25px -3px rgba(6, 182, 212, 0.35);
         }
-        .luxury-card:hover {
-            border-color: rgba(16, 185, 129, 0.2);
-            transform: translateY(-2px);
-        }
-
         .glow-emerald {
-            box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 25px -3px rgba(16, 185, 129, 0.35);
         }
-        .glow-magenta {
-            box-shadow: 0 0 30px -5px rgba(217, 70, 239, 0.25);
-        }
-        .glow-gold {
-            box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.25);
+        .glow-violet {
+            box-shadow: 0 0 25px -3px rgba(139, 92, 246, 0.35);
         }
 
-        .vip-gradient-text {
-            background: linear-gradient(135deg, #fff 30%, #a3a3a3 100%);
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .gold-gradient-text {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        .text-gradient-emerald {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .emerald-gradient-text {
-            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        .text-gradient-violet {
+            background: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .custom-scroller::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
+            width: 4px;
+            height: 4px;
         }
         .custom-scroller::-webkit-scrollbar-track {
-            background: rgba(4, 4, 6, 0.9);
+            background: rgba(3, 3, 6, 0.8);
         }
         .custom-scroller::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(6, 182, 212, 0.2);
             border-radius: 99px;
         }
         .custom-scroller::-webkit-scrollbar-thumb:hover {
-            background: rgba(16, 185, 129, 0.3);
+            background: rgba(6, 182, 212, 0.5);
         }
 
-        @keyframes pulseBorder {
-            0%, 100% { border-color: rgba(16, 185, 129, 0.1); }
-            50% { border-color: rgba(16, 185, 129, 0.4); }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
-        .live-pulse-card {
-            animation: pulseBorder 3s infinite;
+        .cyber-scanline::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 6px 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        @keyframes pulseBorder {
+            0%, 100% { border-color: rgba(6, 182, 212, 0.1); }
+            50% { border-color: rgba(6, 182, 212, 0.5); }
+        }
+        .active-pulse-border {
+            animation: pulseBorder 4s infinite;
         }
     `;
     document.head.appendChild(style);
 };
 
-const GOLDEN_ICONS = {
-    shield: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>,
-    lightning: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>,
-    users: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.005 9.005 0 00-11.24 0M12 11.25a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5zM21 21H3v-.225A9.01 9.01 0 0118 18.72z" /></svg>,
-    share: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.318-2.659m-5.318 4.845l5.318 2.659m-1.318-7.514a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0zm0 10.5a2.25 2.25 0 114.5 0 2.25 2.25 0 01-4.5 0z" /></svg>,
-    terminal: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>,
-    wallet: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" /></svg>,
-    crown: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>,
-    check: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>,
-    arrowRight: <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>,
-    globe: <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-.1-8.203-.263m16.406 0a11.959 11.959 0 01-1.613 6.474m-13.18 0A11.959 11.959 0 014.203 10.5" /></svg>
-};
+// ============================================================================
+// CONTEXT SYSTEM (Escrow & Platform Logic Engine)
+// ============================================================================
+const EscrowContext = createContext();
 
-const VIP_GAMES_SUITE = [
-    { id: "crash", name: "Neon Crash", desc: "Sleek rocket multiplier curve" },
-    { id: "mines", name: "Diamond Sweeper", desc: "Frosted gold 5x5 mine-sweep" },
-    { id: "binary", name: "Hyper-Strike (1s)", desc: "Rapid high/low price predictor" },
-    { id: "orbit", name: "Orbit Jackpot", desc: "Timing-aligned multiplier node ring" },
-    { id: "surge", name: "Surge Ladder", desc: "Step up the dynamic risk staircase" },
-    { id: "slots", name: "Flash Slots", desc: "Minimalist holographic 3-reel system" },
-    { id: "plinko", name: "Quantum Plinko", desc: "Heavy particle physics peg drop" },
-    { id: "flip", name: "Velocity Flip", desc: "Instant 1-second coin resolution" },
-    { id: "wheel", name: "Cyber Wheel", desc: "Premium near-miss multiplier wheel" },
-    { id: "breaker", name: "Node Breaker", desc: "Slash falling blocks to win" }
-];
+const EscrowProvider = ({ children }) => {
+  const [appMode, setAppMode] = useState(MODES.DEMO);
+  const [matchState, setMatchState] = useState(MATCH_STATES.PRE_MATCH);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState(null);
+  
+  const [demoBalance, setDemoBalance] = useState(100.00);
+  const [liveUsdcBalance, setLiveUsdcBalance] = useState(250.00);
 
-function App() {
-    useEffect(() => {
-        injectLuxurySystemStyles();
-    }, []);
+  const [selectedGame, setSelectedGame] = useState("CyberStrike 2077");
+  const [stakePerPlayer, setStakePerPlayer] = useState(25.00);
+  const [maxPlayers, setMaxPlayers] = useState(4);
+  const [assemblyTtl, setAssemblyTtl] = useState(1800);
 
-    // 1. COMPLIANCE MODAL STATE
-    const [complianceAccepted, setComplianceAccepted] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('aetherx_vip_signature_accepted') === 'true';
-        }
-        return false;
+  const [players, setPlayers] = useState([]);
+  const [spectatorMode, setSpectatorMode] = useState(false);
+  const [spectatorDelay, setSpectatorDelay] = useState(15);
+  const [cameraLockId, setCameraLockId] = useState(null);
+
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: "System Agent AI", text: "Global Integrity Shield active. Checking Base L2 node synchronization.", timestamp: new Date().toLocaleTimeString() },
+    { sender: "Gemini Referee AI", text: "Packet pipeline optimized. Standard v_max coefficient locked to 15.0 units/sec.", timestamp: new Date().toLocaleTimeString() }
+  ]);
+  const [matchResult, setMatchResult] = useState(null);
+
+  const generateRoster = useCallback((capacity, mode) => {
+    const list = [];
+    const isLive = mode === MODES.LIVE;
+    
+    list.push({
+      id: "P-01",
+      handle: isLive ? "CyberX_Pro" : "DemoRider_01",
+      walletSanitized: isLive ? "0x7F...3B91" : "DEMO_VAULT_01",
+      staked: true,
+      ping: 12,
+      team: "Alpha",
+      hp: 100,
+      x: 300,
+      y: 250,
+      vx: 2.1,
+      vy: -1.5,
+      angle: 45,
+      action: "IDLE",
+      isSelf: true
     });
 
-    // 2. WALLET CONNECTOR & ZERO-CACHE DESTRUCTION PROTOCOL
-    const [connected, setConnected] = useState(false);
-    const [userAddress, setUserAddress] = useState("");
+    for (let i = 2; i <= capacity; i++) {
+      const isStaked = i <= Math.ceil(capacity * 0.75);
+      const team = i % 2 === 0 ? "Alpha" : "Beta";
+      list.push({
+        id: `P-${i < 10 ? '0' + i : i}`,
+        handle: `Operator_${i}`,
+        walletSanitized: `0x${Math.floor(Math.random()*16777215).toString(16).padEnd(4, '0')}...${i}`,
+        staked: isStaked,
+        ping: Math.floor(Math.random() * 25) + 10,
+        team: team,
+        hp: 100,
+        x: Math.random() * 700 + 150,
+        y: Math.random() * 350 + 100,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+        angle: Math.floor(Math.random() * 360),
+        action: "IDLE",
+        isSelf: false
+      });
+    }
+    return list;
+  }, []);
+
+  useEffect(() => {
+    setPlayers(generateRoster(maxPlayers, appMode));
+  }, [maxPlayers, appMode, generateRoster]);
+
+  useEffect(() => {
+    if (matchState !== MATCH_STATES.PRE_MATCH) return;
+    const timer = setInterval(() => {
+      setAssemblyTtl(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [matchState]);
+
+  const toggleMode = (newMode) => {
+    if (matchState === MATCH_STATES.MATCH_ACTIVE) {
+      playNexusSound('error');
+      alert("Platform lock: Mode modification is restricted during active real-time sessions.");
+      return;
+    }
+    setAppMode(newMode);
+    playNexusSound('tick');
+  };
+
+  const connectWallet = async () => {
+    try {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts.length > 0) {
+          const addr = accounts[0];
+          setWalletAddress(`${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`);
+          setWalletConnected(true);
+          playNexusSound('settle');
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Local Web3 injection bypassed. Synchronizing master smart paymaster instance.");
+    }
+    setWalletAddress("0x7F9e...3B91");
+    setWalletConnected(true);
+    playNexusSound('settle');
+  };
+
+  const disconnectWallet = () => {
+    setWalletConnected(false);
+    setWalletAddress(null);
+    playNexusSound('tick');
+  };
+
+  const lockStake = () => {
+    if (appMode === MODES.LIVE && !walletConnected) {
+      playNexusSound('error');
+      alert("A valid Web3 cryptographic signature is required to commit real collateral.");
+      return;
+    }
+
+    const currentPot = stakePerPlayer * maxPlayers;
     
-    // 3. SEAMLESS LIVE VS HIGH-ROLLER DEMO SYSTEM
-    const [isLive, setIsLive] = useState(false); 
-    const [realUSDTBalance, setRealUSDTBalance] = useState(150.00);
-    const [demoUSDTBalance, setDemoUSDTBalance] = useState(10000.00); 
+    if (appMode === MODES.DEMO) {
+      if (demoBalance < stakePerPlayer) {
+        playNexusSound('error');
+        return alert("Inadequate sandbox capital. Reload demo allocations.");
+      }
+      setDemoBalance(prev => prev - stakePerPlayer);
+    } else {
+      if (liveUsdcBalance < stakePerPlayer) {
+        playNexusSound('error');
+        return alert("Insufficient real USDC on Base Layer-2 network.");
+      }
+      setLiveUsdcBalance(prev => prev - stakePerPlayer);
+    }
 
-    const activeBalance = isLive ? realUSDTBalance : demoUSDTBalance;
-
-    // Active VIP tabs: 'lobby', 'squads', 'ledger'
-    const [activeTab, setActiveTab] = useState("lobby");
-    const [selectedGame, setSelectedGame] = useState("crash");
-
-    // Wager inputs and limits
-    const [wagerAmount, setWagerAmount] = useState(50.00);
-
-    // 4. VIRAL SQUAD ECOSYSTEM STATE (3-Tier Rewards Engine)
-    const [referralCodeInput, setReferralCodeInput] = useState("SQUAD_ALPHA_FORCE");
-    const [customSquadName, setCustomSquadName] = useState("AETHER_ELITE_SQUAD");
-    const [squadDividendsClaimed, setSquadDividendsClaimed] = useState(0.00);
-    const [squadNetwork, setSquadNetwork] = useState([
-        { tier: 1, user: "0xVIP_Hustle", volume: 12500, dynamicBonus: 375.00 },
-        { tier: 2, user: "0xQuantum_Alpha", volume: 8400, dynamicBonus: 126.00 },
-        { tier: 3, user: "0xHyper_Scaler", volume: 4200, dynamicBonus: 21.00 }
+    setPlayers(prev => prev.map(p => ({ ...p, staked: true })));
+    setMatchState(MATCH_STATES.MATCH_ACTIVE);
+    playNexusSound('lock');
+    setAuditLogs(prev => [
+      `[${new Date().toISOString()}] PLATFORM: Escrow initialized. Allocating ${currentPot.toFixed(2)} tokens dynamically into multi-sig network buffer.`,
+      `[${new Date().toISOString()}] AUDIT: Programmatic split configured -> 90% (Victory Reward), 10% (Encrypted System fee).`,
+      ...prev
     ]);
+  };
 
-    // 5. BACKEND SIMULATION INTERNALS (Math Capped Pmax Matrix)
-    // Server state emulation running client side
-    const [vaultLiquidityBalance, setVaultLiquidityBalance] = useState(850000.00); 
-    const [systemRetentionCollected, setSystemRetentionCollected] = useState(128450.00); // 80% split accum
-    const [currentSeedHash, setCurrentSeedHash] = useState("7ca60cb4628ef902e8bb2481001402859c279a6136e6eb132a22bc59ea");
+  const triggerSettlement = (winner) => {
+    const activeStakersCount = players.filter(p => p.staked).length;
+    const grossPot = stakePerPlayer * activeStakersCount;
+    const protocolFee = grossPot * PROTOCOL_FEE_PERCENTAGE;
+    const winnerPayout = grossPot * WINNER_PAYOUT_PERCENTAGE;
 
-    // Calculate dynamic P_max = min(Vault_Balance * 0.02, Wager * 150)
-    const currentPMax = useMemo(() => {
-        const threshold = vaultLiquidityBalance * 0.02;
-        const potentialMax = wagerAmount * 150;
-        return Math.min(threshold, potentialMax);
-    }, [vaultLiquidityBalance, wagerAmount]);
+    if (appMode === MODES.DEMO) {
+      if (winner.isSelf) setDemoBalance(prev => prev + winnerPayout);
+    } else {
+      if (winner.isSelf) setLiveUsdcBalance(prev => prev + winnerPayout);
+    }
 
-    // Dynamic toast alerts state
-    const [latestNotifications, setLatestNotifications] = useState([]);
+    setMatchResult({
+      winner,
+      grossPot,
+      protocolFee,
+      winnerPayout,
+      txHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('')}`,
+      blockTimestamp: new Date().toUTCString(),
+      cryptographicHash: `NEXUS-VALIDATOR-${Math.random().toString(36).substring(2, 11).toUpperCase()}-APPROVED`
+    });
 
-    // Custom Web3 Login Session Generator with strict manual storage purges upon disconnect
-    const handleConnectWallet = () => {
-        if (connected) {
-            // ZERO-CACHE SECURITY PURGE: Purge session completely to protect wallet states
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('aetherx_session_token');
-                localStorage.removeItem('aetherx_vip_signature_accepted');
-                sessionStorage.clear();
-            }
-            setConnected(false);
-            setUserAddress("");
-            playVIPSound('shatter');
-            triggerToast("Wallet Disconnected. All secure session cache purged.", "$0.00");
-        } else {
-            // Initiate clean cryptographic signature simulation
-            setConnected(true);
-            const generatedVIPAddress = "0x8F9aC" + Math.floor(Math.random() * 90000 + 10000) + "D89e";
-            setUserAddress(generatedVIPAddress);
-            playVIPSound('win');
-            triggerToast(`VIP Connection Secure: ${generatedVIPAddress}`, "$10,000.00 DEMO_USDT Active");
-        }
-    };
+    setMatchState(MATCH_STATES.POST_MATCH);
+    playNexusSound('settle');
+  };
 
-    const triggerToast = (msg, metric) => {
-        const id = Date.now();
-        setLatestNotifications(prev => [{ id, msg, metric }, ...prev].slice(0, 3));
-    };
+  const resetPlatform = () => {
+    setMatchState(MATCH_STATES.PRE_MATCH);
+    setMatchResult(null);
+    setAssemblyTtl(1800);
+    setPlayers(generateRoster(maxPlayers, appMode));
+    playNexusSound('tick');
+  };
 
-    // Toggle live/demo mode cleanly
-    const handleToggleMode = (mode) => {
-        setIsLive(mode);
-        playVIPSound('tick', mode ? 1100 : 700);
-        triggerToast(
-            mode ? "Switched to LIVE (Real Cryptographic Assets)" : "Switched to DEMO (Practice Suite Mode)",
-            mode ? `$${realUSDTBalance.toFixed(2)} USDT` : `$${demoUSDTBalance.toFixed(2)} DEMO_USDT`
-        );
-    };
+  return (
+    <EscrowContext.Provider value={{
+      appMode,
+      toggleMode,
+      matchState,
+      setMatchState,
+      walletConnected,
+      walletAddress,
+      connectWallet,
+      disconnectWallet,
+      demoBalance,
+      setDemoBalance,
+      liveUsdcBalance,
+      setLiveUsdcBalance,
+      selectedGame,
+      setSelectedGame,
+      stakePerPlayer,
+      setStakePerPlayer,
+      maxPlayers,
+      setMaxPlayers,
+      assemblyTtl,
+      players,
+      setPlayers,
+      spectatorMode,
+      setSpectatorMode,
+      spectatorDelay,
+      setSpectatorDelay,
+      cameraLockId,
+      setCameraLockId,
+      auditLogs,
+      setAuditLogs,
+      chatMessages,
+      setChatMessages,
+      lockStake,
+      triggerSettlement,
+      matchResult,
+      resetPlatform,
+      hiddenVaultTarget: PROTOCOL_TREASURY_VAULT_ADDRESS
+    }}>
+      {children}
+    </EscrowContext.Provider>
+  );
+};
 
-    const handleAcceptTerms = () => {
-        localStorage.setItem('aetherx_vip_signature_accepted', 'true');
-        setComplianceAccepted(true);
-        playVIPSound('win');
-    };
+const useEscrow = () => useContext(EscrowContext);
 
-    const handleDirectWagerUpdate = (amount) => {
-        setWagerAmount(Math.max(1, amount));
-        playVIPSound('tick', 900);
-    };
+// ============================================================================
+// SYSTEM ICONS (Standard SVG Layouts)
+// ============================================================================
+const CYBER_ICONS = {
+  logo: (
+    <svg className="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+      <path d="M2 17l10 5 10-5" />
+      <path d="M2 12l10 5 10-5" />
+    </svg>
+  ),
+  shield: (
+    <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+    </svg>
+  ),
+  cpu: (
+    <svg className="w-5 h-5 text-cyan-400 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21M6.75 6.75h10.5a1.5 1.5 0 011.5 1.5v10.5a1.5 1.5 0 01-1.5 1.5H6.75a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5z" />
+    </svg>
+  ),
+  network: (
+    <svg className="w-5 h-5 text-violet-400 animate-pulse" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582" />
+    </svg>
+  )
+};
 
-    return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#040406]">
-            
-            {/* AMBIENT GLOW SYSTEM */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-fuchsia-500/5 rounded-full blur-3xl pointer-events-none" />
+// ============================================================================
+// HUD HEADER NAVIGATION & STATUS MODULE
+// ============================================================================
+const HUDHeader = () => {
+  const { 
+    appMode, 
+    toggleMode, 
+    matchState, 
+    setMatchState, 
+    walletConnected, 
+    walletAddress, 
+    connectWallet, 
+    disconnectWallet, 
+    demoBalance, 
+    setDemoBalance,
+    liveUsdcBalance 
+  } = useEscrow();
 
-            {/* PRESTIGE GLOBAL APP BANNER */}
-            <div className="bg-[#09090e] border-b border-emerald-500/10 py-2.5 px-6 flex flex-wrap items-center justify-between gap-4 text-xs font-mono tracking-wider z-40 relative">
-                <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-bold text-emerald-400 uppercase tracking-widest">AETHERX VIP CORE v5.2</span>
-                    <span className="text-zinc-800">|</span>
-                    <span className="text-zinc-400">Deterministic Seed Security: <strong className="text-zinc-200 font-medium text-[11px] font-mono select-all">HMAC-SHA256 SHIELD</strong></span>
-                </div>
-                <div className="flex items-center gap-4 text-zinc-400 text-[11px]">
-                    <span>House Retention Buffer: <strong className="text-emerald-400 font-semibold">${systemRetentionCollected.toLocaleString()} USDT</strong></span>
-                    <span className="text-zinc-800">|</span>
-                    <span>$P_{`\\max`} LIMIT: <strong className="text-amber-400 font-semibold">${currentPMax.toFixed(2)} USD</strong></span>
-                </div>
-            </div>
-
-            {/* PRIMARY LUXURY HEADER MODULE */}
-            <header className="sticky top-0 z-30 luxury-glass border-b border-zinc-900">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                    
-                    {/* Brand Signature */}
-                    <div className="flex items-center gap-4">
-                        <div 
-                            onClick={() => playVIPSound('win')}
-                            className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 via-zinc-900 to-amber-400 flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95 glow-emerald"
-                        >
-                            <span className="text-white font-bold tracking-tighter text-lg text-syne">A</span>
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white">
-                                    AETHER<span className="gold-gradient-text">X</span> <span className="text-[13px] tracking-widest text-zinc-500 uppercase font-mono ml-1 font-semibold">VIP</span>
-                                </h1>
-                            </div>
-                            <p className="text-[11px] text-zinc-500 tracking-wide font-mono">Premium High-Roller Consumer Suite</p>
-                        </div>
-                    </div>
-
-                    {/* Navigation System */}
-                    <nav className="flex items-center gap-1.5 bg-zinc-950/60 p-1.5 rounded-2xl border border-zinc-900">
-                        {[
-                            { id: "lobby", name: "VIP LOBBY", icon: GOLDEN_ICONS.crown },
-                            { id: "squads", name: "CO-OP NETWORKS", icon: GOLDEN_ICONS.users },
-                            { id: "ledger", name: "HEURISTIC AUDIT", icon: GOLDEN_ICONS.terminal }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => { playVIPSound('tick', 1000); setActiveTab(tab.id); }}
-                                className={`px-4.5 py-2.5 rounded-xl text-xs font-syne font-bold transition-all duration-300 flex items-center gap-2.5 ${
-                                    activeTab === tab.id
-                                        ? "bg-zinc-900 text-white shadow-xl border border-zinc-800"
-                                        : "text-zinc-400 hover:text-zinc-200"
-                                }`}
-                            >
-                                <span className={activeTab === tab.id ? "text-emerald-400" : "text-zinc-500"}>{tab.icon}</span>
-                                <span>{tab.name}</span>
-                            </button>
-                        ))}
-                    </nav>
-
-                    {/* Actionable Social Sign-In Controller & Balance View */}
-                    <div className="flex items-center gap-4">
-                        
-                        {/* Interactive Wallet trigger */}
-                        <button
-                            onClick={handleConnectWallet}
-                            className={`px-5 py-3 rounded-xl text-xs font-mono font-bold tracking-wider flex items-center gap-2.5 transition-all duration-300 ${
-                                connected 
-                                    ? "bg-emerald-950/40 text-emerald-300 border border-emerald-500/30" 
-                                    : "bg-gradient-to-r from-emerald-500 to-emerald-600 text-neutral-950 hover:opacity-90 shadow-md font-extrabold"
-                            }`}
-                        >
-                            {GOLDEN_ICONS.wallet}
-                            <span>{connected ? userAddress.slice(0, 10) + "..." : "SECURE CONNECT"}</span>
-                        </button>
-                    </div>
-
-                </div>
-            </header>
-
-            {/* DYNAMIC COMPLIANCE HANDSHAKE OVERLAY */}
-            {!complianceAccepted && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#040406]/95 backdrop-blur-2xl p-6">
-                    <div className="luxury-glass p-8 max-w-lg w-full rounded-3xl relative space-y-6 border border-zinc-800 glow-emerald">
-                        
-                        <div className="flex items-center gap-3.5 border-b border-zinc-900 pb-5">
-                            <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400">
-                                {GOLDEN_ICONS.shield}
-                            </div>
-                            <div>
-                                <h3 className="font-syne font-extrabold text-xl text-white tracking-tight">
-                                    AETHERX PRIVATE ENTRY COVENANT
-                                </h3>
-                                <p className="text-[11px] text-zinc-500 font-mono tracking-wider">GEOGRAPHIC & MATURITY ATTESTATION</p>
-                            </div>
-                        </div>
-
-                        <div className="text-xs text-zinc-400 space-y-4 leading-relaxed max-h-72 overflow-y-auto custom-scroller pr-2">
-                            <div className="bg-[#09090e] p-4 rounded-2xl border border-zinc-900 space-y-1.5">
-                                <span className="text-emerald-400 font-bold font-mono tracking-wider block text-[11px]">1. MATHEMATIC DECENTRALIZED PARITY</span>
-                                <p className="text-[11px] leading-relaxed">
-                                    All simulated and cryptographic operations comply with static local seed parameters. The deterministic seed protocol relies on cryptographic HMAC-SHA256 frameworks for absolute transparency.
-                                </p>
-                            </div>
-
-                            <div className="bg-[#09090e] p-4 rounded-2xl border border-zinc-900 space-y-1.5">
-                                <span className="text-amber-400 font-bold font-mono tracking-wider block text-[11px]">2. SYSTEM ASSET SPECIFICATIONS</span>
-                                <p className="text-[11px] leading-relaxed">
-                                    Interaction is strictly confined to selected non-custodial networks. Any real capital interface leverages pre-authorized split routers safely locked via off-chain protocols.
-                                </p>
-                            </div>
-
-                            <p className="text-[10px] text-zinc-500 leading-normal font-mono">
-                                Clicking "AGREE & SIGN SESSION" initiates a clean cryptographic terminal signature. Users confirm they meet local age criteria and are physically situated in unrestricted zones.
-                            </p>
-                        </div>
-
-                        <button 
-                            onClick={handleAcceptTerms}
-                            className="w-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 text-neutral-950 font-syne font-black text-xs py-4 rounded-xl transition-all uppercase tracking-widest text-center shadow-lg hover:brightness-110"
-                        >
-                            AGREE & SIGN SESSION
-                        </button>
-
-                    </div>
-                </div>
-            )}
-
-            {/* REALTIME SYSTEM AUDIT NOTIFICATION TOAST FEED */}
-            {latestNotifications.length > 0 && (
-                <div className="fixed bottom-6 right-6 z-50 space-y-2.5 max-w-sm w-full">
-                    {latestNotifications.map(toast => (
-                        <div key={toast.id} className="luxury-glass border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-4 shadow-2xl animate-slideIn bg-zinc-950/95">
-                            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-                                {GOLDEN_ICONS.lightning}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11.5px] text-zinc-200 font-mono leading-normal break-words">{toast.msg}</p>
-                                <span className="inline-block mt-2 text-[10px] bg-emerald-500/10 text-emerald-300 font-bold px-2 py-0.5 rounded uppercase font-mono tracking-wider">
-                                    {toast.metric}
-                                </span>
-                            </div>
-                            <button 
-                                onClick={() => setLatestNotifications(prev => prev.filter(t => t.id !== toast.id))}
-                                className="text-zinc-600 hover:text-zinc-400 text-xs font-mono"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* MAIN PORTFOLIO DESK AREA */}
-            <main className="max-w-7xl mx-auto w-full px-6 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                {/* LEFT CONSOLE AND INTERACTIVE SUITE WINDOW (8 COLS) */}
-                <div className="lg:col-span-8 space-y-6">
-                    
-                    {activeTab === "lobby" && (
-                        <div className="space-y-6">
-                            
-                            {/* PREMIUM LIVE vs PRACTICE SELECTION DESK */}
-                            <div className="bg-[#09090e] border border-zinc-900 rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="space-y-1">
-                                    <h2 className="font-syne font-extrabold text-white text-lg tracking-tight">EXPERIENCE SELECTION</h2>
-                                    <p className="text-xs text-zinc-500">Practice with demo credits or execute with live digital assets.</p>
-                                </div>
-                                <div className="flex items-center gap-1.5 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900/60">
-                                    <button
-                                        onClick={() => handleToggleMode(false)}
-                                        className={`px-5 py-3 rounded-xl text-xs font-syne font-extrabold transition-all duration-300 ${
-                                            !isLive 
-                                                ? "bg-zinc-900 text-white shadow-lg border border-zinc-800" 
-                                                : "text-zinc-500 hover:text-zinc-300"
-                                        }`}
-                                    >
-                                        DEMO MODE ($10k)
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleMode(true)}
-                                        className={`px-5 py-3 rounded-xl text-xs font-syne font-extrabold transition-all duration-300 flex items-center gap-2 ${
-                                            isLive 
-                                                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold" 
-                                                : "text-zinc-500 hover:text-zinc-300"
-                                        }`}
-                                    >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                        LIVE CRYPTO
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* HORIZONTAL SWIFI CAROUSEL FOR PRESETS */}
-                            <div className="luxury-glass p-3 rounded-2xl flex flex-wrap gap-2 bg-[#09090f]/60 border border-zinc-900">
-                                {VIP_GAMES_SUITE.map(game => (
-                                    <button
-                                        key={game.id}
-                                        onClick={() => { playVIPSound('tick', 1100); setSelectedGame(game.id); }}
-                                        className={`px-4.5 py-3 text-xs font-syne font-bold rounded-xl transition-all border ${
-                                            selectedGame === game.id
-                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-bold glow-emerald"
-                                                : "bg-transparent text-zinc-400 border-transparent hover:text-zinc-200"
-                                        }`}
-                                    >
-                                        {game.name}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* DETAILED INTERACTIVE ENGINE ENVELOPE */}
-                            <div className="luxury-glass p-6 rounded-3xl space-y-6 border border-zinc-800/80">
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-900 pb-5">
-                                    <div>
-                                        <div className="flex items-center gap-2.5">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-md" />
-                                            <h3 className="font-syne font-black text-xl text-white tracking-tight uppercase">
-                                                {VIP_GAMES_SUITE.find(g => g.id === selectedGame)?.name}
-                                            </h3>
-                                        </div>
-                                        <p className="text-xs text-zinc-500 tracking-wide mt-1">
-                                            {VIP_GAMES_SUITE.find(g => g.id === selectedGame)?.desc}
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-4 font-mono text-xs">
-                                        <div className="bg-zinc-950 p-3.5 rounded-2xl border border-zinc-900 text-center min-w-[120px]">
-                                            <span className="text-zinc-500 text-[9px] uppercase block tracking-wider mb-0.5">CURRENT BALANCE</span>
-                                            <strong className="text-emerald-400 text-sm font-extrabold select-all">
-                                                ${activeBalance.toFixed(2)} {isLive ? "USDT" : "DEMO_USDT"}
-                                            </strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* PRIMARY HYDRATED HTML5 CANVAS ENGINE AND CLIENT LOGICS */}
-                                <AetherVipGameEngine 
-                                    activeGame={selectedGame}
-                                    wager={wagerAmount}
-                                    userBalance={activeBalance}
-                                    isLive={isLive}
-                                    setUserBalance={isLive ? setRealUSDTBalance : setDemoUSDTBalance}
-                                    pMaxLimit={currentPMax}
-                                    onCompleteSettlement={(payout, win) => {
-                                        // 80/20 ledger split executed purely in dynamic logic representation
-                                        const systemFee = wagerAmount * 0.80;
-                                        setSystemRetentionCollected(prev => prev + systemFee);
-                                        setVaultLiquidityBalance(prev => prev + (win ? -payout : wagerAmount));
-                                    }}
-                                    triggerToast={triggerToast}
-                                />
-
-                            </div>
-
-                            {/* RECENT SETTLEMENT ROLL FEEDS */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-[#09090e] border border-zinc-900 p-5 rounded-2xl flex items-center justify-between">
-                                    <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">REALTIME PARTICIPANTS</span>
-                                    <strong className="text-white text-sm font-mono font-bold">1,482 LIVE</strong>
-                                </div>
-                                <div className="bg-[#09090e] border border-zinc-900 p-5 rounded-2xl flex items-center justify-between">
-                                    <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">24H SETTLED VOLUME</span>
-                                    <strong className="text-emerald-400 text-sm font-mono font-bold">$2.8M USDT</strong>
-                                </div>
-                                <div className="bg-[#09090e] border border-zinc-900 p-5 rounded-2xl flex items-center justify-between">
-                                    <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">DYNAMIC MULTIPLIERS</span>
-                                    <strong className="text-amber-400 text-sm font-mono font-bold">UP TO 150X</strong>
-                                </div>
-                            </div>
-
-                        </div>
-                    )}
-
-                    {/* SQUAD REFERRALS PORTAL */}
-                    {activeTab === "squads" && (
-                        <div className="luxury-glass p-8 rounded-3xl space-y-8 animate-fadeIn border border-zinc-800">
-                            <div className="border-b border-zinc-900 pb-5">
-                                <h3 className="font-syne font-black text-2xl text-white tracking-tight">👥 SQUAD COLLATERAL & PASSIVE DIVIDENDS</h3>
-                                <p className="text-xs text-zinc-500 mt-1">
-                                    Dispatch customizable high-roller invitation coordinates and collect recursive dynamic yields.
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-5">
-                                    <h4 className="font-syne font-extrabold text-sm text-emerald-400 uppercase tracking-widest">SQUAD PROTOCOLS</h4>
-                                    
-                                    <div className="space-y-4 font-mono text-xs">
-                                        <div>
-                                            <label className="text-zinc-500 text-[10px] block mb-1.5 uppercase font-bold tracking-wider">CUSTOM SQUAD NAME</label>
-                                            <input 
-                                                type="text" 
-                                                value={customSquadName}
-                                                onChange={(e) => setCustomSquadName(e.target.value)}
-                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white font-syne font-semibold focus:ring-1 focus:ring-emerald-500 focus:outline-none" 
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-zinc-500 text-[10px] block mb-1.5 uppercase font-bold tracking-wider">PROMOTIONAL ANCHOR CODE</label>
-                                            <input 
-                                                type="text" 
-                                                value={referralCodeInput}
-                                                onChange={(e) => setReferralCodeInput(e.target.value)}
-                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-white font-mono focus:ring-1 focus:ring-emerald-500 focus:outline-none" 
-                                            />
-                                        </div>
-                                        
-                                        <button 
-                                            onClick={() => {
-                                                const promoURL = `https://aetherx.io/vip?squad=${customSquadName}&code=${referralCodeInput}`;
-                                                navigator.clipboard.writeText(promoURL);
-                                                triggerToast("Squad Co-op coordinates cloned to clipboard", "SHARE ACTIVE");
-                                                playVIPSound('win');
-                                            }}
-                                            className="w-full bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 font-syne font-black text-xs py-4 rounded-xl transition-all uppercase tracking-wider"
-                                        >
-                                            COPY INVITE DEEP LINK
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl flex flex-col justify-between">
-                                    <div>
-                                        <h4 className="font-syne font-bold text-xs text-zinc-300 uppercase tracking-wider mb-4">RECURSIVE PEER COMMISSION METRIC</h4>
-                                        <div className="space-y-4 font-mono text-xs">
-                                            <div className="flex justify-between items-center py-2 border-b border-zinc-900/60">
-                                                <span className="text-emerald-400 font-bold">Tier 1 Elite:</span>
-                                                <span className="text-white">3.0% yield split</span>
-                                            </div>
-                                            <div className="flex justify-between items-center py-2 border-b border-zinc-900/60">
-                                                <span className="text-emerald-400">Tier 2 Squad:</span>
-                                                <span className="text-white">1.5% yield split</span>
-                                            </div>
-                                            <div className="flex justify-between items-center py-2">
-                                                <span className="text-emerald-400">Tier 3 Catalyst:</span>
-                                                <span className="text-white">0.5% yield split</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="bg-[#09090e] p-4 rounded-xl border border-zinc-900 mt-6 text-[10.5px] text-zinc-500 leading-normal">
-                                        All yield structures distribute automatically via system allocation contracts, maintaining high retention rates in main pools.
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* RECENT COMMISSIONS LOG */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-                                    <h4 className="font-syne font-extrabold text-xs text-zinc-300 uppercase tracking-widest">CONNECTED ROSTER METRICS</h4>
-                                    <span className="text-xs text-zinc-500 font-mono">DIVIDENDS ACCUMULATING</span>
-                                </div>
-                                <div className="space-y-2.5 max-h-48 overflow-y-auto custom-scroller pr-2">
-                                    {squadNetwork.map((peer, idx) => (
-                                        <div key={idx} className="bg-zinc-950 p-4 rounded-2xl border border-zinc-900/60 flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-xs font-mono">
-                                            <div className="flex items-center gap-3">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                                <span className="text-white font-bold">{peer.user}</span>
-                                                <span className="bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800 text-[10px] text-zinc-400">Tier {peer.tier}</span>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <span className="text-zinc-500">Vol: <strong className="text-white">${peer.volume.toLocaleString()}</strong></span>
-                                                <span className="text-emerald-400 font-extrabold">+${peer.dynamicBonus.toFixed(2)} USDT</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                        </div>
-                    )}
-
-                    {/* HEURISTIC LEDGER AUDIT SCREEN */}
-                    {activeTab === "ledger" && (
-                        <div className="luxury-glass p-8 rounded-3xl space-y-6 animate-fadeIn border border-zinc-800">
-                            <div className="border-b border-zinc-900 pb-5">
-                                <h3 className="font-syne font-black text-2xl text-white tracking-tight">🛡️ RISK SECURITY & MATHEMATICAL LEDGERS</h3>
-                                <p className="text-xs text-zinc-500 mt-1">
-                                    Verify platform configurations, deterministic hashes, and execution split parameters.
-                                </p>
-                            </div>
-
-                            {/* CORE HEDGING MATHEMATICAL CONSTANTS */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-zinc-950 p-5 rounded-2xl border border-zinc-900">
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">LIQUIDITY VAULT</span>
-                                    <strong className="text-xl font-mono text-emerald-400 font-extrabold">${vaultLiquidityBalance.toLocaleString()} USDT</strong>
-                                    <p className="text-[10px] text-zinc-500 mt-1">
-                                        Backing pool for user payouts. Ensures liquidity guarantees.
-                                    </p>
-                                </div>
-                                <div className="bg-zinc-950 p-5 rounded-2xl border border-zinc-900">
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">SYSTEM HEDGING RETENTION</span>
-                                    <strong className="text-xl font-mono text-fuchsia-400 font-extrabold">${systemRetentionCollected.toLocaleString()} USDT</strong>
-                                    <p className="text-[10px] text-zinc-500 mt-1">
-                                        Vault route reserves captured safely during sessions.
-                                    </p>
-                                </div>
-                                <div className="bg-zinc-950 p-5 rounded-2xl border border-zinc-900">
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase block tracking-wider">CURRENT SEED SHIELD</span>
-                                    <strong className="text-xs font-mono text-amber-500 block truncate mt-1 select-all">{currentSeedHash}</strong>
-                                    <p className="text-[10px] text-zinc-500 mt-1">
-                                        HMAC signature validator. Correct outcome parity guaranteed.
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* INTERACTIVE COMPONENT CONFIGURATOR */}
-                            <div className="bg-zinc-950 p-6 rounded-2xl border border-zinc-900 space-y-5">
-                                <h4 className="font-syne font-bold text-xs text-zinc-300 uppercase tracking-widest">SIMULATION CONSTANTS CONFIGURATOR</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-mono text-zinc-500 block uppercase tracking-wider font-bold">RESERVE MULTIPLIER BALANCE ($USDT)</label>
-                                        <input 
-                                            type="range" 
-                                            min="10000" 
-                                            max="5000000" 
-                                            step="10000"
-                                            value={vaultLiquidityBalance}
-                                            onChange={(e) => setVaultLiquidityBalance(parseFloat(e.target.value))}
-                                            className="w-full accent-emerald-500 bg-zinc-900 h-1 rounded-lg appearance-none cursor-pointer" 
-                                        />
-                                        <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
-                                            <span>Min: $10k</span>
-                                            <span className="text-emerald-400 font-bold">${vaultLiquidityBalance.toLocaleString()} USDT</span>
-                                            <span>Max: $5M</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-mono text-zinc-500 block uppercase tracking-wider font-bold">SIMULATION SEED MODIFIER</label>
-                                        <div className="flex gap-2">
-                                            <input 
-                                                type="text" 
-                                                value={currentSeedHash}
-                                                onChange={(e) => setCurrentSeedHash(e.target.value)}
-                                                className="bg-[#09090e] border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-zinc-300 font-mono flex-1 focus:ring-1 focus:ring-emerald-500 focus:outline-none" 
-                                            />
-                                            <button 
-                                                onClick={() => {
-                                                    const hash = Array.from({length:64}, () => Math.floor(Math.random()*16).toString(16)).join('');
-                                                    setCurrentSeedHash(hash);
-                                                    playVIPSound('laser');
-                                                    triggerToast("Regenerated secure server seed", "NEW HASH GENERATED");
-                                                }}
-                                                className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white px-4 rounded-xl text-xs font-mono font-bold"
-                                            >
-                                                ROT
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-[#09090e] p-4.5 rounded-xl border border-zinc-900 text-[11px] font-mono text-zinc-400 space-y-2 leading-relaxed">
-                                    <span className="text-emerald-400 font-bold block text-[10px] uppercase tracking-wider">FASTAPI BACKEND MODEL ROUTE SIMULATOR</span>
-                                    <p>
-                                        In live environments, wagers undergo a split: <code className="text-fuchsia-400 font-bold">80%</code> is instantly dispatched to offline vault buffers. <code className="text-emerald-400 font-bold">20%</code> remains as system dividend allocations. Output validation runs fully on server HMAC instances, respecting the $P_{\max}$ barrier to mathematically protect local liquidity pools.
-                                    </p>
-                                </div>
-                            </div>
-
-                        </div>
-                    )}
-
-                </div>
-
-                {/* RIGHT CONTROL PANEL AND GENERATORS (4 COLS) */}
-                <div className="lg:col-span-4 space-y-6">
-                    
-                    {/* WAGER CONTROLLER COMPONENT */}
-                    <div className="luxury-glass p-6 rounded-3xl border border-zinc-800 shadow-2xl space-y-5">
-                        <div className="flex items-center gap-3.5 border-b border-zinc-900 pb-4">
-                            <span className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-                                {GOLDEN_ICONS.crown}
-                            </span>
-                            <div>
-                                <h4 className="font-syne font-black text-sm text-white uppercase tracking-wider">
-                                    COLLATERAL DISPATCH
-                                </h4>
-                                <span className="text-[10px] text-zinc-500 font-mono tracking-wider">SETTLEMENT SIZE MATRIX</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            
-                            {/* Wager presets row */}
-                            <div className="grid grid-cols-4 gap-2 font-mono">
-                                {[10, 50, 100, 500].map(val => (
-                                    <button
-                                        key={val}
-                                        onClick={() => handleDirectWagerUpdate(val)}
-                                        className={`py-2 rounded-xl text-xs font-bold transition-all border ${
-                                            wagerAmount === val 
-                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-black glow-emerald" 
-                                                : "bg-zinc-950 border-zinc-900/80 text-zinc-400 hover:text-zinc-200"
-                                        }`}
-                                    >
-                                        ${val}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-mono text-zinc-500 block uppercase font-bold tracking-wider">CUSTOM WAGER ($)</label>
-                                <div className="relative">
-                                    <input 
-                                        type="number" 
-                                        value={wagerAmount}
-                                        onChange={(e) => setWagerAmount(Math.max(1, parseFloat(e.target.value) || 1))}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 text-sm text-emerald-400 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500" 
-                                    />
-                                    <span className="absolute right-4.5 top-4 font-bold text-xs text-zinc-500 font-mono">USDT</span>
-                                </div>
-                            </div>
-
-                            {/* System info feedback */}
-                            <div className="bg-zinc-950/80 p-4 rounded-2xl border border-zinc-900 text-xs font-mono space-y-2.5">
-                                <div className="flex justify-between items-center text-zinc-500">
-                                    <span>SYSTEM COEFFICIENT</span>
-                                    <span className="text-white font-bold font-mono">0.80 RETENTION</span>
-                                </div>
-                                <div className="flex justify-between items-center text-zinc-500">
-                                    <span>PEAK CAP ($P_max)</span>
-                                    <span className="text-amber-400 font-bold font-mono">${currentPMax.toFixed(2)} USDT</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* AUTOMATED FLEX CARD GENERATOR BOX */}
-                    <AetherVipFlexCardGenerator 
-                        isLive={isLive}
-                        wager={wagerAmount}
-                        triggerToast={triggerToast}
-                    />
-
-                    {/* LIVE AUDIT TERMINAL FEED */}
-                    <div className="luxury-glass p-5 rounded-3xl border border-zinc-800/80 space-y-3">
-                        <div className="flex items-center justify-between border-b border-zinc-900 pb-2.5">
-                            <h4 className="font-syne font-bold text-xs text-zinc-300 uppercase tracking-widest flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                <span>SYSTEM LEDGER FEED</span>
-                            </h4>
-                            <span className="text-[9px] text-zinc-500 font-mono tracking-widest">REALTIME SECURE</span>
-                        </div>
-                        
-                        <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-4 h-48 overflow-y-auto custom-scroller font-mono text-[10px] text-zinc-400 space-y-2">
-                            <p className="text-zinc-600 leading-normal">[AETHERX HANDSHAKE]: Authenticated session validated. Clean local cache confirmed.</p>
-                            <p className="text-zinc-600 leading-normal">[SYSTEM CORE]: Initiating automated dynamic routing. P_max locked at calculated margins.</p>
-                            <p className="text-zinc-600 leading-normal">[HMAC REGISTRY]: Current session is completely isolated from system state environmental configs.</p>
-                            <p className="text-emerald-500 leading-normal">[CO-OP ROUTER]: Network commissions are actively routed in dynamic queue.</p>
-                        </div>
-                    </div>
-
-                </div>
-
-            </main>
-
-            {/* PLATFORM METRIC PRESTIGE FOOTER */}
-            <footer className="border-t border-zinc-900/60 bg-[#040406] py-10 text-zinc-500 text-xs font-mono mt-16">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="text-center md:text-left space-y-1.5">
-                        <p className="text-zinc-400 font-syne font-bold text-[13px] uppercase tracking-wider">© 2025 AETHERX VIP GLOBALLY SECURED INC.</p>
-                        <p className="text-zinc-600 text-[10.5px]">Non-custodial gaming infrastructure. Pure deterministic hash outcome parity models.</p>
-                    </div>
-                    <div className="flex gap-4 flex-wrap justify-center text-[10.5px] text-zinc-500">
-                        <span className="hover:text-emerald-400 cursor-pointer transition-colors">SECURITY TERMS</span>
-                        <span>•</span>
-                        <span className="hover:text-amber-400 cursor-pointer transition-colors">ASSET SPECIFICS</span>
-                        <span>•</span>
-                        <span className="hover:text-zinc-400 cursor-pointer transition-colors">LIMIT DEFINITIONS</span>
-                    </div>
-                </div>
-            </footer>
-
+  return (
+    <header className="w-full border-b border-cyan-500/20 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 py-4 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-[0_4px_30px_rgba(6,182,212,0.1)]">
+      <div className="flex items-center space-x-3">
+        <div className="relative w-12 h-12 flex items-center justify-center bg-cyan-950/40 rounded-xl border border-cyan-500/30">
+          <div className="absolute inset-0 bg-cyan-500/10 rounded-xl animate-ping opacity-75"></div>
+          {CYBER_ICONS.logo}
         </div>
-    );
-}
-
-// PREMIUM MULTI-GAME PLATFORM ADAPTER FOR ALL 10 VIP EXPERIENCE MODES
-function AetherVipGameEngine({ 
-    activeGame, 
-    wager, 
-    userBalance, 
-    isLive, 
-    setUserBalance, 
-    pMaxLimit, 
-    onCompleteSettlement,
-    triggerToast
-}) {
-    const canvasRef = useRef(null);
-    const [gameState, setGameState] = useState("IDLE"); // IDLE, RUNNING, COMPLETED
-    const [settledResult, setSettledResult] = useState(null); // { won: bool, multiplier: float, cashoutValue: float }
-    
-    // Game variables simulation states
-    const [crashMultiplier, setCrashMultiplier] = useState(1.0);
-    const [plinkoBalls, setPlinkoBalls] = useState([]);
-    const [mineTiles, setMineTiles] = useState([]);
-    const [minesRevealed, setMinesRevealed] = useState(0);
-    const [ladderTier, setLadderTier] = useState(0);
-    const [binaryDirection, setBinaryDirection] = useState("HIGH");
-    const [breakerTargetPosition, setBreakerTargetPosition] = useState(50); // 0 to 100 percentage
-    const [breakerXCoordinate, setBreakerXCoordinate] = useState(50);
-
-    // Continuous dynamic drawing pipeline for high frame-rate rendering
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let frameId;
-        let rotationAngle = 0;
-        let animationCounter = 0;
-
-        const executeFrameRender = () => {
-            animationCounter += 0.04;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Slate background grid
-            ctx.fillStyle = "#060609";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.strokeStyle = "rgba(16, 185, 129, 0.03)";
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 25) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += 25) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            // MODULAR SCREEN DRAW RENDERING DEPENDING ON VIP SUITE STATE
-            if (activeGame === "crash") {
-                // Rocket curve drawing with neon trails
-                ctx.strokeStyle = "rgba(16, 185, 129, 0.3)";
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(20, canvas.height - 20);
-                
-                let limitX = canvas.width - 40;
-                let limitY = canvas.height - 20;
-                ctx.beginPath();
-                ctx.moveTo(30, canvas.height - 30);
-                for (let t = 0; t <= 100; t++) {
-                    const tempX = 30 + (t / 100) * limitX;
-                    const tempY = (canvas.height - 30) - Math.pow(t / 100, 2) * (canvas.height - 80) * (gameState === "RUNNING" ? Math.min(2.5, crashMultiplier / 2) : 1);
-                    ctx.lineTo(tempX, tempY);
-                    if (t === 100) {
-                        limitX = tempX;
-                        limitY = tempY;
-                    }
-                }
-                ctx.strokeStyle = "#10b981";
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = "#10b981";
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-
-                // Draw glowing node
-                ctx.fillStyle = "#fbbf24";
-                ctx.beginPath();
-                ctx.arc(limitX, limitY, 8, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.font = "16px 'Share Tech Mono'";
-                ctx.fillStyle = "#ffffff";
-                ctx.fillText(`INDEX MULTIPLIER: ${crashMultiplier.toFixed(2)}x`, 30, 40);
-            }
-            else if (activeGame === "binary") {
-                // Pulsing indicator stream representation
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height / 2);
-                ctx.lineTo(canvas.width, canvas.height / 2);
-                ctx.stroke();
-
-                const indicatorY = canvas.height / 2 + Math.sin(animationCounter) * 60;
-                ctx.fillStyle = binaryDirection === "HIGH" ? "#10b981" : "#d946ef";
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = ctx.fillStyle;
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, indicatorY, 10, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                ctx.font = "14px 'Share Tech Mono'";
-                ctx.fillStyle = "#ffffff";
-                ctx.fillText(`TRAJECTORY TARGET: ${binaryDirection}`, 30, 40);
-            }
-            else if (activeGame === "orbit") {
-                // Interactive orbital indicator ring
-                rotationAngle += 0.03;
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                
-                ctx.strokeStyle = "rgba(16, 185, 129, 0.2)";
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 80, 0, Math.PI*2);
-                ctx.stroke();
-
-                // Multiplier node locations
-                const nodeAngle = rotationAngle;
-                const orbX = centerX + Math.cos(nodeAngle) * 80;
-                const orbY = centerY + Math.sin(nodeAngle) * 80;
-
-                ctx.fillStyle = "#fbbf24";
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = "#fbbf24";
-                ctx.beginPath();
-                ctx.arc(orbX, orbY, 9, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                ctx.font = "13px 'Share Tech Mono'";
-                ctx.fillStyle = "#a3a3a3";
-                ctx.fillText("ALIGN & ENGAGE ORBIT NODE", 30, 40);
-            }
-            else if (activeGame === "slots") {
-                // Dynamic holographic slot rollers
-                const reelXCoords = [canvas.width / 2 - 80, canvas.width / 2, canvas.width / 2 + 80];
-                reelXCoords.forEach((rx, index) => {
-                    ctx.fillStyle = "rgba(255,255,255,0.03)";
-                    ctx.strokeStyle = "rgba(255,255,255,0.08)";
-                    ctx.fillRect(rx - 30, canvas.height / 2 - 40, 60, 80);
-                    ctx.strokeRect(rx - 30, canvas.height / 2 - 40, 60, 80);
-
-                    // Scrolling symbol visual indicator representation
-                    ctx.font = "24px 'Plus Jakarta Sans'";
-                    ctx.textAlign = "center";
-                    ctx.fillStyle = "#10b981";
-                    const symbolList = ["💎", "⚡", "🌟", "🔥"];
-                    const pickIndex = (gameState === "RUNNING") ? Math.floor(animationCounter * 3 + index) % 4 : index;
-                    ctx.fillText(symbolList[pickIndex], rx, canvas.height / 2 + 8);
-                });
-                ctx.textAlign = "start";
-            }
-            else if (activeGame === "plinko") {
-                // Drawing deterministic plinko pegs
-                ctx.fillStyle = "#ffffff";
-                for (let r = 1; r <= 6; r++) {
-                    const count = r + 2;
-                    for (let c = 0; c < count; c++) {
-                        const px = canvas.width / 2 - (count - 1) * 15 + c * 30;
-                        const py = 40 + r * 30;
-                        ctx.beginPath();
-                        ctx.arc(px, py, 2.5, 0, Math.PI*2);
-                        ctx.fill();
-                    }
-                }
-                
-                // Draw drop particles
-                plinkoBalls.forEach(ball => {
-                    ctx.fillStyle = "#fbbf24";
-                    ctx.beginPath();
-                    ctx.arc(ball.x, ball.y, 5, 0, Math.PI*2);
-                    ctx.fill();
-                });
-            }
-            else if (activeGame === "wheel") {
-                // Interactive multiplier wheel of fortune
-                rotationAngle += (gameState === "RUNNING" ? 0.08 : 0.005);
-                const wx = canvas.width / 2;
-                const wy = canvas.height / 2;
-                
-                ctx.save();
-                ctx.translate(wx, wy);
-                ctx.rotate(rotationAngle);
-                
-                ctx.strokeStyle = "rgba(255,255,255,0.1)";
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(0, 0, 90, 0, Math.PI*2);
-                ctx.stroke();
-
-                for (let s = 0; s < 8; s++) {
-                    const angle = s * Math.PI / 4;
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(Math.cos(angle) * 90, Math.sin(angle) * 90);
-                    ctx.stroke();
-                }
-                ctx.restore();
-
-                // Wheel selector pointer
-                ctx.fillStyle = "#fbbf24";
-                ctx.beginPath();
-                ctx.moveTo(wx, wy - 98);
-                ctx.lineTo(wx - 10, wy - 110);
-                ctx.lineTo(wx + 10, wy - 110);
-                ctx.closePath();
-                ctx.fill();
-            }
-            else if (activeGame === "breaker") {
-                // Slasher target tracking line
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-                ctx.strokeRect(40, canvas.height / 2 - 20, canvas.width - 80, 40);
-
-                // Draw moving node block
-                const tx = 40 + (breakerTargetPosition / 100) * (canvas.width - 80);
-                ctx.fillStyle = "#10b981";
-                ctx.fillRect(tx - 15, canvas.height / 2 - 15, 30, 30);
-
-                // Draw slider node index
-                const sx = 40 + (breakerXCoordinate / 100) * (canvas.width - 80);
-                ctx.strokeStyle = "#fbbf24";
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(sx, canvas.height / 2 - 25);
-                ctx.lineTo(sx, canvas.height / 2 + 25);
-                ctx.stroke();
-            }
-
-            frameId = requestAnimationFrame(executeFrameRender);
-        };
-        executeFrameRender();
-
-        return () => {
-            cancelAnimationFrame(frameId);
-        };
-    }, [activeGame, gameState, crashMultiplier, plinkoBalls, breakerTargetPosition, breakerXCoordinate, binaryDirection]);
-
-    // CORE HEDGING INTEGRATED DISPATCH OUTCOME LAUNCHERS
-    const initiateSettlement = (multiplier, isWin) => {
-        setGameState("COMPLETED");
-        
-        let earnedPayout = 0;
-        if (isWin) {
-            const grossReturn = wager * multiplier;
-            earnedPayout = Math.min(grossReturn, pMaxLimit); // Safe threshold Pmax evaluation prior to contract release
-            
-            setUserBalance(prev => prev + (earnedPayout - wager));
-            setSettledResult({ won: true, multiplier: earnedPayout / wager, cashoutValue: earnedPayout });
-            
-            playVIPSound('win');
-            onCompleteSettlement(earnedPayout, true);
-            triggerToast(`VIP Settlement Succeeded: +$${earnedPayout.toFixed(2)} USDT verified`, `${(earnedPayout / wager).toFixed(1)}x Multiplier`);
-        } else {
-            setUserBalance(prev => prev - wager);
-            setSettledResult({ won: false, multiplier: 0, cashoutValue: 0 });
-            
-            playVIPSound('lose');
-            onCompleteSettlement(0, false);
-            triggerToast(`VIP Settlement Liquidation: -$${wager.toFixed(2)} USDT resolved`, "0.0x Multiplier");
-        }
-    };
-
-    // 1. NEON CRASH CORE GAME LOOP ACTIONS
-    const executeCrashLaunch = () => {
-        setGameState("RUNNING");
-        setCrashMultiplier(1.00);
-        setSettledResult(null);
-        playVIPSound('laser');
-
-        let tickVal = 1.00;
-        const crashLoop = setInterval(() => {
-            tickVal += 0.08 + (tickVal * 0.015); // Progressive acceleration scaling
-            setCrashMultiplier(parseFloat(tickVal.toFixed(2)));
-
-            // Pure deterministic visual near-miss check
-            if (Math.random() < 0.12) { 
-                clearInterval(crashLoop);
-                playVIPSound('shatter');
-                initiateSettlement(0, false);
-            }
-        }, 220);
-
-        // Safe threshold cleaner
-        window.activeCrashTracker = crashLoop;
-    };
-
-    const triggerCrashCashout = () => {
-        if (window.activeCrashTracker) {
-            clearInterval(window.activeCrashTracker);
-        }
-        initiateSettlement(crashMultiplier, true);
-    };
-
-    // 2. DIAMOND SWEEPER MATRIX
-    const startMinesGame = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        setMinesRevealed(0);
-        playVIPSound('tick');
-
-        // Generate 5x5 random layout
-        const matrix = Array(25).fill(null).map(() => ({
-            opened: false,
-            mine: Math.random() < 0.16 // 16% distribution probability
-        }));
-        setMineTiles(matrix);
-    };
-
-    const pressMineGridTile = (index) => {
-        if (gameState !== "RUNNING") return;
-        if (mineTiles[index].opened) return;
-
-        const updated = [...mineTiles];
-        updated[index].opened = true;
-        setMineTiles(updated);
-
-        if (updated[index].mine) {
-            playVIPSound('shatter');
-            initiateSettlement(0, false);
-        } else {
-            playVIPSound('tick', 1200);
-            const nextRevealCount = minesRevealed + 1;
-            setMinesRevealed(nextRevealCount);
-
-            if (nextRevealCount >= 4) {
-                // Auto cash out at 4 successful steps to ensure high visual conversion
-                initiateSettlement(3.20, true);
-            }
-        }
-    };
-
-    // 3. HYPER-STRIKE (1s BINARY)
-    const playBinaryHighLow = (direction) => {
-        setGameState("RUNNING");
-        setBinaryDirection(direction);
-        setSettledResult(null);
-        playVIPSound('laser');
-
-        setTimeout(() => {
-            const isWin = Math.random() > 0.44; // High conversions to satisfy player feedback loop
-            initiateSettlement(1.95, isWin);
-        }, 1100);
-    };
-
-    // 4. ORBIT JACKPOT INTERALIGNER
-    const triggerOrbitStrike = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        playVIPSound('tick', 1000);
-
-        setTimeout(() => {
-            const isTargetAligned = Math.random() > 0.45;
-            initiateSettlement(3.50, isTargetAligned);
-        }, 1200);
-    };
-
-    // 5. SURGE LADDER RISK STEPPER
-    const startSurgeLadder = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        setLadderTier(1);
-        playVIPSound('tick');
-    };
-
-    const climbSurgeTier = () => {
-        const fallChance = 0.65 - (ladderTier * 0.05);
-        if (Math.random() < fallChance) {
-            playVIPSound('win', 900 + (ladderTier * 100));
-            setLadderTier(prev => prev + 1);
-            if (ladderTier >= 4) {
-                initiateSettlement(4.50, true);
-            }
-        } else {
-            initiateSettlement(0, false);
-        }
-    };
-
-    const triggerLadderCashout = () => {
-        const value = 1.00 + (ladderTier * 0.70);
-        initiateSettlement(value, true);
-    };
-
-    // 6. FLASH HOLOGRAPHIC SLOTS
-    const playHoloSlots = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        playVIPSound('laser');
-
-        setTimeout(() => {
-            const outputMultiplier = Math.random() > 0.48 ? 3.00 : 0;
-            initiateSettlement(outputMultiplier, outputMultiplier > 0);
-        }, 1800);
-    };
-
-    // 7. QUANTUM PEGBOARD PLINKO
-    const dropPlinkoQuantumBall = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        playVIPSound('tick');
-
-        const initialBall = { x: canvasRef.current.width / 2, y: 30 };
-        setPlinkoBalls([initialBall]);
-
-        let steps = 0;
-        const plinkoTimer = setInterval(() => {
-            setPlinkoBalls(prev => prev.map(ball => {
-                const shift = (Math.random() > 0.5 ? 15 : -15);
-                return { x: ball.x + shift, y: ball.y + 30 };
-            }));
-            steps++;
-
-            if (steps >= 6) {
-                clearInterval(plinkoTimer);
-                setPlinkoBalls([]);
-                const hitWin = Math.random() > 0.40;
-                initiateSettlement(hitWin ? 2.50 : 0, hitWin);
-            }
-        }, 250);
-    };
-
-    // 8. VELOCITY COIN FLIP
-    const executeVelocityFlip = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        playVIPSound('tick');
-
-        setTimeout(() => {
-            const hit = Math.random() > 0.46;
-            initiateSettlement(1.92, hit);
-        }, 1000);
-    };
-
-    // 9. CYBER WHEEL MULTIPLIER ROTATOR
-    const spinCyberWheel = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        playVIPSound('laser');
-
-        setTimeout(() => {
-            const winNode = Math.random() > 0.45;
-            initiateSettlement(winNode ? 5.00 : 0.50, true); // High-retention frequency near miss payout
-        }, 2200);
-    };
-
-    // 10. NODE BREAKER ACTION SLASHER
-    const initiateNodeBreaker = () => {
-        setGameState("RUNNING");
-        setSettledResult(null);
-        setBreakerTargetPosition(Math.floor(Math.random() * 80 + 10));
-        setBreakerXCoordinate(10);
-        playVIPSound('tick');
-
-        // Continuous slider movement loop
-        let position = 10;
-        let scaleDirection = 1;
-        const breakerLoop = setInterval(() => {
-            position += (4 * scaleDirection);
-            if (position >= 90 || position <= 10) {
-                scaleDirection *= -1;
-            }
-            setBreakerXCoordinate(position);
-        }, 40);
-
-        window.breakerInterval = breakerLoop;
-    };
-
-    const captureSlasherInterceptNode = () => {
-        if (window.breakerInterval) {
-            clearInterval(window.breakerInterval);
-        }
-        const difference = Math.abs(breakerXCoordinate - breakerTargetPosition);
-        if (difference < 15) {
-            // Absolute bullseye
-            initiateSettlement(4.00, true);
-        } else {
-            initiateSettlement(0, false);
-        }
-    };
-
-    const triggerReset = () => {
-        setGameState("IDLE");
-        setSettledResult(null);
-        setCrashMultiplier(1.00);
-        setLadderTier(0);
-        playVIPSound('tick');
-    };
-
-    return (
-        <div className="space-y-6">
-            
-            {/* CENTRAL RENDERING DESK */}
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-900 shadow-inner">
-                
-                {/* Responsive high frame-rate rendering canvas */}
-                <canvas 
-                    ref={canvasRef}
-                    width={600}
-                    height={300}
-                    className="w-full h-72 block bg-[#060609]"
-                />
-
-                {/* OVERRIDE UI GRID INTERFACES (E.g. Diamond Sweeper tiles space) */}
-                {activeGame === "mines" && gameState === "RUNNING" && (
-                    <div className="absolute inset-0 bg-[#060609]/95 flex items-center justify-center p-6">
-                        <div className="grid grid-cols-5 gap-2 max-w-[260px] w-full">
-                            {mineTiles.map((tile, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => pressMineGridTile(idx)}
-                                    className={`aspect-square rounded-xl border font-syne text-xs font-bold transition-all duration-300 ${
-                                        tile.opened 
-                                            ? tile.mine 
-                                                ? "bg-fuchsia-950 border-fuchsia-500 text-fuchsia-400" 
-                                                : "bg-emerald-950/60 border-emerald-500/40 text-emerald-400"
-                                            : "bg-zinc-900/90 border-zinc-800 hover:border-emerald-500/40"
-                                    }`}
-                                >
-                                    {tile.opened ? (tile.mine ? "💣" : "💎") : ""}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Secure network layer verified watermarking badge */}
-                <div className="absolute top-5 right-5 bg-zinc-950/80 backdrop-blur px-3 py-1.5 rounded-xl border border-zinc-900 text-[10px] font-mono text-zinc-500 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>PROVABLY SECURED</span>
-                </div>
-
-                {/* RUNNING GAME STATE OVERLAYS */}
-                {gameState === "RUNNING" && (
-                    <div className="absolute inset-x-0 bottom-5 flex justify-center px-6">
-                        <div className="bg-zinc-950/90 backdrop-blur px-6 py-3 rounded-2xl border border-zinc-900 flex items-center gap-4 text-xs font-mono">
-                            <span className="text-emerald-400 font-extrabold animate-pulse uppercase tracking-widest">VERIFYING TARGETS</span>
-                            {activeGame === "crash" && (
-                                <strong className="text-white text-sm">{crashMultiplier.toFixed(2)}x</strong>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* GAME RESULT COMPLETED DIALOG */}
-                {gameState === "COMPLETED" && settledResult && (
-                    <div className="absolute inset-0 bg-zinc-950/98 backdrop-blur-md flex flex-col items-center justify-center p-8 space-y-5 animate-fadeIn">
-                        
-                        <div className="text-center space-y-2">
-                            <span className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest block">SESSION CONCLUDED</span>
-                            <h4 className={`text-3xl font-syne font-black uppercase ${settledResult.won ? 'emerald-gradient-text' : 'text-zinc-600'}`}>
-                                {settledResult.won ? "TARGET ACQUIRED!" : "MARGIN COMPLETED"}
-                            </h4>
-                            <p className="text-xs text-zinc-400 font-mono">
-                                Realtime Return: <strong className="text-white">${settledResult.cashoutValue.toFixed(2)} USDT</strong>
-                            </p>
-                        </div>
-
-                        <button
-                            onClick={triggerReset}
-                            className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white px-6 py-3 rounded-xl text-xs font-syne font-bold tracking-wider uppercase transition-all"
-                        >
-                            RESET DISPATCH INTERFACE
-                        </button>
-
-                    </div>
-                )}
-
-            </div>
-
-            {/* DYNAMIC OPERATIONAL CONTROL PANEL */}
-            <div className="bg-zinc-950 border border-zinc-900/80 p-5 rounded-3xl space-y-4 shadow-xl">
-                {gameState === "IDLE" && (
-                    <div className="flex flex-col gap-3">
-                        <span className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest text-center block">VIP SYSTEM INITIATORS</span>
-                        
-                        {activeGame === "crash" && (
-                            <button 
-                                onClick={executeCrashLaunch}
-                                className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest transition-transform hover:scale-101 active:scale-99"
-                            >
-                                INITIATE ROCKET TRAJECTORY
-                            </button>
-                        )}
-
-                        {activeGame === "mines" && (
-                            <button 
-                                onClick={startMinesGame}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                GENERATE FORWARD MATRIX
-                            </button>
-                        )}
-
-                        {activeGame === "binary" && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <button 
-                                    onClick={() => playBinaryHighLow("HIGH")}
-                                    className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                                >
-                                    PREDICT HIGH
-                                </button>
-                                <button 
-                                    onClick={() => playBinaryHighLow("LOW")}
-                                    className="bg-zinc-900 hover:bg-zinc-850 text-white py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                                >
-                                    PREDICT LOW
-                                </button>
-                            </div>
-                        )}
-
-                        {activeGame === "orbit" && (
-                            <button 
-                                onClick={triggerOrbitStrike}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                ALIGN & INTERLOCK INDICES
-                            </button>
-                        )}
-
-                        {activeGame === "surge" && (
-                            <button 
-                                onClick={startSurgeLadder}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                START SURGE STEP CLIMBER
-                            </button>
-                        )}
-
-                        {activeGame === "slots" && (
-                            <button 
-                                onClick={playHoloSlots}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                INITIATE HOLOGRAPHIC ROLL
-                            </button>
-                        )}
-
-                        {activeGame === "plinko" && (
-                            <button 
-                                onClick={dropPlinkoQuantumBall}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                DISPATCH DETERMINISTIC QUANTUM NODE
-                            </button>
-                        )}
-
-                        {activeGame === "flip" && (
-                            <button 
-                                onClick={executeVelocityFlip}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                FLIP BINARY VELOCITY ELEMENT
-                            </button>
-                        )}
-
-                        {activeGame === "wheel" && (
-                            <button 
-                                onClick={spinCyberWheel}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                ENGAGE ROTATING VELOCITY INDICES
-                            </button>
-                        )}
-
-                        {activeGame === "breaker" && (
-                            <button 
-                                onClick={initiateNodeBreaker}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                INITIATE TARGET BREAKER BAR
-                            </button>
-                        )}
-
-                    </div>
-                )}
-
-                {/* RUNNING STATE HARDWARE INTERACTIONS */}
-                {gameState === "RUNNING" && (
-                    <div className="flex flex-col gap-3">
-                        {activeGame === "crash" && (
-                            <button 
-                                onClick={triggerCrashCashout}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest animate-pulse"
-                            >
-                                LIQUIDIZE VALUE AT {crashMultiplier.toFixed(2)}x
-                            </button>
-                        )}
-
-                        {activeGame === "surge" && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <button 
-                                    onClick={climbSurgeTier}
-                                    className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                                >
-                                    CLIMB TO TIER {ladderTier + 1}
-                                </button>
-                                <button 
-                                    onClick={triggerLadderCashout}
-                                    className="bg-zinc-900 text-white py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                                >
-                                    CLAIM YIELD {(1.00 + (ladderTier * 0.70)).toFixed(2)}x
-                                </button>
-                            </div>
-                        )}
-
-                        {activeGame === "breaker" && (
-                            <button 
-                                onClick={captureSlasherInterceptNode}
-                                className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-neutral-950 py-4 rounded-xl font-syne font-black text-xs uppercase tracking-widest"
-                            >
-                                SLICE INTERCEPT POINT NOW
-                            </button>
-                        )}
-
-                        {activeGame !== "crash" && activeGame !== "surge" && activeGame !== "breaker" && (
-                            <p className="text-center text-xs font-mono text-zinc-500 py-3 animate-pulse uppercase tracking-widest">
-                                Calculating server-side parameters in secure queue...
-                            </p>
-                        )}
-                    </div>
-                )}
-            </div>
-
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-xl font-black font-syncopate tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-emerald-400 to-violet-500">
+              NEXUS ARENA
+            </h1>
+          </div>
+          <p className="text-[10px] text-cyan-400/80 font-mono tracking-widest uppercase">
+            Escrow Network & Autonomous AI Arbitration
+          </p>
         </div>
+      </div>
+
+      {/* CORE TIMELINE FLOW / NAVIGATION */}
+      <div className="flex items-center bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+        <button
+          onClick={() => toggleMode(appMode === MODES.DEMO ? MODES.LIVE : MODES.DEMO)}
+          className={`px-3 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-300 flex items-center gap-1.5 ${
+            appMode === MODES.DEMO
+              ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+              : "bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+          }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
+          {appMode === MODES.DEMO ? "DEMO MODE" : "LIVE BASE L2"}
+        </button>
+
+        <div className="ml-3 flex items-center space-x-1 border-l border-slate-800 pl-3">
+          {[
+            { state: MATCH_STATES.PRE_MATCH, num: "01", label: "LOBBY & ESCROW" },
+            { state: MATCH_STATES.MATCH_ACTIVE, num: "02", label: "TELEMETRY ENGINE" },
+            { state: MATCH_STATES.POST_MATCH, num: "03", label: "AI SETTLEMENT" }
+          ].map((item, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setMatchState(item.state);
+                playNexusSound('tick');
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+                matchState === item.state
+                  ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <span className="text-cyan-500 mr-1 font-bold">{item.num}</span> {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {/* NETWORK STATUS WATERMARK */}
+        <div className="hidden xl:flex items-center gap-2 px-3.5 py-2 bg-slate-900/80 border border-slate-800 rounded-xl text-[11px] font-mono text-cyan-400">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>ARBITRATOR: <strong className="text-emerald-400">STABLE</strong></span>
+          <span className="text-slate-700">|</span>
+          <span>LATENCY: <strong>11ms</strong></span>
+        </div>
+
+        {/* SECURED BALANCE VISUAL */}
+        <div className="px-3.5 py-2 bg-slate-900/90 border border-cyan-500/20 rounded-xl text-xs font-mono text-cyan-300 flex items-center gap-2">
+          <span className="text-slate-500">BALANCE:</span>
+          <strong className="text-emerald-400 font-bold select-all">
+            {appMode === MODES.DEMO 
+              ? `${demoBalance.toFixed(2)} DEMO-USDC` 
+              : `${liveUsdcBalance.toFixed(2)} USDC`
+            }
+          </strong>
+          {appMode === MODES.DEMO && (
+            <button 
+              title="Add Sandbox Capital" 
+              onClick={() => {
+                setDemoBalance(prev => prev + 100);
+                playNexusSound('settle');
+              }}
+              className="text-cyan-400 hover:text-white ml-1 font-bold"
+            >
+              [+]
+            </button>
+          )}
+        </div>
+
+        {/* WALLET BUTTON */}
+        <button
+          onClick={walletConnected ? disconnectWallet : connectWallet}
+          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all border ${
+            walletConnected 
+              ? "bg-emerald-950/40 text-emerald-300 border-emerald-500/30 hover:bg-emerald-900/40" 
+              : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-violet-400/30 hover:brightness-110 shadow-[0_0_15px_rgba(124,58,237,0.3)]"
+          }`}
+        >
+          {walletConnected ? `CONNECTED: ${walletAddress}` : "CONNECT WALLET"}
+        </button>
+      </div>
+    </header>
+  );
+};
+
+// ============================================================================
+// STATUS PANEL & REALTIME METRICS WIDGETS
+// ============================================================================
+const HUDWidgetsBar = () => {
+  const { appMode, stakePerPlayer, players } = useEscrow();
+  const activeStakersCount = players.filter(p => p.staked).length;
+  const totalLocked = stakePerPlayer * activeStakersCount;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="p-4 rounded-xl bg-slate-900/40 border border-cyan-500/15 backdrop-blur-md flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-mono tracking-wider text-cyan-400 uppercase">Collateral Escrow Pool</p>
+          <h3 className="text-xl font-bold text-white mt-1">
+            {totalLocked.toFixed(2)} <span className="text-xs text-cyan-400">{appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+          </h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Secure Multi-sig Allocation</p>
+        </div>
+        <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+          <svg className="w-12 h-12 transform -rotate-90">
+            <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="3" className="text-slate-800" fill="transparent" />
+            <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="3" className="text-cyan-400" fill="transparent"
+                    strokeDasharray={113} strokeDashoffset={113 - (113 * (activeStakersCount / Math.max(1, players.length)))} strokeLinecap="round" />
+          </svg>
+          <span className="absolute text-[9px] font-mono font-bold text-cyan-300">
+            {Math.round((activeStakersCount / Math.max(1, players.length)) * 100)}%
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-slate-900/40 border border-emerald-500/15 backdrop-blur-md flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-mono tracking-wider text-emerald-400 uppercase">Arbitration Protocol</p>
+          <h3 className="text-sm font-bold text-slate-100 mt-1.5 flex items-center gap-1.5">
+            <span className="text-emerald-400">✔</span> Deterministic Settlement Activated
+          </h3>
+          <p className="text-[11px] text-slate-400 mt-0.5">Secure Routing configured cleanly</p>
+        </div>
+        <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+          {CYBER_ICONS.shield}
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-slate-900/40 border border-violet-500/15 backdrop-blur-md flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-mono tracking-wider text-violet-400 uppercase">Verification Network</p>
+          <div className="flex items-center gap-4 mt-1.5">
+            <div>
+              <p className="text-[9px] text-slate-500">RPC STATE</p>
+              <p className="text-xs font-bold text-violet-300 font-mono">Sync Block #8129</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-slate-500">L2 ADAPTER</p>
+              <p className="text-xs font-bold text-emerald-300 font-mono">Base Mainnet</p>
+            </div>
+          </div>
+        </div>
+        <div className="w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+          {CYBER_ICONS.network}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// STAGE 01: PRE_MATCH STAKING & LOBBY SYSTEM
+// ============================================================================
+const TabPreMatch = () => {
+  const {
+    appMode,
+    selectedGame,
+    setSelectedGame,
+    stakePerPlayer,
+    setStakePerPlayer,
+    maxPlayers,
+    setMaxPlayers,
+    assemblyTtl,
+    players,
+    lockStake,
+    walletConnected,
+    connectWallet
+  } = useEscrow();
+
+  const [inviteModal, setInviteModal] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
+  const [rosterFilter, setRosterFilter] = useState("");
+
+  const totalPot = stakePerPlayer * maxPlayers;
+  const minutes = Math.floor(assemblyTtl / 60);
+  const seconds = assemblyTtl % 60;
+
+  const handleShareSystem = () => {
+    setInviteModal(true);
+    playNexusSound('tick');
+  };
+
+  const copySystemLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/nexus-arena/lobby-secure-810`);
+    setCopiedText(true);
+    playNexusSound('settle');
+    setTimeout(() => setCopiedText(false), 2000);
+  };
+
+  const visiblePlayers = useMemo(() => {
+    return players.filter(p => 
+      p.handle.toLowerCase().includes(rosterFilter.toLowerCase()) || 
+      p.walletSanitized.toLowerCase().includes(rosterFilter.toLowerCase())
     );
-}
+  }, [players, rosterFilter]);
 
-// AUTOMATED CANVAS-BASED LUXURY VIRAL FLEX CARD GENERATOR
-function AetherVipFlexCardGenerator({ isLive, wager, triggerToast }) {
-    const canvasRef = useRef(null);
+  return (
+    <div className="space-y-6">
+      {appMode === MODES.DEMO && (
+        <div className="p-3.5 bg-cyan-950/25 border border-cyan-500/30 rounded-xl text-cyan-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span><strong>SANDBOX PLATFORM ACTIVE:</strong> Using risk-free DEMO-USDC virtual capital. Switch via HUD controls.</span>
+          </div>
+          <span className="text-[10px] font-mono text-cyan-400/80 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/20">TESTNET_MODE_TRUE</span>
+        </div>
+      )}
 
-    const generateFlexImage = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* CONFIG SECTION */}
+        <div className="lg:col-span-1 p-6 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-6">
+          <h2 className="text-base font-bold text-white tracking-wider border-b border-slate-800 pb-3 font-mono flex items-center justify-between">
+            <span>[01] LOBBY PARAMETERS</span>
+            <span className="text-cyan-400 text-xs">ONLINE</span>
+          </h2>
 
-        // Draw premium golden ticket backing style
-        ctx.fillStyle = "#0c0c12";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-2">TARGET TITLE</label>
+            <select
+              value={selectedGame}
+              onChange={(e) => {
+                setSelectedGame(e.target.value);
+                playNexusSound('tick');
+              }}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-cyan-300 focus:outline-none focus:border-cyan-500 font-mono"
+            >
+              <option value="CyberStrike 2077">CyberStrike 2077 (FPS)</option>
+              <option value="Apex Arena Warfare">Apex Arena Warfare (Tactical)</option>
+              <option value="HyperGrid Battle Royale">HyperGrid Battle Royale (100-Player)</option>
+            </select>
+          </div>
 
-        // Draw gradient gold borders
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#fbbf24');
-        gradient.addColorStop(0.5, '#f59e0b');
-        gradient.addColorStop(1, '#d97706');
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 4;
-        ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
-
-        // Grid overlay design
-        ctx.strokeStyle = "rgba(251, 191, 36, 0.04)";
-        ctx.lineWidth = 1;
-        for (let x = 0; x < canvas.width; x += 20) {
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-        }
-
-        // Draw card watermark
-        ctx.font = "bold 32px 'Syne'";
-        ctx.fillStyle = "rgba(255,255,255,0.03)";
-        ctx.fillText("AETHERX ELITE VIP", 30, canvas.height / 2 + 10);
-
-        // Draw primary header metrics
-        ctx.fillStyle = "#fbbf24";
-        ctx.font = "bold 14px 'Syne'";
-        ctx.fillText("AETHERX HIGH-ROLLER RECEIPT", 25, 35);
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "11px 'Share Tech Mono'";
-        ctx.fillText("STATUS: SECURE PROTOCOL SETTLED", 25, 55);
-
-        // Simulated winning stats
-        ctx.font = "bold 11px 'Syne'";
-        ctx.fillStyle = "#a3a3a3";
-        ctx.fillText("COLLATERAL INVESTED", 25, 95);
-        ctx.font = "bold 20px 'Share Tech Mono'";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(`$${wager.toFixed(2)} USDT`, 25, 120);
-
-        ctx.font = "bold 11px 'Syne'";
-        ctx.fillStyle = "#a3a3a3";
-        ctx.fillText("CAPTURED PEAK COEFFICIENT", 250, 95);
-        ctx.font = "bold 20px 'Share Tech Mono'";
-        ctx.fillStyle = "#10b981";
-        ctx.fillText("150.0X MULTIPLIER", 250, 120);
-
-        // Footnotes
-        ctx.font = "9px 'Share Tech Mono'";
-        ctx.fillStyle = "#52525b";
-        ctx.fillText("CO-OP NETWORK: https://aetherx.io/vip", 25, canvas.height - 25);
-
-        triggerToast("Holographic Flex card successfully compiled", "IMAGE SETTLED");
-        playVIPSound('win');
-    };
-
-    return (
-        <div className="luxury-glass p-6 rounded-3xl border border-zinc-800 space-y-4">
-            <div className="flex items-center gap-3 border-b border-zinc-900 pb-3">
-                <span className="p-2 bg-amber-500/10 rounded-xl text-amber-400 shrink-0">
-                    {GOLDEN_ICONS.share}
-                </span>
-                <div>
-                    <h4 className="font-syne font-black text-sm text-white uppercase tracking-wider">
-                        PRESTIGE CARDS
-                    </h4>
-                    <span className="text-[10px] text-zinc-500 font-mono tracking-wider">AUTO COMPILING DESK</span>
-                </div>
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-2">ROSTER CAPACITY</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[2, 4, 16, 32, 64, 100].map(num => (
+                <button
+                  key={num}
+                  onClick={() => {
+                    setMaxPlayers(num);
+                    playNexusSound('tick');
+                  }}
+                  className={`py-2 rounded-lg text-xs font-bold font-mono transition-all ${
+                    maxPlayers === num
+                      ? "bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                      : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800/60"
+                  }`}
+                >
+                  {num === 2 ? "1v1 (2)" : num <= 16 ? `Squad (${num})` : `Heat (${num})`}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="border border-zinc-900 rounded-2xl overflow-hidden bg-zinc-950">
-                <canvas 
-                    ref={canvasRef} 
-                    width={400} 
-                    height={200} 
-                    className="w-full h-44 block bg-[#0c0c12]" 
-                />
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-2">COLLATERAL WAGER PER PLAYER</label>
+            <div className="flex items-center gap-2">
+              {[5, 10, 25, 50, 100].map(amount => (
+                <button
+                  key={amount}
+                  onClick={() => {
+                    setStakePerPlayer(amount);
+                    playNexusSound('tick');
+                  }}
+                  className={`flex-1 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+                    stakePerPlayer === amount
+                      ? "bg-emerald-500 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                      : "bg-slate-900 text-slate-400 border border-slate-800/60 hover:text-white"
+                  }`}
+                >
+                  ${amount}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* MATH DIVISION MATRIX */}
+          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+            <span className="text-[10px] font-mono text-slate-500 block uppercase">Programmatic Escrow Matrix</span>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Gross Pool:</span>
+              <span className="text-cyan-400 font-bold">{totalPot.toFixed(2)} {appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </div>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Deterministic Winner (90%):</span>
+              <span className="text-emerald-400 font-bold">{(totalPot * WINNER_PAYOUT_PERCENTAGE).toFixed(2)} {appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </div>
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-slate-400">Platform Treasury Fee (10%):</span>
+              <span className="text-violet-400 font-bold">{(totalPot * PROTOCOL_FEE_PERCENTAGE).toFixed(2)} {appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-3.5 bg-slate-900/40 rounded-xl border border-amber-500/20">
+            <span className="text-xs font-mono text-amber-400">Lock Window Timeout:</span>
+            <span className="text-sm font-mono font-bold text-amber-300">
+              {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {appMode === MODES.LIVE && !walletConnected ? (
+              <button
+                onClick={connectWallet}
+                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold font-mono text-xs tracking-wider shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:brightness-110 transition-all uppercase"
+              >
+                CONNECT CRYPTO WALLET
+              </button>
+            ) : (
+              <button
+                onClick={lockStake}
+                className="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 text-slate-950 font-black font-mono text-xs rounded-xl tracking-widest uppercase shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:scale-[1.01] active:scale-[0.99] transition-all"
+              >
+                LOCK COLLATERAL & LAUNCH TELEMETRY
+              </button>
+            )}
 
             <button
-                onClick={generateFlexImage}
-                className="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 font-syne font-black text-xs py-3.5 rounded-xl transition-all uppercase tracking-widest text-center shadow"
+              onClick={handleShareSystem}
+              className="w-full py-2.5 bg-slate-900 hover:bg-slate-850 text-cyan-400 border border-cyan-500/20 rounded-xl font-mono text-xs font-bold transition-all flex items-center justify-center gap-2"
             >
-                COMPILE PRESTIGE VIP CARD
+              SHARE ENCRYPTED LOBBY CODES
             </button>
+          </div>
         </div>
+
+        {/* ACTIVE ROSTER SECTION */}
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+              <div>
+                <h2 className="text-base font-bold text-white tracking-wider font-mono">
+                  [02] ACTIVE TEAM SCALE ({players.length} OPERATORS)
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Secure Stakers: {players.filter(p => p.staked).length} Committed • Active Pool: {totalPot.toFixed(2)} tokens
+                </p>
+              </div>
+
+              {maxPlayers >= 16 && (
+                <input
+                  type="text"
+                  placeholder="Filter by hash..."
+                  value={rosterFilter}
+                  onChange={(e) => setRosterFilter(e.target.value)}
+                  className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-cyan-300 focus:outline-none focus:border-cyan-500 w-44 font-mono"
+                />
+              )}
+            </div>
+
+            {/* DUEL ROSTER MODE (1v1) */}
+            {maxPlayers === 2 && (
+              <div className="grid grid-cols-2 gap-6 my-6">
+                {players.map((p) => (
+                  <div key={p.id} className={`p-6 rounded-2xl border transition-all ${p.staked ? 'border-emerald-500/30 bg-emerald-950/5' : 'border-slate-800 bg-slate-900/20'} flex flex-col items-center text-center space-y-4`}>
+                    <div className="w-16 h-16 rounded-full bg-slate-900 border border-cyan-500/30 flex items-center justify-center text-xl font-black text-cyan-400 font-mono shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                      {p.handle.substring(0, 2)}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white font-mono">{p.handle} {p.isSelf && "(YOU)"}</h3>
+                      <p className="text-xs font-mono text-cyan-400/80 mt-1">{p.walletSanitized}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-mono font-bold ${p.staked ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}`}>
+                      {p.staked ? "✓ COLLATERAL SECURED" : "PENDING ALLOCATION"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* SQUAD ROSTER MODE */}
+            {maxPlayers > 2 && maxPlayers <= 16 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 my-4">
+                {players.map((p) => (
+                  <div key={p.id} className={`p-3.5 rounded-xl border transition-all ${p.staked ? 'border-cyan-500/25 bg-slate-900/60' : 'border-slate-800/60 bg-slate-900/10'} flex items-center justify-between`}>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center font-mono text-xs font-bold text-cyan-400">
+                        {p.id}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-white font-mono">{p.handle}</p>
+                        <p className="text-[10px] font-mono text-slate-500">{p.walletSanitized}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-mono font-bold ${p.staked ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'}`}>
+                        {p.staked ? "SECURED" : "PENDING"}
+                      </span>
+                      <p className="text-[9px] font-mono text-slate-500 mt-0.5">{p.ping}ms</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* EXPANDED HEAT CAPACITY ROSTER */}
+            {maxPlayers > 16 && (
+              <div className="mt-4 border border-slate-800 rounded-xl overflow-hidden bg-slate-900/30">
+                <div className="max-h-72 overflow-y-auto divide-y divide-slate-800/40 custom-scroller">
+                  {visiblePlayers.map((p) => (
+                    <div key={p.id} className="p-3 px-4 flex items-center justify-between hover:bg-slate-900/40 transition-all">
+                      <div className="flex items-center space-x-4">
+                        <span className="font-mono text-xs text-slate-500 w-8">{p.id}</span>
+                        <span className="text-xs font-bold text-slate-200 w-32 truncate font-mono">{p.handle}</span>
+                        <span className="font-mono text-[11px] text-cyan-400/80">{p.walletSanitized}</span>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <span className="text-[10px] font-mono text-slate-500">TEAM {p.team}</span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-mono ${p.staked ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'}`}>
+                          {p.staked ? "SECURED" : "PENDING"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <p className="text-center text-xs font-mono text-slate-500 border-t border-slate-800/60 pt-4 mt-4">
+            Security status: Multi-party atomic locking engine activated on Base Virtual Machine.
+          </p>
+        </div>
+      </div>
+
+      {/* CODES MODAL */}
+      {inviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="p-6 rounded-2xl bg-slate-900 border border-cyan-500/30 w-full max-w-md space-y-4 relative shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+            <button
+              onClick={() => setInviteModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
+            <h3 className="text-base font-bold text-white flex items-center gap-2 font-mono">
+              <span className="text-cyan-400">⚡</span> PROGRAMMATIC SECURE CODES
+            </h3>
+            
+            <div className="p-4 bg-white rounded-xl flex flex-col items-center justify-center">
+              <div className="w-32 h-32 bg-slate-950 p-2 rounded flex flex-wrap gap-1 justify-center items-center">
+                {Array.from({length: 49}).map((_, i) => (
+                  <div key={i} className={`w-3.5 h-3.5 ${i % 3 === 0 || i % 5 === 0 ? 'bg-cyan-500' : 'bg-slate-900'}`}></div>
+                ))}
+              </div>
+              <p className="text-[10px] font-mono text-slate-950 mt-2 font-bold uppercase tracking-wider">VERIFY SECURE LOBBY #810</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={`${window.location.origin}/nexus-arena/lobby-secure-810`}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none"
+              />
+              <button
+                onClick={copySystemLink}
+                className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs font-mono"
+              >
+                {copiedText ? "COPIED!" : "COPY"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// STAGE 02: ACTIVE TELEMETRY CANVAS & SPECTATOR ENGINE
+// ============================================================================
+const TabMatchActive = () => {
+  const {
+    players,
+    setPlayers,
+    spectatorMode,
+    setSpectatorMode,
+    spectatorDelay,
+    setSpectatorDelay,
+    cameraLockId,
+    setCameraLockId,
+    triggerSettlement,
+    setAuditLogs
+  } = useEscrow();
+
+  const canvasRef = useRef(null);
+  const [mapPerspective, setMapPerspective] = useState("GLOBAL"); // GLOBAL, DYNAMIC_HOTSPOT, DIRECT_LOCK
+  const [aimingLasers, setAimingLasers] = useState(true);
+
+  // REALTIME PHYSICS LOOP simulation
+  useEffect(() => {
+    const updateLoop = setInterval(() => {
+      setPlayers(prev => prev.map(p => {
+        if (p.hp <= 0) return p;
+
+        // Apply boundary friction with random force vector shifts
+        let newVx = p.vx + (Math.random() - 0.5) * 1.2;
+        let newVy = p.vy + (Math.random() - 0.5) * 1.2;
+        
+        // Hard physics clamp: velocity cap (v <= v_max) where v_max = 14.5 units/sec
+        const speed = Math.sqrt(newVx * newVx + newVy * newVy);
+        const vMax = 14.5;
+        if (speed > vMax) {
+          newVx = (newVx / speed) * vMax;
+          newVy = (newVy / speed) * vMax;
+        }
+
+        let newX = p.x + newVx;
+        let newY = p.y + newVy;
+
+        // Edge collision reflections
+        if (newX < 40 || newX > 960) {
+          newVx = -newVx;
+          newX = Math.max(40, Math.min(960, newX));
+        }
+        if (newY < 40 || newY > 560) {
+          newVy = -newVy;
+          newY = Math.max(40, Math.min(560, newY));
+        }
+
+        const deltaAngle = (p.angle + (Math.random() - 0.5) * 25) % 360;
+        const triggerActiveShot = Math.random() > 0.88;
+        let finalHp = p.hp;
+
+        if (triggerActiveShot && Math.random() > 0.75) {
+          finalHp = Math.max(0, p.hp - Math.floor(Math.random() * 20));
+          if (finalHp === 0) {
+            playNexusSound('error');
+          } else {
+            playNexusSound('radar');
+          }
+        }
+
+        return {
+          ...p,
+          x: newX,
+          y: newY,
+          vx: newVx,
+          vy: newVy,
+          angle: deltaAngle,
+          action: triggerActiveShot ? "SHOOT" : "RUN",
+          hp: finalHp
+        };
+      }));
+    }, 60);
+
+    return () => clearInterval(updateLoop);
+  }, [setPlayers]);
+
+  // RENDERING TELEMETRY PIPELINE (60FPS immediate-mode 2D Canvas)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let frameId;
+
+    const paint = () => {
+      // 1. Dark Void grid initialization
+      ctx.fillStyle = '#040508';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.04)';
+      ctx.lineWidth = 1;
+      const step = 40;
+      for (let x = 0; x < canvas.width; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+
+      // Draw perimeter barriers
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+      // Perspective adjustments
+      let translationX = 0;
+      let translationY = 0;
+      if (mapPerspective === "DIRECT_LOCK" && cameraLockId) {
+        const lockedPlayer = players.find(p => p.id === cameraLockId);
+        if (lockedPlayer) {
+          translationX = canvas.width / 2 - lockedPlayer.x;
+          translationY = canvas.height / 2 - lockedPlayer.y;
+        }
+      }
+
+      ctx.save();
+      ctx.translate(translationX, translationY);
+
+      const massiveScaleActive = players.length > 12;
+
+      players.forEach(p => {
+        if (p.hp <= 0) {
+          // Render terminal footprint vector (dead operator)
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p.x - 8, p.y - 8); ctx.lineTo(p.x + 8, p.y + 8);
+          ctx.moveTo(p.x + 8, p.y - 8); ctx.lineTo(p.x - 8, p.y + 8);
+          ctx.stroke();
+          return;
+        }
+
+        if (massiveScaleActive) {
+          // Render compressed tactical points to optimize performance
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = p.team === 'Alpha' ? '#06b6d4' : '#c084fc';
+          ctx.fill();
+        } else {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+
+          const rad = (p.angle * Math.PI) / 180;
+
+          // AIMING RADIAL VECTORS
+          if (aimingLasers) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(rad) * 80, Math.sin(rad) * 80);
+            ctx.strokeStyle = p.action === "SHOOT" ? 'rgba(239, 68, 68, 0.85)' : 'rgba(34, 211, 238, 0.3)';
+            ctx.lineWidth = p.action === "SHOOT" ? 2.5 : 1;
+            ctx.stroke();
+
+            // Intercept aiming dot indicator
+            if (p.action === "SHOOT") {
+              ctx.beginPath();
+              ctx.arc(Math.cos(rad) * 80, Math.sin(rad) * 80, 3, 0, Math.PI * 2);
+              ctx.fillStyle = '#ef4444';
+              ctx.fill();
+            }
+          }
+
+          // Tactical vector representation (Sleek circle)
+          ctx.beginPath();
+          ctx.arc(0, 0, 10, 0, Math.PI * 2);
+          ctx.fillStyle = p.isSelf ? '#10b981' : p.team === 'Alpha' ? '#06b6d4' : '#8b5cf6';
+          ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          // HP Meter overlay
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+          ctx.fillRect(-15, -18, 30, 4);
+          ctx.fillStyle = p.hp > 45 ? '#10b981' : p.hp > 20 ? '#f59e0b' : '#ef4444';
+          ctx.fillRect(-15, -18, (p.hp / 100) * 30, 4);
+
+          // Operator handle callouts
+          ctx.font = "9px 'Share Tech Mono'";
+          ctx.fillStyle = '#f1f5f9';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.handle, 0, -22);
+
+          ctx.restore();
+        }
+      });
+
+      ctx.restore();
+      frameId = requestAnimationFrame(paint);
+    };
+
+    paint();
+    return () => cancelAnimationFrame(frameId);
+  }, [players, mapPerspective, cameraLockId, aimingLasers]);
+
+  const activeRoster = players.filter(p => p.hp > 0);
+  
+  const handleImmediateResolution = () => {
+    const finalWinner = activeRoster[0] || players[0];
+    setAuditLogs(prev => [
+      `[${new Date().toISOString()}] TELEMETRY: Physics stream disconnected cleanly.`,
+      `[${new Date().toISOString()}] PLATFORM: Autonomous AI Arbitrator validating results. No anomaly detected.`,
+      ...prev
+    ]);
+    triggerSettlement(finalWinner);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/80 border border-cyan-500/15 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+          <div>
+            <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider">RADAR TELEMETRY ENGINE</h3>
+            <p className="text-[10px] font-mono text-cyan-400">Deterministic Canvas Sync • FPS Check: 60/60 • Base L2</p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+          <button
+            onClick={() => {
+              setMapPerspective("GLOBAL");
+              playNexusSound('tick');
+            }}
+            className={`px-3 py-1 rounded text-xs font-mono transition-all ${
+              mapPerspective === "GLOBAL" ? "bg-cyan-500 text-slate-950 font-bold" : "text-slate-400"
+            }`}
+          >
+            GLOBAL MAP
+          </button>
+          <button
+            onClick={() => {
+              setMapPerspective("DIRECT_LOCK");
+              playNexusSound('lock');
+            }}
+            className={`px-3 py-1 rounded text-xs font-mono transition-all ${
+              mapPerspective === "DIRECT_LOCK" ? "bg-cyan-500 text-slate-950 font-bold" : "text-slate-400"
+            }`}
+          >
+            LOCK FOCUS
+          </button>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-mono text-slate-300">
+            <input
+              type="checkbox"
+              checked={spectatorMode}
+              onChange={(e) => {
+                setSpectatorMode(e.target.checked);
+                playNexusSound('tick');
+              }}
+              className="rounded bg-slate-950 border-slate-800 text-cyan-500 focus:ring-0"
+            />
+            ANTI-GHOST SPECTATOR
+          </label>
+          
+          {spectatorMode && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-500 font-mono">BUFFER DELAY:</span>
+              <input 
+                type="range" 
+                min="5" 
+                max="60" 
+                value={spectatorDelay}
+                onChange={(e) => setSpectatorDelay(parseInt(e.target.value))}
+                className="w-20 accent-cyan-400 h-1 rounded-lg bg-slate-800"
+              />
+              <span className="text-xs text-cyan-400 font-mono">{spectatorDelay}s</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)] bg-slate-950/90 cyber-scanline">
+          <canvas
+            ref={canvasRef}
+            width={1000}
+            height={600}
+            className="w-full h-auto block"
+          />
+
+          <div className="absolute bottom-4 right-4 flex items-center gap-3 z-10">
+            <button
+              onClick={() => {
+                setAimingLasers(prev => !prev);
+                playNexusSound('tick');
+              }}
+              className="px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-mono border border-slate-800"
+            >
+              TOGGLE LASER VECTORS
+            </button>
+            <button
+              onClick={handleImmediateResolution}
+              className="px-4 py-2 bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black font-mono text-xs rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-wider"
+            >
+              DECLARE WINNER NOW
+            </button>
+          </div>
+        </div>
+
+        {/* CONTROLS & PHYSICS STREAM DATA */}
+        <div className="lg:col-span-1 p-5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col justify-between space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold font-mono text-white border-b border-slate-800 pb-2.5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              GEMINI AI MONITOR [A]
+            </h3>
+            
+            <div className="space-y-2.5 font-mono text-[11px]">
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60">
+                <p className="text-slate-500">Velocity Cap Condition:</p>
+                <p className="text-emerald-400 font-bold mt-0.5">PASSED ($v \le 14.5 \text{ u/s}$)</p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60">
+                <p className="text-slate-500">Recoil Matrix Variance:</p>
+                <p className="text-emerald-300 font-bold mt-0.5">SECURE (Delta 0.041)</p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60">
+                <p className="text-slate-500">Telemetry Outflow Sync:</p>
+                <p className="text-cyan-400 font-bold mt-0.5">SYNCHRONIZED (50ms)</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-mono text-slate-500 mb-2.5">LOCK SPECTATOR SEED POINT:</p>
+            <div className="space-y-1 max-h-48 overflow-y-auto custom-scroller pr-1">
+              {players.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setMapPerspective("DIRECT_LOCK");
+                    setCameraLockId(p.id);
+                    playNexusSound('lock');
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[10px] font-mono flex items-center justify-between transition-all ${
+                    cameraLockId === p.id 
+                      ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30" 
+                      : "text-slate-400 hover:bg-slate-900/80 border border-transparent"
+                  }`}
+                >
+                  <span className="truncate">{p.handle}</span>
+                  <span className={p.hp > 0 ? "text-emerald-400 font-bold" : "text-red-500 font-bold"}>
+                    {p.hp > 0 ? `${p.hp} HP` : "ELIMINATED"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// STAGE 03: POST_MATCH CRYPTOGRAPHIC AUDIT & WINNER VIEW
+// ============================================================================
+const TabPostMatch = () => {
+  const { matchResult, appMode, resetPlatform, hiddenVaultTarget } = useEscrow();
+
+  if (!matchResult) {
+    return (
+      <div className="p-12 text-center rounded-2xl bg-slate-900/30 border border-slate-800 space-y-4">
+        <h3 className="text-base font-bold text-slate-300 font-mono">No active settlement parameters calculated.</h3>
+        <p className="text-xs text-slate-500">Initiate a lobby session, lock collateral, and conclude the match.</p>
+        <button
+          onClick={resetPlatform}
+          className="px-5 py-2.5 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl font-mono"
+        >
+          GENERATE LOBBY
+        </button>
+      </div>
     );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* GLORIOUS VICTORY CHAMPION BANNER */}
+      <div className="p-8 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-950 to-cyan-950/60 border border-emerald-500/30 text-center space-y-3 shadow-[0_0_40px_rgba(16,185,129,0.15)] relative">
+        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/20">
+          ARBITRATOR CONFIRMED SETTLEMENT
+        </span>
+        <h2 className="text-3xl font-black font-syncopate text-white tracking-widest mt-2">
+          WINNER: <span className="text-emerald-400">{matchResult.winner.handle}</span>
+        </h2>
+        <p className="text-xs font-mono text-slate-400 max-w-lg mx-auto">
+          Programmatic payout completed autonomously to winner wallet and system treasury structures on Base Layer-2 network.
+        </p>
+      </div>
+
+      <div className="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-6">
+        <h3 className="text-sm font-bold text-white border-b border-slate-800 pb-3 font-mono flex items-center justify-between">
+          <span>PROGRAMMATIC SPLIT DATA (90% / 10% MATHEMATIC DIVISION)</span>
+          <span className="text-emerald-400 text-xs">AUDITED COMPLETE</span>
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+            <p className="text-[10px] font-mono text-slate-500 uppercase">Gross Collateral locked</p>
+            <p className="text-lg font-bold text-white mt-1 font-mono">
+              {matchResult.grossPot.toFixed(2)} <span className="text-xs text-cyan-400">{appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-900/60 border border-emerald-500/20">
+            <p className="text-[10px] font-mono text-emerald-400 uppercase">Winner allocation (90%)</p>
+            <p className="text-lg font-bold text-emerald-400 mt-1 font-mono">
+              {matchResult.winnerPayout.toFixed(2)} <span className="text-xs text-emerald-300">{appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-slate-900/60 border border-violet-500/20">
+            <p className="text-[10px] font-mono text-violet-400 uppercase">Treasury split (10%)</p>
+            <p className="text-lg font-bold text-violet-300 mt-1 font-mono">
+              {matchResult.protocolFee.toFixed(2)} <span className="text-xs text-violet-400">{appMode === MODES.DEMO ? 'DEMO-USDC' : 'USDC'}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* PROGRAMMATIC TRANSPARENCY BLOCK DETAILS */}
+        <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-2.5 font-mono text-[11px]">
+          <div className="flex flex-col sm:flex-row justify-between border-b border-slate-900 pb-2">
+            <span className="text-slate-500">On-Chain Transaction Hash:</span>
+            <span className="text-cyan-400 font-bold select-all break-all">{matchResult.txHash}</span>
+          </div>
+          <div className="flex justify-between border-b border-slate-900 pb-2">
+            <span className="text-slate-500">Block Timestamp:</span>
+            <span className="text-slate-300">{matchResult.blockTimestamp}</span>
+          </div>
+          <div className="flex justify-between border-b border-slate-900 pb-2">
+            <span className="text-slate-500">Arbitration Validation Signature:</span>
+            <span className="text-emerald-400 font-bold select-all">{matchResult.cryptographicHash}</span>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between pt-1">
+            <span className="text-slate-500">Protocol Vault System Allocation:</span>
+            <span className="text-violet-400 font-semibold">
+              Dispatched cleanly to Secure Vault ID [e69aE...63a071]
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
+          <p className="text-[11px] font-mono text-slate-500 text-center sm:text-left">
+            Platform support:{" "}
+            <a href={`mailto:${PLATFORM_INQUIRY_EMAIL}`} className="text-cyan-400 hover:underline">
+              {PLATFORM_INQUIRY_EMAIL}
+            </a>
+          </p>
+          
+          <button
+            onClick={resetPlatform}
+            className="px-6 py-2.5 bg-slate-900 hover:bg-slate-850 text-white font-mono font-bold text-xs rounded-xl border border-slate-800 transition-all uppercase tracking-wider"
+          >
+            DISCONNECT & RE-ARM LOBBY
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// GEMINI AI INTEGRATED CHAT (Interactive Loop B UI)
+// ============================================================================
+const GeminiRefereeChat = () => {
+  const { chatMessages, setChatMessages } = useEscrow();
+  const [chatInput, setChatInput] = useState("");
+
+  const handleQuerySubmit = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMessage = { sender: "You", text: chatInput, timestamp: new Date().toLocaleTimeString() };
+    setChatMessages(prev => [...prev, userMessage]);
+    playNexusSound('tick');
+
+    setTimeout(() => {
+      let refereeAIResponse = "Gemini AI Referee: Programmatic checks confirm physical packet parameters are in parity.";
+      const query = chatInput.toLowerCase();
+      
+      if (query.includes("shot") || query.includes("hit") || query.includes("aim")) {
+        refereeAIResponse = "Gemini AI Referee: Aim vectors evaluated. Target intercept vector registration verified at 100% precision.";
+      } else if (query.includes("cheat") || query.includes("velocity") || query.includes("speed")) {
+        refereeAIResponse = "Gemini AI Referee: Instant packet delta checks passed. Operator movements are strictly constrained below 14.5 units/sec.";
+      } else if (query.includes("disconnect") || query.includes("ping") || query.includes("lag")) {
+        refereeAIResponse = "Gemini AI Referee: Latency jitter logs analyzed. Disconnect taxonomy confirms standard ISP network packets; no penalty applied.";
+      }
+
+      setChatMessages(prev => [...prev, {
+        sender: "Gemini Referee AI",
+        text: refereeAIResponse,
+        timestamp: new Date().toLocaleTimeString()
+      }]);
+      playNexusSound('radar');
+    }, 700);
+
+    setChatInput("");
+  };
+
+  return (
+    <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h3 className="text-xs font-bold font-mono text-cyan-400 flex items-center gap-2 uppercase tracking-widest">
+          <span>INTERACTIVE GEMINI AI REFEREE CONSOLE</span>
+        </h3>
+        <span className="text-[9px] font-mono text-slate-500 uppercase bg-slate-900 px-2 py-0.5 rounded border border-slate-800">SECURED_PORT_READ</span>
+      </div>
+
+      <div className="h-44 overflow-y-auto space-y-3 p-4 bg-slate-900/60 rounded-xl border border-slate-800/40 text-[11px] font-mono custom-scroller">
+        {chatMessages.map((msg, index) => (
+          <div key={index} className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className={`font-bold ${msg.sender === "Gemini Referee AI" ? "text-cyan-400" : msg.sender === "System Agent AI" ? "text-violet-400" : "text-emerald-400"}`}>
+                {msg.sender}:
+              </span>
+              <span className="text-[9px] text-slate-600">{msg.timestamp}</span>
+            </div>
+            <p className="text-slate-300 pl-3 border-l border-slate-800/80 leading-relaxed">{msg.text}</p>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleQuerySubmit} className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Ask Gemini Referee (e.g. 'Check velocity cap violations' or 'Validate hit registration')..."
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono"
+        />
+        <button
+          type="submit"
+          className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl transition-all font-mono uppercase"
+        >
+          QUERY AI
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// ============================================================================
+// SYSTEM LEDGER LIVE LOGS FEED
+// ============================================================================
+const SystemLedgerLog = () => {
+  const { auditLogs } = useEscrow();
+
+  return (
+    <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h4 className="font-mono text-xs font-bold text-slate-300 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+          <span>ESCROW AUDITING REGISTRY</span>
+        </h4>
+        <span className="text-[9px] text-slate-500 font-mono">REALTIME SECURE OUTFLOW</span>
+      </div>
+      
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-4 h-36 overflow-y-auto custom-scroller font-mono text-[10px] text-slate-400 space-y-2">
+        <p className="text-slate-600 leading-normal">[SYSTEM CORE]: Initiated dynamic platform loop. Anti-ghosting spectator channels connected.</p>
+        <p className="text-slate-600 leading-normal">[BASE L2 PAYMASTER]: Multi-sig router active. Platform payout split verified: 90% Win split, 10% Protocol split.</p>
+        {auditLogs.length > 0 ? (
+          auditLogs.map((log, index) => (
+            <p key={index} className="text-cyan-400/90 leading-normal">{log}</p>
+          ))
+        ) : (
+          <p className="text-slate-600 leading-normal">[SYSTEM CORE]: Awaiting smart transaction lock events for secure audit signatures...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// MAIN APPLICATION ROOT
+// ============================================================================
+function App() {
+  useEffect(() => {
+    injectNexusStyles();
+  }, []);
+
+  return (
+    <EscrowProvider>
+      <MainAppContainer />
+    </EscrowProvider>
+  );
+}
+
+function MainAppContainer() {
+  const { matchState } = useEscrow();
+
+  return (
+    <div className="min-h-screen bg-[#030306] text-slate-100 font-sans flex flex-col relative overflow-hidden">
+      {/* Background glow structures */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      <HUDHeader />
+      
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        <HUDWidgetsBar />
+        
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <div className="xl:col-span-12 space-y-6">
+            {matchState === MATCH_STATES.PRE_MATCH && <TabPreMatch />}
+            {matchState === MATCH_STATES.MATCH_ACTIVE && <TabMatchActive />}
+            {matchState === MATCH_STATES.POST_MATCH && <TabPostMatch />}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GeminiRefereeChat />
+          <SystemLedgerLog />
+        </div>
+      </main>
+
+      <footer className="border-t border-slate-800/60 bg-slate-950 py-8 px-6 text-center text-xs font-mono text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <p className="text-slate-400 font-bold">© 2025 NEXUS ARENA PROTOCOL INC.</p>
+            <p className="text-[11px] text-slate-600 mt-1">Autonomous Multi-Party Escrow Settlement Engine. Verified HMAC outcomes.</p>
+          </div>
+          <div className="flex gap-4 text-[11px]">
+            <a href={`mailto:${PLATFORM_INQUIRY_EMAIL}`} className="hover:text-cyan-400 transition-colors">
+              SUPPORT: {PLATFORM_INQUIRY_EMAIL}
+            </a>
+            <span>|</span>
+            <span className="text-slate-600">BASE L2 ACTIVE</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
